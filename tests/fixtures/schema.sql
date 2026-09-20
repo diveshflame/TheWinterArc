@@ -96,7 +96,11 @@ CREATE TABLE "challenge_tasks" (
     "isRuleBreaker" BOOLEAN NOT NULL DEFAULT false,
     "isAlcoholTask" BOOLEAN NOT NULL DEFAULT false,
     "points" INTEGER NOT NULL,
+    "unit" TEXT,
+    "unitCount" DOUBLE PRECISION DEFAULT 1,
     "target" DOUBLE PRECISION,
+    "bonusThreshold" DOUBLE PRECISION,
+    "bonusPoints" INTEGER,
 
     CONSTRAINT "challenge_tasks_pkey" PRIMARY KEY ("id")
 );
@@ -120,6 +124,7 @@ CREATE TABLE "task_logs" (
     "date" DATE NOT NULL,
     "completed" BOOLEAN NOT NULL DEFAULT false,
     "value" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "bonusPoints" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "task_logs_pkey" PRIMARY KEY ("id")
 );

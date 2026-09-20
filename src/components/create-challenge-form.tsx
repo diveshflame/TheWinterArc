@@ -3,13 +3,19 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createChallenge } from "@/app/actions";
+import { UnitPresetSelect } from "@/components/unit-picker";
 
 interface TaskDraft {
   id: string;
   name: string;
   type: "DAILY" | "WEEKLY";
+  control: "CHECKBOX" | "NUMBER";
   points: string;
-  target: string; // optional, for weekly numeric tasks
+  unit: string; // unit type for number inputs (e.g. "km", "reps") from the preset dropdown
+  unitCount: string; // number of individual units per points block (numbers only)
+  bonusThreshold: string; // number of units per bonus (e.g. "10")
+  bonusPoints: string;    // bonus pts awarded per bonusThreshold reached
+  target: string; // optional, for weekly tasks
 }
 
 let taskIdCounter = 0;
@@ -41,8 +47,8 @@ export function CreateChallengeForm({ adminName }: { adminName: string }) {
 
   function addTask() {
     setTasks((prev) => [
+      { id: newTaskId(), name: "", type: "DAILY", control: "CHECKBOX", points: "", unit: "", unitCount: "1", bonusThreshold: "", bonusPoints: "", target: "" },
       ...prev,
-      { id: newTaskId(), name: "", type: "DAILY", points: "", target: "" },
     ]);
   }
 
@@ -75,15 +81,25 @@ export function CreateChallengeForm({ adminName }: { adminName: string }) {
     const taskInputs = validTasks.map((t) => {
       const points = Number(t.points) || 0;
       const isWeekly = t.type === "WEEKLY";
+      const isNumber = t.control === "NUMBER";
       const target = isWeekly && t.target.trim() !== "" ? Number(t.target) : isWeekly ? 1 : null;
       return {
         name: t.name.trim(),
         type: t.type,
-        inputType: "CHECKBOX",
+        inputType: t.control,
         isRuleBreaker: false,
         isAlcoholTask: false,
         points,
-        target,
+        unit: isNumber && t.unit.trim() !== "" ? t.unit.trim() : null,
+        unitCount:
+          isNumber && t.unitCount.trim() !== "" && Number(t.unitCount) > 0
+            ? Number(t.unitCount)
+            : 1,
+        target: isNumber ? null : target,
+        bonusThreshold:
+          isNumber && t.bonusThreshold.trim() !== "" ? Number(t.bonusThreshold) : null,
+        bonusPoints:
+          isNumber && t.bonusPoints.trim() !== "" ? Number(t.bonusPoints) : null,
       };
     });
 
@@ -260,18 +276,93 @@ export function CreateChallengeForm({ adminName }: { adminName: string }) {
                     </select>
                   </label>
                   <label className="block">
+                    <span className="text-[11px] text-muted">Control</span>
+                    <select
+                      value={task.control}
+                      onChange={(e) =>
+                        updateTask(task.id, {
+                          control: e.target.value as "CHECKBOX" | "NUMBER",
+                        })
+                      }
+                      className="input"
+                    >
+                      <option value="CHECKBOX">Check box (toggle)</option>
+                      <option value="NUMBER">Number input (value)</option>
+                    </select>
+                  </label>
+                  <label className="block">
                     <span className="text-[11px] text-muted">
-                      {task.type === "DAILY" ? "Points / day" : "Points"}
+                      {task.control === "NUMBER"
+                        ? "Points / block"
+                        : task.type === "DAILY"
+                        ? "Points / day"
+                        : "Points"}
                     </span>
                     <input
                       type="number"
                       value={task.points}
-                      onChange={(e) => updateTask(task.id, { points: e.target.value })}
+                      onChange={(e) =>
+                        updateTask(task.id, { points: e.target.value })
+                      }
                       placeholder="0"
                       className="input"
                     />
                   </label>
-                  {task.type === "WEEKLY" && (
+                  {task.control === "NUMBER" && (
+                    <label className="block sm:col-span-2">
+                      <span className="text-[11px] text-muted">
+                        Units (per points block)
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={task.unitCount}
+                        onChange={(e) =>
+                          updateTask(task.id, { unitCount: e.target.value })
+                        }
+                        placeholder="1"
+                        className="input"
+                      />
+                      <UnitPresetSelect
+                        value={task.unit}
+                        onSelect={(u) => updateTask(task.id, { unit: u })}
+                      />
+                    </label>
+                  )}
+                  {task.control === "NUMBER" && (
+                    <label className="block">
+                      <span className="text-[11px] text-muted">
+                        Bonus every (units)
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={task.bonusThreshold}
+                        onChange={(e) =>
+                          updateTask(task.id, { bonusThreshold: e.target.value })
+                        }
+                        placeholder="e.g. 10"
+                        className="input"
+                      />
+                    </label>
+                  )}
+                  {task.control === "NUMBER" && (
+                    <label className="block">
+                      <span className="text-[11px] text-muted">Bonus pts</span>
+                      <input
+                        type="number"
+                        value={task.bonusPoints}
+                        onChange={(e) =>
+                          updateTask(task.id, { bonusPoints: e.target.value })
+                        }
+                        placeholder="e.g. 20"
+                        className="input"
+                      />
+                    </label>
+                  )}
+                  {task.type === "WEEKLY" && task.control !== "NUMBER" && (
                     <label className="block">
                       <span className="text-[11px] text-muted">
                         Times a week
@@ -291,9 +382,37 @@ export function CreateChallengeForm({ adminName }: { adminName: string }) {
                   )}
                 </div>
                 <p className="text-[11px] text-muted pl-8">
-                  {task.type === "DAILY"
-                    ? `Daily habit — members check it off daily for ${Number(task.points) || 0} pts/day.`
-                    : `Weekly challenge — log daily in Today's log. Evaluated & credited on Sunday if done ${task.target || "N"} days/week (${Number(task.points) || 0} pts).`}
+                  {task.control === "NUMBER" ? (
+                    (() => {
+                      const count =
+                        Number(task.unitCount) > 0 ? Number(task.unitCount) : 1;
+                      const perBlock = task.unit
+                        ? count === 1
+                          ? task.unit
+                          : `${count} ${task.unit}`
+                        : count === 1
+                        ? "unit"
+                        : `${count} units`;
+                      return (
+                        `Value input — members enter an amount and earn ` +
+                        `${Number(task.points) || 0} pts per ${perBlock}.` +
+                        (task.bonusThreshold.trim() !== "" &&
+                        task.bonusPoints.trim() !== "" &&
+                        Number(task.bonusThreshold) > 0
+                          ? ` Bonus: +${Number(task.bonusPoints) || 0} pts every ${Number(
+                              task.bonusThreshold
+                            )} ${task.unit || "units"}.`
+                          : "")
+                      );
+                    })()
+                  ) : task.type === "DAILY" ? (
+                    `Daily habit — members check it off daily for ${Number(task.points) || 0} pts/day.`
+                  ) : (
+                    `Weekly challenge — log daily in Today's log. Evaluated & credited on Sunday if done ${task.target || "N"} days/week (${Number(task.points) || 0} pts).`
+                  )}
+                  {Number(task.points) < 0 && (
+                    <span className="text-danger font-medium"> Negative points are deducted.</span>
+                  )}
                 </p>
               </div>
             ))}

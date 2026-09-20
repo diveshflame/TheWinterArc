@@ -15,7 +15,8 @@ export async function saveTaskLog(
   challengeId: string,
   taskId: string,
   completed: boolean,
-  value: number
+  value: number,
+  bonusPoints = 0
 ): Promise<{ ok: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user) return { ok: false, error: "Not signed in" };
@@ -32,8 +33,8 @@ export async function saveTaskLog(
     where: {
       userId_taskId_date: { userId, taskId, date: today },
     },
-    update: { completed, value },
-    create: { userId, challengeId, taskId, date: today, completed, value },
+    update: { completed, value, bonusPoints },
+    create: { userId, challengeId, taskId, date: today, completed, value, bonusPoints },
   });
 
   await runDayScoring(userId, challengeId, today);
@@ -47,7 +48,7 @@ export async function saveTaskLog(
 export async function saveMultipleTaskLogs(
   challengeId: string,
   dateStr: string,
-  updates: { taskId: string; completed: boolean; value: number }[]
+  updates: { taskId: string; completed: boolean; value: number; bonusPoints?: number }[]
 ): Promise<{ ok: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user) return { ok: false, error: "Not signed in" };
@@ -65,7 +66,7 @@ export async function saveMultipleTaskLogs(
       where: {
         userId_taskId_date: { userId, taskId: update.taskId, date: targetDate },
       },
-      update: { completed: update.completed, value: update.value },
+      update: { completed: update.completed, value: update.value, bonusPoints: update.bonusPoints ?? 0 },
       create: {
         userId,
         challengeId,
@@ -73,6 +74,7 @@ export async function saveMultipleTaskLogs(
         date: targetDate,
         completed: update.completed,
         value: update.value,
+        bonusPoints: update.bonusPoints ?? 0,
       },
     });
   }
@@ -97,7 +99,11 @@ export interface ChallengeTaskInput {
   isRuleBreaker: boolean;
   isAlcoholTask: boolean;
   points: number;
+  unit?: string | null; // unit type for NUMBER inputs (e.g. "km", "mile")
+  unitCount?: number | null; // individual units per points block (e.g. 50 per "50 push-ups")
   target: number | null;
+  bonusThreshold?: number | null; // NUMBER: bonus every full N units
+  bonusPoints?: number | null;    // NUMBER: bonus pts per full bonusThreshold
   tiers?: { threshold: number; points: number }[];
 }
 
@@ -141,7 +147,11 @@ export async function createChallenge(input: {
         isRuleBreaker: taskInput.isRuleBreaker,
         isAlcoholTask: taskInput.isAlcoholTask,
         points: taskInput.points,
+        unit: taskInput.unit ?? null,
+        unitCount: taskInput.unitCount ?? null,
         target: taskInput.target,
+        bonusThreshold: taskInput.bonusThreshold ?? null,
+        bonusPoints: taskInput.bonusPoints ?? null,
         tiers: taskInput.tiers ? {
           createMany: {
             data: taskInput.tiers.map((t) => ({
@@ -257,7 +267,11 @@ export async function updateChallengeTasks(
       isRuleBreaker: taskInput.isRuleBreaker,
       isAlcoholTask: taskInput.isAlcoholTask,
       points: taskInput.points,
+      unit: taskInput.unit ?? null,
+      unitCount: taskInput.unitCount ?? null,
       target: taskInput.target,
+      bonusThreshold: taskInput.bonusThreshold ?? null,
+      bonusPoints: taskInput.bonusPoints ?? null,
     };
 
     if (taskInput.id && existingIds.has(taskInput.id)) {

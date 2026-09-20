@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { saveTaskLog } from "@/app/actions";
 import {
   getDailyCompletionSummary,
+  numberTaskPoints,
+  unitsLabel,
+  formatDateKey,
   DAILY_BONUS_POINTS,
   type ChallengeTask,
   type TaskLog,
@@ -47,18 +50,54 @@ export function DailyLogClient({
     date: new Date(),
     completed: logState[t.id]?.completed ?? false,
     value: logState[t.id]?.value ?? 0,
+    bonusPoints: 0,
   }));
 
   const completion = getDailyCompletionSummary(tasks, logsList);
 
+  const todayKey = formatDateKey(new Date());
+
+  // Bonus is awarded in the log UI (not by the backend): a daily task earns the
+  // configured bonus once its value reaches the threshold; a weekly task earns
+  // it once its running weekly total crosses the threshold for the first time.
+  function dailyBonus(task: ChallengeTask, value: number): number {
+    return task.bonusThreshold &&
+      task.bonusThreshold > 0 &&
+      task.bonusPoints &&
+      value >= task.bonusThreshold
+      ? task.bonusPoints
+      : 0;
+  }
+
+  function weeklyBonus(task: ChallengeTask, value: number): number {
+    if (!task.bonusThreshold || task.bonusThreshold <= 0 || !task.bonusPoints)
+      return 0;
+    const prior = weekLogs.filter(
+      (l) => l.taskId === task.id && formatDateKey(l.date) !== todayKey
+    );
+    const total = prior.reduce((s, l) => s + (l.value || 0), 0) + value;
+    if (total < task.bonusThreshold) return 0;
+    const priorBonus = prior.reduce((s, l) => s + (l.bonusPoints || 0), 0);
+    if (priorBonus > 0) return 0; // already rewarded this week
+    return task.bonusPoints;
+  }
+
   function save(taskId: string, completed: boolean, value: number) {
+    const task = tasks.find((t) => t.id === taskId);
+    let bonus = 0;
+    if (task?.inputType === "NUMBER") {
+      bonus =
+        task.type === "WEEKLY"
+          ? weeklyBonus(task, value)
+          : dailyBonus(task, value);
+    }
     setLogState((prev) => ({
       ...prev,
       [taskId]: { completed, value },
     }));
     setSaved(true);
     startTransition(() => {
-      saveTaskLog(challengeId, taskId, completed, value).then(() => {
+      saveTaskLog(challengeId, taskId, completed, value, bonus).then(() => {
         router.refresh();
       });
     });
@@ -72,7 +111,7 @@ export function DailyLogClient({
   function addValue(taskId: string, amount: number) {
     const current = logState[taskId] || { completed: false, value: 0 };
     const nextVal = Math.max(0, Math.round((current.value + amount) * 10) / 10);
-    save(taskId, current.completed, nextVal);
+    save(taskId, nextVal > 0, nextVal);
   }
 
   const dailyHabits = tasks.filter((t) => t.type === "DAILY" && !t.isRuleBreaker && !t.isAlcoholTask);
@@ -102,38 +141,104 @@ export function DailyLogClient({
               const current = logState[task.id] || { completed: false, value: 0 };
               const isWeekly = task.type === "WEEKLY";
 
-              if (isWeekly && task.inputType === "NUMBER") {
-                const total = Math.round(weekSum[task.id] * 10) / 10;
+              // Number inputs: enter an amount, earn points per unit.
+              if (task.inputType === "NUMBER") {
+                const unit = unitsLabel(task);
+                const unitRaw = task.unit || "unit";
+                const bonusLabel =
+                  task.bonusThreshold && task.bonusThreshold > 0 && task.bonusPoints
+                    ? ` · +${task.bonusPoints} bonus every ${task.bonusThreshold} ${unitRaw}`
+                    : "";
+                if (isWeekly) {
+                  const total = Math.round(weekSum[task.id] * 10) / 10;
+                  const earned = numberTaskPoints(total, task);
+                  return (
+                    <div key={task.id} className="py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <span className="text-sm font-medium">{task.name}</span>
+                          <p className="text-[11px] text-muted">
+                            {task.points} pts / {unit}
+                            {bonusLabel} · Credited Sunday
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted text-right">
+                          This week:{" "}
+                          <span className="text-foreground font-semibold">
+                            {total} {unitRaw}
+                          </span>
+                          {earned !== 0 && (
+                            <span
+                              className={`ml-1 font-semibold ${
+                                earned < 0 ? "text-danger" : "text-accent"
+                              }`}
+                            >
+                              ({earned > 0 ? "+" : ""}
+                              {earned})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 mt-2 flex-wrap items-center">
+                        {[1, 2, 5].map((n) => (
+                          <QuickAddBtn
+                            key={n}
+                            label={`+${n} ${unitRaw}`}
+                            onClick={() => addValue(task.id, n)}
+                          />
+                        ))}
+                        <CustomInput
+                          placeholder={`Amount (${unitRaw})`}
+                          onValue={(n) =>
+                            save(task.id, n > 0, Math.max(0, n))
+                          }
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+
+                const earned = numberTaskPoints(current.value, task);
                 return (
                   <div key={task.id} className="py-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <div>
                         <span className="text-sm font-medium">{task.name}</span>
                         <p className="text-[11px] text-muted">
-                          Weekly goal · Credited Sunday ({task.points} pts)
+                          {task.points} pts / {unit}
+                          {bonusLabel} ·{" "}
+                          <span className="text-muted">today</span>
+                          {earned !== 0 && (
+                            <span
+                              className={`ml-1 font-semibold ${
+                                earned < 0 ? "text-danger" : "text-accent"
+                              }`}
+                            >
+                              · {earned > 0 ? "+" : ""}
+                              {earned} pts
+                            </span>
+                          )}
                         </p>
                       </div>
-                      <span className="text-xs text-muted">
-                        This week:{" "}
-                        <span className="text-foreground font-semibold">
-                          {total}
-                          {task.target ? ` / ${task.target}` : ""}
-                        </span>
+                      <span className="text-xs text-muted text-right">
+                        {current.value > 0 ? (
+                          <>
+                            {current.value} {unitRaw}
+                          </>
+                        ) : null}
                       </span>
                     </div>
                     <div className="flex gap-2 mt-2 flex-wrap items-center">
                       {[1, 2, 5].map((n) => (
                         <QuickAddBtn
                           key={n}
-                          label={`+${n}`}
+                          label={`+${n} ${unitRaw}`}
                           onClick={() => addValue(task.id, n)}
                         />
                       ))}
                       <CustomInput
-                        placeholder="Custom"
-                        onValue={(n) =>
-                          save(task.id, current.completed, Math.max(0, n))
-                        }
+                        placeholder={`Amount (${unitRaw})`}
+                        onValue={(n) => save(task.id, n > 0, Math.max(0, n))}
                       />
                     </div>
                   </div>
@@ -185,6 +290,7 @@ export function DailyLogClient({
                     task.isRuleBreaker ? !current.completed : current.completed
                   }
                   onToggle={() => toggle(task.id)}
+                  unit={null}
                 />
               );
             })}
@@ -226,11 +332,13 @@ function HabitRow({
   points,
   checked,
   onToggle,
+  unit,
 }: {
   label: string;
   points: number;
   checked: boolean;
   onToggle: () => void;
+  unit: string | null;
 }) {
   return (
     <div className="flex items-center justify-between py-3">
@@ -238,7 +346,13 @@ function HabitRow({
         <span className={`text-sm ${checked ? "text-foreground font-medium" : "text-muted"}`}>
           {label}
         </span>
-        <span className="text-[11px] text-accent font-semibold">{points} pts</span>
+        <span
+          className={`text-[11px] font-semibold ${
+            points < 0 ? "text-danger" : "text-accent"
+          }`}
+        >
+          {points} pts{unit ? ` / ${unit}` : ""}
+        </span>
       </div>
       <Toggle checked={checked} onChange={onToggle} />
     </div>
@@ -279,15 +393,16 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={onChange}
-      className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${
-        checked ? (danger ? "bg-danger" : "bg-accent") : "bg-card-border"
+      aria-label={checked ? "Done" : "Not done"}
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border text-lg font-bold transition-colors ${
+        checked
+          ? danger
+            ? "border-danger bg-danger text-white"
+            : "border-accent bg-accent text-white"
+          : "border-card-border bg-card text-muted"
       }`}
     >
-        <span
-          className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform duration-200 ${
-            checked ? "translate-x-5" : "translate-x-0.5"
-          }`}
-        />
+      {checked ? "✓" : "✕"}
     </button>
   );
 }

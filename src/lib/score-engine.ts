@@ -3,6 +3,7 @@ import {
   isDailySuccessSummary,
   getDailyCompletionSummary,
   computeWeeklyResultSummary,
+  earnedBlocks,
   formatDateKey,
   startOfWeek,
   endOfDay,
@@ -79,7 +80,14 @@ export async function runDayScoring(
     let habitPoints = 0;
     dailyTasks.forEach((task) => {
       const log = dayLogs.find((l) => l.taskId === task.id);
-      if (task.isRuleBreaker) {
+      if (task.inputType === "NUMBER") {
+        const value = log?.value || 0;
+        if (value > 0) {
+          // Block points plus any bonus the user was awarded in the log UI
+          // (stored on the log entry like any other points).
+          habitPoints += earnedBlocks(value, task) * task.points + (log?.bonusPoints || 0);
+        }
+      } else if (task.isRuleBreaker) {
         if (!log || !log.completed) {
           habitPoints += task.points;
         }
@@ -129,7 +137,12 @@ export async function runDayScoring(
     let habitPoints = 0;
     dailyTasks.forEach((task) => {
       const log = dayLogs.find((l) => l.taskId === task.id);
-      if (task.isRuleBreaker) {
+      if (task.inputType === "NUMBER") {
+        const value = log?.value || 0;
+        if (value > 0) {
+          habitPoints += earnedBlocks(value, task) * task.points + (log?.bonusPoints || 0);
+        }
+      } else if (task.isRuleBreaker) {
         if (!log || !log.completed) {
           habitPoints += task.points;
         }

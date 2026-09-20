@@ -8,6 +8,7 @@ import { EditTasksSection } from "@/components/task-editor";
 import { ChallengeDetailsEditor } from "@/components/challenge-details-editor";
 import { ChallengeDangerZone } from "@/components/challenge-danger-zone";
 import { countdownTo } from "@/lib/date-utils";
+import { unitsLabel } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -161,7 +162,11 @@ function ChallengesTasks({
     isRuleBreaker: boolean;
     isAlcoholTask: boolean;
     points: number;
+    unit: string | null;
+    unitCount: number | null;
     target: number | null;
+    bonusThreshold: number | null;
+    bonusPoints: number | null;
     tiers: { threshold: number; points: number }[];
   }[];
 }) {
@@ -176,8 +181,20 @@ function ChallengesTasks({
             {daily.map((task) => (
               <div key={task.id} className="flex items-center justify-between py-2.5">
                 <span className="text-sm">{task.name}</span>
-                <span className="text-xs text-accent font-semibold">
+                <span
+                  className={`text-xs font-semibold ${
+                    task.points < 0 ? "text-danger" : "text-accent"
+                  }`}
+                >
                   {task.points} pts
+                  {task.inputType === "NUMBER"
+                    ? ` / ${unitsLabel(task)}`
+                    : ""}
+                  {task.inputType === "NUMBER" &&
+                  task.bonusThreshold &&
+                  task.bonusPoints
+                    ? ` +${task.bonusPoints}/every ${task.bonusThreshold} ${task.unit || "units"}`
+                    : ""}
                 </span>
               </div>
             ))}
@@ -192,12 +209,26 @@ function ChallengesTasks({
               <div key={task.id} className="py-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{task.name}</span>
-                  <span className="text-xs text-accent font-semibold">
-                    {task.target
+                  <span
+                    className={`text-xs font-semibold ${
+                      task.points < 0 ? "text-danger" : "text-accent"
+                    }`}
+                  >
+                    {task.inputType === "NUMBER"
+                      ? `${task.points} pts / ${unitsLabel(task)}`
+                      : task.target
                       ? `${task.points} pts · ${task.target} days/wk (Credited Sunday)`
                       : `${task.points} pts (Credited Sunday)`}
                   </span>
                 </div>
+                {task.inputType === "NUMBER" &&
+                  task.bonusThreshold &&
+                  task.bonusPoints && (
+                    <p className="text-[11px] text-accent2 font-medium mt-1">
+                      +{task.bonusPoints} bonus every{" "}
+                      {task.bonusThreshold} {task.unit || "units"}
+                    </p>
+                  )}
                 {task.tiers.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {[...task.tiers]

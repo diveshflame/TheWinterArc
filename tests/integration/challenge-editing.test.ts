@@ -103,7 +103,7 @@ describe("updateChallenge", () => {
 
     const res = await updateChallengeTasks(challengeId, [
       { id: task.id, name: "Habit", type: "DAILY", inputType: "CHECKBOX", isRuleBreaker: false, isAlcoholTask: false, points: 9, target: null },
-      { name: "New Task", type: "WEEKLY", inputType: "NUMBER", isRuleBreaker: false, isAlcoholTask: false, points: 20, target: 4 },
+      { name: "New Task", type: "WEEKLY", inputType: "NUMBER", isRuleBreaker: false, isAlcoholTask: false, points: 20, target: 4, unit: "km", bonusThreshold: 50, bonusPoints: 100 },
     ]);
     expect(res.ok).toBe(true);
 
@@ -113,5 +113,9 @@ describe("updateChallenge", () => {
     const all = await db.challengeTask.findMany({ where: { challengeId } });
     expect(all).toHaveLength(2);
     expect(all.map((t) => t.name)).toContain("New Task");
+
+    const newTask = all.find((t) => t.name === "New Task");
+    expect(newTask!.bonusThreshold).toBe(50);
+    expect(newTask!.bonusPoints).toBe(100);
   });
 });

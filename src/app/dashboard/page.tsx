@@ -149,7 +149,7 @@ function WeeklyProgressSection({
             label={res.name}
             current={res.currentValue}
             target={res.targetValue || 0}
-            unit=""
+            unit={res.unit || ""}
             achieved={res.achieved}
           />
         ))
@@ -178,11 +178,21 @@ function ProgressRow({
         <span className="font-medium">
           {label} {achieved && <span className="text-success">✓</span>}
         </span>
-        {target > 0 && (
-          <span className="text-muted">
-            {current}/{target} {unit}
-          </span>
-        )}
+        <span className="text-muted">
+          {target > 0 ? (
+            <>
+              {current}/{target} {unit}
+            </>
+          ) : unit ? (
+            <>
+              {current} {unit}
+            </>
+          ) : (
+            <>
+              {current}
+            </>
+          )}
+        </span>
       </div>
       <div className="h-2 rounded-full bg-background overflow-hidden">
         <div

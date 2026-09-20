@@ -9185,12 +9185,18 @@ export namespace Prisma {
 
   export type ChallengeTaskAvgAggregateOutputType = {
     points: number | null
+    unitCount: number | null
     target: number | null
+    bonusThreshold: number | null
+    bonusPoints: number | null
   }
 
   export type ChallengeTaskSumAggregateOutputType = {
     points: number | null
+    unitCount: number | null
     target: number | null
+    bonusThreshold: number | null
+    bonusPoints: number | null
   }
 
   export type ChallengeTaskMinAggregateOutputType = {
@@ -9202,7 +9208,11 @@ export namespace Prisma {
     isRuleBreaker: boolean | null
     isAlcoholTask: boolean | null
     points: number | null
+    unit: string | null
+    unitCount: number | null
     target: number | null
+    bonusThreshold: number | null
+    bonusPoints: number | null
   }
 
   export type ChallengeTaskMaxAggregateOutputType = {
@@ -9214,7 +9224,11 @@ export namespace Prisma {
     isRuleBreaker: boolean | null
     isAlcoholTask: boolean | null
     points: number | null
+    unit: string | null
+    unitCount: number | null
     target: number | null
+    bonusThreshold: number | null
+    bonusPoints: number | null
   }
 
   export type ChallengeTaskCountAggregateOutputType = {
@@ -9226,19 +9240,29 @@ export namespace Prisma {
     isRuleBreaker: number
     isAlcoholTask: number
     points: number
+    unit: number
+    unitCount: number
     target: number
+    bonusThreshold: number
+    bonusPoints: number
     _all: number
   }
 
 
   export type ChallengeTaskAvgAggregateInputType = {
     points?: true
+    unitCount?: true
     target?: true
+    bonusThreshold?: true
+    bonusPoints?: true
   }
 
   export type ChallengeTaskSumAggregateInputType = {
     points?: true
+    unitCount?: true
     target?: true
+    bonusThreshold?: true
+    bonusPoints?: true
   }
 
   export type ChallengeTaskMinAggregateInputType = {
@@ -9250,7 +9274,11 @@ export namespace Prisma {
     isRuleBreaker?: true
     isAlcoholTask?: true
     points?: true
+    unit?: true
+    unitCount?: true
     target?: true
+    bonusThreshold?: true
+    bonusPoints?: true
   }
 
   export type ChallengeTaskMaxAggregateInputType = {
@@ -9262,7 +9290,11 @@ export namespace Prisma {
     isRuleBreaker?: true
     isAlcoholTask?: true
     points?: true
+    unit?: true
+    unitCount?: true
     target?: true
+    bonusThreshold?: true
+    bonusPoints?: true
   }
 
   export type ChallengeTaskCountAggregateInputType = {
@@ -9274,7 +9306,11 @@ export namespace Prisma {
     isRuleBreaker?: true
     isAlcoholTask?: true
     points?: true
+    unit?: true
+    unitCount?: true
     target?: true
+    bonusThreshold?: true
+    bonusPoints?: true
     _all?: true
   }
 
@@ -9373,7 +9409,11 @@ export namespace Prisma {
     isRuleBreaker: boolean
     isAlcoholTask: boolean
     points: number
+    unit: string | null
+    unitCount: number | null
     target: number | null
+    bonusThreshold: number | null
+    bonusPoints: number | null
     _count: ChallengeTaskCountAggregateOutputType | null
     _avg: ChallengeTaskAvgAggregateOutputType | null
     _sum: ChallengeTaskSumAggregateOutputType | null
@@ -9404,7 +9444,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points?: boolean
+    unit?: boolean
+    unitCount?: boolean
     target?: boolean
+    bonusThreshold?: boolean
+    bonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     tiers?: boolean | ChallengeTask$tiersArgs<ExtArgs>
     logs?: boolean | ChallengeTask$logsArgs<ExtArgs>
@@ -9420,7 +9464,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points?: boolean
+    unit?: boolean
+    unitCount?: boolean
     target?: boolean
+    bonusThreshold?: boolean
+    bonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["challengeTask"]>
 
@@ -9433,7 +9481,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points?: boolean
+    unit?: boolean
+    unitCount?: boolean
     target?: boolean
+    bonusThreshold?: boolean
+    bonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["challengeTask"]>
 
@@ -9446,10 +9498,14 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points?: boolean
+    unit?: boolean
+    unitCount?: boolean
     target?: boolean
+    bonusThreshold?: boolean
+    bonusPoints?: boolean
   }
 
-  export type ChallengeTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "name" | "type" | "inputType" | "isRuleBreaker" | "isAlcoholTask" | "points" | "target", ExtArgs["result"]["challengeTask"]>
+  export type ChallengeTaskOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "name" | "type" | "inputType" | "isRuleBreaker" | "isAlcoholTask" | "points" | "unit" | "unitCount" | "target" | "bonusThreshold" | "bonusPoints", ExtArgs["result"]["challengeTask"]>
   export type ChallengeTaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     tiers?: boolean | ChallengeTask$tiersArgs<ExtArgs>
@@ -9479,7 +9535,11 @@ export namespace Prisma {
       isRuleBreaker: boolean
       isAlcoholTask: boolean
       points: number
+      unit: string | null
+      unitCount: number | null
       target: number | null
+      bonusThreshold: number | null
+      bonusPoints: number | null
     }, ExtArgs["result"]["challengeTask"]>
     composites: {}
   }
@@ -9914,7 +9974,11 @@ export namespace Prisma {
     readonly isRuleBreaker: FieldRef<"ChallengeTask", 'Boolean'>
     readonly isAlcoholTask: FieldRef<"ChallengeTask", 'Boolean'>
     readonly points: FieldRef<"ChallengeTask", 'Int'>
+    readonly unit: FieldRef<"ChallengeTask", 'String'>
+    readonly unitCount: FieldRef<"ChallengeTask", 'Float'>
     readonly target: FieldRef<"ChallengeTask", 'Float'>
+    readonly bonusThreshold: FieldRef<"ChallengeTask", 'Float'>
+    readonly bonusPoints: FieldRef<"ChallengeTask", 'Int'>
   }
     
 
@@ -11474,10 +11538,12 @@ export namespace Prisma {
 
   export type TaskLogAvgAggregateOutputType = {
     value: number | null
+    bonusPoints: number | null
   }
 
   export type TaskLogSumAggregateOutputType = {
     value: number | null
+    bonusPoints: number | null
   }
 
   export type TaskLogMinAggregateOutputType = {
@@ -11488,6 +11554,7 @@ export namespace Prisma {
     date: Date | null
     completed: boolean | null
     value: number | null
+    bonusPoints: number | null
   }
 
   export type TaskLogMaxAggregateOutputType = {
@@ -11498,6 +11565,7 @@ export namespace Prisma {
     date: Date | null
     completed: boolean | null
     value: number | null
+    bonusPoints: number | null
   }
 
   export type TaskLogCountAggregateOutputType = {
@@ -11508,16 +11576,19 @@ export namespace Prisma {
     date: number
     completed: number
     value: number
+    bonusPoints: number
     _all: number
   }
 
 
   export type TaskLogAvgAggregateInputType = {
     value?: true
+    bonusPoints?: true
   }
 
   export type TaskLogSumAggregateInputType = {
     value?: true
+    bonusPoints?: true
   }
 
   export type TaskLogMinAggregateInputType = {
@@ -11528,6 +11599,7 @@ export namespace Prisma {
     date?: true
     completed?: true
     value?: true
+    bonusPoints?: true
   }
 
   export type TaskLogMaxAggregateInputType = {
@@ -11538,6 +11610,7 @@ export namespace Prisma {
     date?: true
     completed?: true
     value?: true
+    bonusPoints?: true
   }
 
   export type TaskLogCountAggregateInputType = {
@@ -11548,6 +11621,7 @@ export namespace Prisma {
     date?: true
     completed?: true
     value?: true
+    bonusPoints?: true
     _all?: true
   }
 
@@ -11645,6 +11719,7 @@ export namespace Prisma {
     date: Date
     completed: boolean
     value: number
+    bonusPoints: number
     _count: TaskLogCountAggregateOutputType | null
     _avg: TaskLogAvgAggregateOutputType | null
     _sum: TaskLogSumAggregateOutputType | null
@@ -11674,6 +11749,7 @@ export namespace Prisma {
     date?: boolean
     completed?: boolean
     value?: boolean
+    bonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     task?: boolean | ChallengeTaskDefaultArgs<ExtArgs>
@@ -11687,6 +11763,7 @@ export namespace Prisma {
     date?: boolean
     completed?: boolean
     value?: boolean
+    bonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     task?: boolean | ChallengeTaskDefaultArgs<ExtArgs>
@@ -11700,6 +11777,7 @@ export namespace Prisma {
     date?: boolean
     completed?: boolean
     value?: boolean
+    bonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     task?: boolean | ChallengeTaskDefaultArgs<ExtArgs>
@@ -11713,9 +11791,10 @@ export namespace Prisma {
     date?: boolean
     completed?: boolean
     value?: boolean
+    bonusPoints?: boolean
   }
 
-  export type TaskLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "taskId" | "date" | "completed" | "value", ExtArgs["result"]["taskLog"]>
+  export type TaskLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "taskId" | "date" | "completed" | "value" | "bonusPoints", ExtArgs["result"]["taskLog"]>
   export type TaskLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11747,6 +11826,7 @@ export namespace Prisma {
       date: Date
       completed: boolean
       value: number
+      bonusPoints: number
     }, ExtArgs["result"]["taskLog"]>
     composites: {}
   }
@@ -12180,6 +12260,7 @@ export namespace Prisma {
     readonly date: FieldRef<"TaskLog", 'DateTime'>
     readonly completed: FieldRef<"TaskLog", 'Boolean'>
     readonly value: FieldRef<"TaskLog", 'Float'>
+    readonly bonusPoints: FieldRef<"TaskLog", 'Int'>
   }
     
 
@@ -16120,7 +16201,11 @@ export namespace Prisma {
     isRuleBreaker: 'isRuleBreaker',
     isAlcoholTask: 'isAlcoholTask',
     points: 'points',
-    target: 'target'
+    unit: 'unit',
+    unitCount: 'unitCount',
+    target: 'target',
+    bonusThreshold: 'bonusThreshold',
+    bonusPoints: 'bonusPoints'
   };
 
   export type ChallengeTaskScalarFieldEnum = (typeof ChallengeTaskScalarFieldEnum)[keyof typeof ChallengeTaskScalarFieldEnum]
@@ -16143,7 +16228,8 @@ export namespace Prisma {
     taskId: 'taskId',
     date: 'date',
     completed: 'completed',
-    value: 'value'
+    value: 'value',
+    bonusPoints: 'bonusPoints'
   };
 
   export type TaskLogScalarFieldEnum = (typeof TaskLogScalarFieldEnum)[keyof typeof TaskLogScalarFieldEnum]
@@ -16782,7 +16868,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFilter<"ChallengeTask"> | boolean
     isAlcoholTask?: BoolFilter<"ChallengeTask"> | boolean
     points?: IntFilter<"ChallengeTask"> | number
+    unit?: StringNullableFilter<"ChallengeTask"> | string | null
+    unitCount?: FloatNullableFilter<"ChallengeTask"> | number | null
     target?: FloatNullableFilter<"ChallengeTask"> | number | null
+    bonusThreshold?: FloatNullableFilter<"ChallengeTask"> | number | null
+    bonusPoints?: IntNullableFilter<"ChallengeTask"> | number | null
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     tiers?: TaskTierListRelationFilter
     logs?: TaskLogListRelationFilter
@@ -16797,7 +16887,11 @@ export namespace Prisma {
     isRuleBreaker?: SortOrder
     isAlcoholTask?: SortOrder
     points?: SortOrder
+    unit?: SortOrderInput | SortOrder
+    unitCount?: SortOrderInput | SortOrder
     target?: SortOrderInput | SortOrder
+    bonusThreshold?: SortOrderInput | SortOrder
+    bonusPoints?: SortOrderInput | SortOrder
     challenge?: ChallengeOrderByWithRelationInput
     tiers?: TaskTierOrderByRelationAggregateInput
     logs?: TaskLogOrderByRelationAggregateInput
@@ -16815,7 +16909,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFilter<"ChallengeTask"> | boolean
     isAlcoholTask?: BoolFilter<"ChallengeTask"> | boolean
     points?: IntFilter<"ChallengeTask"> | number
+    unit?: StringNullableFilter<"ChallengeTask"> | string | null
+    unitCount?: FloatNullableFilter<"ChallengeTask"> | number | null
     target?: FloatNullableFilter<"ChallengeTask"> | number | null
+    bonusThreshold?: FloatNullableFilter<"ChallengeTask"> | number | null
+    bonusPoints?: IntNullableFilter<"ChallengeTask"> | number | null
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     tiers?: TaskTierListRelationFilter
     logs?: TaskLogListRelationFilter
@@ -16830,7 +16928,11 @@ export namespace Prisma {
     isRuleBreaker?: SortOrder
     isAlcoholTask?: SortOrder
     points?: SortOrder
+    unit?: SortOrderInput | SortOrder
+    unitCount?: SortOrderInput | SortOrder
     target?: SortOrderInput | SortOrder
+    bonusThreshold?: SortOrderInput | SortOrder
+    bonusPoints?: SortOrderInput | SortOrder
     _count?: ChallengeTaskCountOrderByAggregateInput
     _avg?: ChallengeTaskAvgOrderByAggregateInput
     _max?: ChallengeTaskMaxOrderByAggregateInput
@@ -16850,7 +16952,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolWithAggregatesFilter<"ChallengeTask"> | boolean
     isAlcoholTask?: BoolWithAggregatesFilter<"ChallengeTask"> | boolean
     points?: IntWithAggregatesFilter<"ChallengeTask"> | number
+    unit?: StringNullableWithAggregatesFilter<"ChallengeTask"> | string | null
+    unitCount?: FloatNullableWithAggregatesFilter<"ChallengeTask"> | number | null
     target?: FloatNullableWithAggregatesFilter<"ChallengeTask"> | number | null
+    bonusThreshold?: FloatNullableWithAggregatesFilter<"ChallengeTask"> | number | null
+    bonusPoints?: IntNullableWithAggregatesFilter<"ChallengeTask"> | number | null
   }
 
   export type TaskTierWhereInput = {
@@ -16916,6 +17022,7 @@ export namespace Prisma {
     date?: DateTimeFilter<"TaskLog"> | Date | string
     completed?: BoolFilter<"TaskLog"> | boolean
     value?: FloatFilter<"TaskLog"> | number
+    bonusPoints?: IntFilter<"TaskLog"> | number
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     task?: XOR<ChallengeTaskScalarRelationFilter, ChallengeTaskWhereInput>
@@ -16929,6 +17036,7 @@ export namespace Prisma {
     date?: SortOrder
     completed?: SortOrder
     value?: SortOrder
+    bonusPoints?: SortOrder
     challenge?: ChallengeOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
     task?: ChallengeTaskOrderByWithRelationInput
@@ -16946,6 +17054,7 @@ export namespace Prisma {
     date?: DateTimeFilter<"TaskLog"> | Date | string
     completed?: BoolFilter<"TaskLog"> | boolean
     value?: FloatFilter<"TaskLog"> | number
+    bonusPoints?: IntFilter<"TaskLog"> | number
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     task?: XOR<ChallengeTaskScalarRelationFilter, ChallengeTaskWhereInput>
@@ -16959,6 +17068,7 @@ export namespace Prisma {
     date?: SortOrder
     completed?: SortOrder
     value?: SortOrder
+    bonusPoints?: SortOrder
     _count?: TaskLogCountOrderByAggregateInput
     _avg?: TaskLogAvgOrderByAggregateInput
     _max?: TaskLogMaxOrderByAggregateInput
@@ -16977,6 +17087,7 @@ export namespace Prisma {
     date?: DateTimeWithAggregatesFilter<"TaskLog"> | Date | string
     completed?: BoolWithAggregatesFilter<"TaskLog"> | boolean
     value?: FloatWithAggregatesFilter<"TaskLog"> | number
+    bonusPoints?: IntWithAggregatesFilter<"TaskLog"> | number
   }
 
   export type DaySummaryWhereInput = {
@@ -17743,7 +17854,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     challenge: ChallengeCreateNestedOneWithoutTasksInput
     tiers?: TaskTierCreateNestedManyWithoutTaskInput
     logs?: TaskLogCreateNestedManyWithoutTaskInput
@@ -17758,7 +17873,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     tiers?: TaskTierUncheckedCreateNestedManyWithoutTaskInput
     logs?: TaskLogUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -17771,7 +17890,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     challenge?: ChallengeUpdateOneRequiredWithoutTasksNestedInput
     tiers?: TaskTierUpdateManyWithoutTaskNestedInput
     logs?: TaskLogUpdateManyWithoutTaskNestedInput
@@ -17786,7 +17909,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     tiers?: TaskTierUncheckedUpdateManyWithoutTaskNestedInput
     logs?: TaskLogUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -17800,7 +17927,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
   }
 
   export type ChallengeTaskUpdateManyMutationInput = {
@@ -17811,7 +17942,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ChallengeTaskUncheckedUpdateManyInput = {
@@ -17823,7 +17958,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type TaskTierCreateInput = {
@@ -17879,6 +18018,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
     challenge: ChallengeCreateNestedOneWithoutTaskLogsInput
     user: UserCreateNestedOneWithoutTaskLogsInput
     task: ChallengeTaskCreateNestedOneWithoutLogsInput
@@ -17892,6 +18032,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type TaskLogUpdateInput = {
@@ -17899,6 +18040,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
     challenge?: ChallengeUpdateOneRequiredWithoutTaskLogsNestedInput
     user?: UserUpdateOneRequiredWithoutTaskLogsNestedInput
     task?: ChallengeTaskUpdateOneRequiredWithoutLogsNestedInput
@@ -17912,6 +18054,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type TaskLogCreateManyInput = {
@@ -17922,6 +18065,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type TaskLogUpdateManyMutationInput = {
@@ -17929,6 +18073,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type TaskLogUncheckedUpdateManyInput = {
@@ -17939,6 +18084,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryCreateInput = {
@@ -18741,12 +18887,19 @@ export namespace Prisma {
     isRuleBreaker?: SortOrder
     isAlcoholTask?: SortOrder
     points?: SortOrder
+    unit?: SortOrder
+    unitCount?: SortOrder
     target?: SortOrder
+    bonusThreshold?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type ChallengeTaskAvgOrderByAggregateInput = {
     points?: SortOrder
+    unitCount?: SortOrder
     target?: SortOrder
+    bonusThreshold?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type ChallengeTaskMaxOrderByAggregateInput = {
@@ -18758,7 +18911,11 @@ export namespace Prisma {
     isRuleBreaker?: SortOrder
     isAlcoholTask?: SortOrder
     points?: SortOrder
+    unit?: SortOrder
+    unitCount?: SortOrder
     target?: SortOrder
+    bonusThreshold?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type ChallengeTaskMinOrderByAggregateInput = {
@@ -18770,12 +18927,19 @@ export namespace Prisma {
     isRuleBreaker?: SortOrder
     isAlcoholTask?: SortOrder
     points?: SortOrder
+    unit?: SortOrder
+    unitCount?: SortOrder
     target?: SortOrder
+    bonusThreshold?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type ChallengeTaskSumOrderByAggregateInput = {
     points?: SortOrder
+    unitCount?: SortOrder
     target?: SortOrder
+    bonusThreshold?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -18871,10 +19035,12 @@ export namespace Prisma {
     date?: SortOrder
     completed?: SortOrder
     value?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type TaskLogAvgOrderByAggregateInput = {
     value?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type TaskLogMaxOrderByAggregateInput = {
@@ -18885,6 +19051,7 @@ export namespace Prisma {
     date?: SortOrder
     completed?: SortOrder
     value?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type TaskLogMinOrderByAggregateInput = {
@@ -18895,10 +19062,12 @@ export namespace Prisma {
     date?: SortOrder
     completed?: SortOrder
     value?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type TaskLogSumOrderByAggregateInput = {
     value?: SortOrder
+    bonusPoints?: SortOrder
   }
 
   export type DaySummaryUserIdChallengeIdDateCompoundUniqueInput = {
@@ -20315,6 +20484,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
     challenge: ChallengeCreateNestedOneWithoutTaskLogsInput
     task: ChallengeTaskCreateNestedOneWithoutLogsInput
   }
@@ -20326,6 +20496,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type TaskLogCreateOrConnectWithoutUserInput = {
@@ -20593,6 +20764,7 @@ export namespace Prisma {
     date?: DateTimeFilter<"TaskLog"> | Date | string
     completed?: BoolFilter<"TaskLog"> | boolean
     value?: FloatFilter<"TaskLog"> | number
+    bonusPoints?: IntFilter<"TaskLog"> | number
   }
 
   export type DaySummaryUpsertWithWhereUniqueWithoutUserInput = {
@@ -21013,7 +21185,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     tiers?: TaskTierCreateNestedManyWithoutTaskInput
     logs?: TaskLogCreateNestedManyWithoutTaskInput
   }
@@ -21026,7 +21202,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     tiers?: TaskTierUncheckedCreateNestedManyWithoutTaskInput
     logs?: TaskLogUncheckedCreateNestedManyWithoutTaskInput
   }
@@ -21046,6 +21226,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
     user: UserCreateNestedOneWithoutTaskLogsInput
     task: ChallengeTaskCreateNestedOneWithoutLogsInput
   }
@@ -21057,6 +21238,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type TaskLogCreateOrConnectWithoutChallengeInput = {
@@ -21256,7 +21438,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFilter<"ChallengeTask"> | boolean
     isAlcoholTask?: BoolFilter<"ChallengeTask"> | boolean
     points?: IntFilter<"ChallengeTask"> | number
+    unit?: StringNullableFilter<"ChallengeTask"> | string | null
+    unitCount?: FloatNullableFilter<"ChallengeTask"> | number | null
     target?: FloatNullableFilter<"ChallengeTask"> | number | null
+    bonusThreshold?: FloatNullableFilter<"ChallengeTask"> | number | null
+    bonusPoints?: IntNullableFilter<"ChallengeTask"> | number | null
   }
 
   export type TaskLogUpsertWithWhereUniqueWithoutChallengeInput = {
@@ -21595,6 +21781,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
     challenge: ChallengeCreateNestedOneWithoutTaskLogsInput
     user: UserCreateNestedOneWithoutTaskLogsInput
   }
@@ -21606,6 +21793,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type TaskLogCreateOrConnectWithoutTaskInput = {
@@ -21719,7 +21907,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     challenge: ChallengeCreateNestedOneWithoutTasksInput
     logs?: TaskLogCreateNestedManyWithoutTaskInput
   }
@@ -21733,7 +21925,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     logs?: TaskLogUncheckedCreateNestedManyWithoutTaskInput
   }
 
@@ -21761,7 +21957,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     challenge?: ChallengeUpdateOneRequiredWithoutTasksNestedInput
     logs?: TaskLogUpdateManyWithoutTaskNestedInput
   }
@@ -21775,7 +21975,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     logs?: TaskLogUncheckedUpdateManyWithoutTaskNestedInput
   }
 
@@ -21881,7 +22085,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     challenge: ChallengeCreateNestedOneWithoutTasksInput
     tiers?: TaskTierCreateNestedManyWithoutTaskInput
   }
@@ -21895,7 +22103,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
     tiers?: TaskTierUncheckedCreateNestedManyWithoutTaskInput
   }
 
@@ -22029,7 +22241,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     challenge?: ChallengeUpdateOneRequiredWithoutTasksNestedInput
     tiers?: TaskTierUpdateManyWithoutTaskNestedInput
   }
@@ -22043,7 +22259,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     tiers?: TaskTierUncheckedUpdateManyWithoutTaskNestedInput
   }
 
@@ -22684,6 +22904,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type DaySummaryCreateManyUserInput = {
@@ -22824,6 +23045,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
     challenge?: ChallengeUpdateOneRequiredWithoutTaskLogsNestedInput
     task?: ChallengeTaskUpdateOneRequiredWithoutLogsNestedInput
   }
@@ -22835,6 +23057,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type TaskLogUncheckedUpdateManyWithoutUserInput = {
@@ -22844,6 +23067,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryUpdateWithoutUserInput = {
@@ -23005,7 +23229,11 @@ export namespace Prisma {
     isRuleBreaker?: boolean
     isAlcoholTask?: boolean
     points: number
+    unit?: string | null
+    unitCount?: number | null
     target?: number | null
+    bonusThreshold?: number | null
+    bonusPoints?: number | null
   }
 
   export type TaskLogCreateManyChallengeInput = {
@@ -23015,6 +23243,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type DaySummaryCreateManyChallengeInput = {
@@ -23084,7 +23313,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     tiers?: TaskTierUpdateManyWithoutTaskNestedInput
     logs?: TaskLogUpdateManyWithoutTaskNestedInput
   }
@@ -23097,7 +23330,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
     tiers?: TaskTierUncheckedUpdateManyWithoutTaskNestedInput
     logs?: TaskLogUncheckedUpdateManyWithoutTaskNestedInput
   }
@@ -23110,7 +23347,11 @@ export namespace Prisma {
     isRuleBreaker?: BoolFieldUpdateOperationsInput | boolean
     isAlcoholTask?: BoolFieldUpdateOperationsInput | boolean
     points?: IntFieldUpdateOperationsInput | number
+    unit?: NullableStringFieldUpdateOperationsInput | string | null
+    unitCount?: NullableFloatFieldUpdateOperationsInput | number | null
     target?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusThreshold?: NullableFloatFieldUpdateOperationsInput | number | null
+    bonusPoints?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type TaskLogUpdateWithoutChallengeInput = {
@@ -23118,6 +23359,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutTaskLogsNestedInput
     task?: ChallengeTaskUpdateOneRequiredWithoutLogsNestedInput
   }
@@ -23129,6 +23371,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type TaskLogUncheckedUpdateManyWithoutChallengeInput = {
@@ -23138,6 +23381,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryUpdateWithoutChallengeInput = {
@@ -23240,6 +23484,7 @@ export namespace Prisma {
     date: Date | string
     completed?: boolean
     value?: number
+    bonusPoints?: number
   }
 
   export type TaskTierUpdateWithoutTaskInput = {
@@ -23265,6 +23510,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
     challenge?: ChallengeUpdateOneRequiredWithoutTaskLogsNestedInput
     user?: UserUpdateOneRequiredWithoutTaskLogsNestedInput
   }
@@ -23276,6 +23522,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type TaskLogUncheckedUpdateManyWithoutTaskInput = {
@@ -23285,6 +23532,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
+    bonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
 

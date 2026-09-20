@@ -139,7 +139,7 @@ describe("challenge lifecycle", () => {
       await logFullDayPerfect(alice.id, day(i));
     }
 
-    // Weekly progress: gym 4x, 10km walk, 150 pushups (base tier), all rules kept
+    // Weekly progress: gym 4x, 10km walk, 150 pushups, all rules kept
     for (const n of [0, 1, 2, 3]) {
       await insertLog(alice.id, "Gym 4x/week", day(n), true, 1);
     }
@@ -175,14 +175,16 @@ describe("challenge lifecycle", () => {
         userId_challengeId_weekStart: { userId: alice.id, challengeId, weekStart: startOfWeek(day(6)) },
       },
     });
-    // gym 40 + walk 10 + pushups 5 + sugar 20 + fastfood 20 + junk 30 + alcohol 20 = 145
-    expect(weekly!.points).toBe(145);
+    // gym 160 (4 × 40 pts/session) + walk 100 (10 × 10 pts/km)
+    // + pushups 750 (150 × 5 pts/rep) + sugar 20 + fastfood 20 + junk 30 + alcohol 20
+    // = 1100
+    expect(weekly!.points).toBe(1100);
 
     // --- Member totals ---
     const member = await db.challengeMember.findUnique({
       where: { challengeId_userId: { challengeId, userId: alice.id } },
     });
-    expect(member!.points).toBe(358 + 145); // 503
+    expect(member!.points).toBe(358 + 1100); // 1458
     expect(member!.currentStreak).toBe(7);
     expect(member!.longestStreak).toBe(7);
   });
@@ -197,10 +199,11 @@ describe("challenge lifecycle", () => {
 
     // Perfect daily week
     for (let i = 0; i < 7; i++) await logFullDayPerfect(bob.id, day(i));
-    // Meets gym + walk + pushups, but breaks No sugar (drink? no — eats sugar) and no alcohol
+    // Same volume as Alice (gym 4, 10km walk, 150 pushups), but breaks
+    // No sugar and No alcohol, so those weekly rewards are lost.
     for (const n of [0, 1, 2, 3]) await insertLog(bob.id, "Gym 4x/week", day(n), true, 1);
     await insertLog(bob.id, "10km walk", day(0), true, 10);
-    await insertLog(bob.id, "100 pushups", day(1), true, 250);
+    await insertLog(bob.id, "100 pushups", day(1), true, 150);
     await insertLog(bob.id, "No sugar", day(2), true); // broke no-sugar rule
     await insertLog(bob.id, "No alcohol", day(3), true); // drank → broke alcohol
 
@@ -209,10 +212,10 @@ describe("challenge lifecycle", () => {
     const weekly = await db.weeklyScore.findUnique({
       where: { userId_challengeId_weekStart: { userId: bob.id, challengeId, weekStart: startOfWeek(day(6)) } },
     });
-    // gym 40 + walk 10 + pushups 10 (250→200 tier? tier200=10, but 250<350 → 10)
+    // gym 160 + walk 100 + pushups 750
     // sugar 0 (broken) + fastfood 20 + junk 30 + alcohol 0 (broken)
-    // → 40 + 10 + 10 + 0 + 20 + 30 + 0 = 110
-    expect(weekly!.points).toBe(110);
+    // → 160 + 100 + 750 + 0 + 20 + 30 + 0 = 1060
+    expect(weekly!.points).toBe(1060);
   });
 
   it("ranks the leaderboard by total points (Alice > Bob)", async () => {

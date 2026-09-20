@@ -199,7 +199,11 @@ exports.Prisma.ChallengeTaskScalarFieldEnum = {
   isRuleBreaker: 'isRuleBreaker',
   isAlcoholTask: 'isAlcoholTask',
   points: 'points',
-  target: 'target'
+  unit: 'unit',
+  unitCount: 'unitCount',
+  target: 'target',
+  bonusThreshold: 'bonusThreshold',
+  bonusPoints: 'bonusPoints'
 };
 
 exports.Prisma.TaskTierScalarFieldEnum = {
@@ -216,7 +220,8 @@ exports.Prisma.TaskLogScalarFieldEnum = {
   taskId: 'taskId',
   date: 'date',
   completed: 'completed',
-  value: 'value'
+  value: 'value',
+  bonusPoints: 'bonusPoints'
 };
 
 exports.Prisma.DaySummaryScalarFieldEnum = {

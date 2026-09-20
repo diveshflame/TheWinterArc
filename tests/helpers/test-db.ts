@@ -1,6 +1,6 @@
 import { PGlite } from "@electric-sql/pglite";
 import { PrismaPGlite } from "pglite-prisma-adapter";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/generated/client";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 

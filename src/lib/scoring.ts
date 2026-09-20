@@ -5,11 +5,55 @@ export interface ChallengeTask {
   challengeId: string;
   name: string;
   type: string;       // "DAILY" | "WEEKLY"
-  inputType: string;  // "CHECKBOX" | "NUMBER"
+  inputType: string;  // "CHECKBOX" (toggle) | "NUMBER" (value input)
   isRuleBreaker: boolean;
   isAlcoholTask: boolean;
-  points: number;
+  points: number;     // Points per check / per points block (may be negative)
+  unit: string | null; // Unit type for NUMBER inputs (e.g. "km", "mile", "reps")
+  unitCount?: number | null; // Individual units per points block (e.g. 50 per "50 push-ups")
   target: number | null;
+  bonusThreshold: number | null; // NUMBER: award bonusPoints for every full block of N units
+  bonusPoints: number | null;    // NUMBER: extra points per full bonusThreshold reached
+}
+
+/**
+ * Returns the number of points-scoring blocks earned for a logged value,
+ * honoring the task's unitCount (e.g. 20 points per "50 push-ups" block).
+ * Falls back to 1 unit per block when no unitCount is configured.
+ */
+export function earnedBlocks(value: number, task: ChallengeTask): number {
+  const count = task.unitCount && task.unitCount > 0 ? task.unitCount : 1;
+  return Math.floor(value / count);
+}
+
+/**
+ * Created a human label for a task's unit, e.g. "km" for a single unit or
+ * "50 push-ups" for a per-block count.
+ */
+export function unitsLabel(task: {
+  unitCount?: number | null;
+  unit?: string | null;
+}): string {
+  const count = task.unitCount && task.unitCount > 0 ? task.unitCount : 1;
+  const unit = task.unit;
+  if (!unit) return count === 1 ? "unit" : `${count} units`;
+  return count === 1 ? unit : `${count} ${unit}`;
+}
+
+/**
+ * Points a NUMBER task entry is worth given an accumulated value.
+ * Per-unit points plus the configured bonus once the value crosses the
+ * bonusThreshold. The bonus here mirrors what the log UI awards and sends
+ * with the entry — the backend only sums what was actually logged.
+ */
+export function numberTaskPoints(value: number, task: ChallengeTask): number {
+  let pts = earnedBlocks(value, task) * task.points;
+  const threshold = task.bonusThreshold;
+  const bonus = task.bonusPoints;
+  if (threshold && threshold > 0 && bonus && value >= threshold) {
+    pts += bonus;
+  }
+  return pts;
 }
 
 export interface TaskTier {
@@ -27,6 +71,7 @@ export interface TaskLog {
   date: Date;
   completed: boolean;
   value: number;
+  bonusPoints: number;
 }
 
 export interface ChallengeMember {
@@ -65,7 +110,12 @@ export function getDailyCompletionSummary(
   let achieved = 0;
   dailyTasks.forEach((task) => {
     const log = logs.find((l) => l.taskId === task.id);
-    if (task.isRuleBreaker) {
+    if (task.inputType === "NUMBER") {
+      // Number inputs count as done when the value is greater than zero.
+      if (log && (log.value || 0) > 0) {
+        achieved += 1;
+      }
+    } else if (task.isRuleBreaker) {
       // For rule breakers, not breaking it means success.
       // If there is no log, or log completed is false, we count it as successful.
       if (!log || !log.completed) {
@@ -99,6 +149,9 @@ export interface WeeklyTaskResult {
   points: number;
   currentValue: number;
   targetValue: number | null;
+  unit: string | null;
+  bonusThreshold: number | null;
+  bonusPoints: number | null;
 }
 
 export interface WeeklyResult {
@@ -128,38 +181,29 @@ export function computeWeeklyResultSummary(
     let currentValue = 0;
 
     if (task.inputType === "NUMBER") {
-      currentValue = taskLogs.reduce((s, l) => s + (l.value || 0), 0);
-      const target = task.target || 0;
-
-      // Handle tiered point values (like pushups)
-      const taskTiers = tiers.filter((t) => t.taskId === task.id);
-      if (taskTiers.length > 0) {
-        const sortedTiers = [...taskTiers].sort((a, b) => b.threshold - a.threshold);
-        const metTier = sortedTiers.find((t) => currentValue >= t.threshold);
-        if (metTier) {
-          achieved = true;
-          points = metTier.points;
-        } else {
-          achieved = currentValue >= target;
-          points = achieved ? task.points : 0;
-        }
-      } else {
-        achieved = currentValue >= target;
-        points = achieved ? task.points : 0;
+      // Number inputs award per-unit points (total value × points per unit).
+      // Any bonus the user earned from hitting the threshold was awarded in the
+      // log UI and stored on the logs, so it is summed like any other points.
+      currentValue = Math.round(taskLogs.reduce((s, l) => s + (l.value || 0), 0) * 10) / 10;
+      achieved = currentValue > 0;
+      if (achieved) {
+        points =
+          earnedBlocks(currentValue, task) * task.points +
+          taskLogs.reduce((s, l) => s + (l.bonusPoints || 0), 0);
       }
     } else if (task.isAlcoholTask) {
       // Alcohol rules:
       // Broken if any daily log has completed = true
       const broken = taskLogs.some((l) => l.completed);
       achieved = !broken;
-      if (achieved) {
-        points = task.points;
-      }
+      // Positive points reward staying clean; negative points penalize drinking.
+      points = task.points < 0 ? (broken ? task.points : 0) : achieved ? task.points : 0;
     } else if (task.isRuleBreaker) {
       // Rule breaker is broken if any log has completed = true
       const broken = taskLogs.some((l) => l.completed);
       achieved = !broken;
-      points = achieved ? task.points : 0;
+      // Positive points reward staying clean; negative points penalize breaking.
+      points = task.points < 0 ? (broken ? task.points : 0) : achieved ? task.points : 0;
     } else {
       // General weekly checkboxes (e.g. gym, if logged checkbox daily)
       currentValue = taskLogs.filter((l) => l.completed).length;
@@ -174,6 +218,9 @@ export function computeWeeklyResultSummary(
       points,
       currentValue,
       targetValue: task.target,
+      unit: task.unit ?? null,
+      bonusThreshold: task.bonusThreshold ?? null,
+      bonusPoints: task.bonusPoints ?? null,
     });
     totalPoints += points;
   });
