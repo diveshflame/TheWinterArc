@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AppShell } from "@/components/app-shell";
+import { BestChallengesWidget, type BestChallengeItem } from "@/components/best-challenges-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +24,60 @@ export default async function PublicProfilePage({
         include: { challenge: { select: { id: true, name: true, isActive: true } } },
         orderBy: { points: "desc" },
       },
+      taskLogs: {
+        include: {
+          task: true,
+          challenge: { select: { id: true, name: true } },
+        },
+      },
     },
   });
   if (!user) notFound();
 
   const displayName = user.displayName || user.name || "Unknown";
   const totalPoints = user.memberships.reduce((acc, m) => acc + m.points, 0);
+
+  // Aggregate stats per exercise/task
+  const taskStatsMap = new Map<string, BestChallengeItem>();
+
+  user.taskLogs.forEach((log) => {
+    const task = log.task;
+    if (!task) return;
+
+    let pts = 0;
+    if (task.inputType === "NUMBER") {
+      const count = task.unitCount && task.unitCount > 0 ? task.unitCount : 1;
+      const blocks = Math.floor((log.value || 0) / count);
+      pts = blocks * task.points + (log.bonusPoints || 0);
+    } else if (log.completed) {
+      pts = task.points;
+    }
+
+    const existing = taskStatsMap.get(task.id) || {
+      taskId: task.id,
+      taskName: task.name,
+      inputType: task.inputType,
+      unit: task.unit,
+      challengeName: log.challenge?.name || "Challenge",
+      totalPoints: 0,
+      totalValue: 0,
+      completedDays: 0,
+    };
+
+    existing.totalPoints += pts;
+    existing.totalValue += log.value || 0;
+    if (log.completed || (task.inputType === "NUMBER" && log.value > 0)) {
+      existing.completedDays += 1;
+    }
+
+    taskStatsMap.set(task.id, existing);
+  });
+
+  // Filter positive contributors & sort descending
+  const topExercises: BestChallengeItem[] = Array.from(taskStatsMap.values())
+    .filter((t) => t.totalPoints > 0)
+    .sort((a, b) => b.totalPoints - a.totalPoints)
+    .slice(0, 3);
 
   return (
     <AppShell>
@@ -76,7 +125,13 @@ export default async function PublicProfilePage({
           <StatCard label="Longest" value={user.longestStreak} />
         </div>
 
-        {/* Memberships */}
+        {/* Best Challenges Section — Donut Variant */}
+        <BestChallengesWidget
+          items={topExercises}
+          totalUserPoints={totalPoints}
+        />
+
+        {/* Challenges List (With Long Name Wrapping & Fixed Top-Right Points) */}
         <div className="rounded-2xl bg-card border border-card-border divide-y divide-card-border">
           <h2 className="px-4 pt-3 pb-1 text-xs font-bold text-muted uppercase tracking-wide">
             Challenges
@@ -87,16 +142,24 @@ export default async function PublicProfilePage({
             </div>
           ) : (
             user.memberships.map((m) => (
-              <div key={m.id} className="px-4 py-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{m.challenge.name}</p>
-                  <p className="text-xs text-muted">
+              <div
+                key={m.id}
+                className="px-4 py-3.5 flex items-start justify-between gap-4"
+              >
+                {/* Left: Challenge Name (wraps to 2 lines, then ellipsis) + Subtitle on its own line */}
+                <div className="flex-1 min-w-0 pr-2">
+                  <p className="text-sm font-medium text-foreground line-clamp-2 leading-snug break-words">
+                    {m.challenge.name}
+                  </p>
+                  <p className="text-xs text-muted mt-1">
                     {m.currentStreak > 0 ? `${m.currentStreak} 🔥 streak` : "no streak"}
                   </p>
                 </div>
-                <span className="text-sm font-bold shrink-0">
+
+                {/* Right: Points Pinned to Top Right */}
+                <span className="text-sm font-bold text-foreground shrink-0 text-right whitespace-nowrap pt-0.5">
                   {m.points}
-                  <span className="text-muted text-xs font-medium ml-0.5">pts</span>
+                  <span className="text-muted text-xs font-medium ml-1">pts</span>
                 </span>
               </div>
             ))
