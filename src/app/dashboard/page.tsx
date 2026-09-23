@@ -1,22 +1,36 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
-import { getDashboardData } from "@/lib/queries";
+import { getDashboardData, type UserChallengeSummary } from "@/lib/queries";
 import { AppShell } from "@/components/app-shell";
+import { ChallengeSwitcher } from "@/components/challenge-switcher";
 import { StreakFlame, pointsLabel } from "@/components/ui-helpers";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ c?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/signin");
   const userId = session.user.id;
 
-  const data = await getDashboardData(userId);
+  const resolvedParams = searchParams ? await searchParams : {};
+  const cookieStore = await cookies();
+  const preferredChallengeId =
+    resolvedParams.c || cookieStore.get("active_challenge_id")?.value;
+
+  const data = await getDashboardData(userId, preferredChallengeId);
 
   return (
     <AppShell>
-      <Header />
+      <Header
+        challenges={data.userChallenges}
+        activeChallengeId={data.challenge?.challenge.id}
+      />
       {!data.challenge ? (
         <EmptyState />
       ) : (
@@ -28,8 +42,9 @@ export default async function DashboardPage() {
               </p>
               <h2 className="text-lg font-bold">
                 {data.daysToLeaderboardRest > 0
-                  ? `${data.daysToLeaderboardRest} day${data.daysToLeaderboardRest === 1 ? "" : "s"
-                  } left this week`
+                  ? `${data.daysToLeaderboardRest} day${
+                      data.daysToLeaderboardRest === 1 ? "" : "s"
+                    } left this week`
                   : "Weekly results ready"}
               </h2>
             </div>
@@ -44,7 +59,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <LogTodayButton />
+          <LogTodayButton challengeId={data.challenge.challenge.id} />
 
           <div className="grid grid-cols-2 gap-3">
             <StatCard
@@ -91,21 +106,34 @@ export default async function DashboardPage() {
   );
 }
 
-function Header() {
+function Header({
+  challenges,
+  activeChallengeId,
+}: {
+  challenges: UserChallengeSummary[];
+  activeChallengeId?: string;
+}) {
   return (
-    <div className="flex items-center justify-between py-6">
+    <div className="flex items-center justify-between py-6 gap-3 flex-wrap">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Winter Arc</h1>
         <p className="text-muted text-xs">Daily habits · Weekly challenges</p>
       </div>
+      {challenges.length > 0 && (
+        <ChallengeSwitcher
+          challenges={challenges}
+          activeChallengeId={activeChallengeId}
+        />
+      )}
     </div>
   );
 }
 
-function LogTodayButton() {
+function LogTodayButton({ challengeId }: { challengeId?: string }) {
+  const href = challengeId ? `/log?c=${encodeURIComponent(challengeId)}` : "/log";
   return (
     <Link
-      href="/log"
+      href={href}
       className="block w-full rounded-xl bg-accent text-white py-3.5 text-center text-sm font-semibold shadow-lg shadow-accent/20 hover:brightness-110 transition"
     >
       Log Today ({pointsLabel()})

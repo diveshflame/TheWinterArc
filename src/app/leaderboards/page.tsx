@@ -1,18 +1,32 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getPrimaryChallenge } from "@/lib/queries";
+import { getPrimaryChallenge, getUserChallenges } from "@/lib/queries";
 import { startOfWeek, startOfDay, endOfDay } from "@/lib/scoring";
 import { AppShell } from "@/components/app-shell";
 import { LeaderboardClient } from "@/components/leaderboard-client";
+import { ChallengeSwitcher } from "@/components/challenge-switcher";
 
 export const dynamic = "force-dynamic";
 
-export default async function LeaderboardsPage() {
+export default async function LeaderboardsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ c?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/signin");
 
-  const membership = await getPrimaryChallenge(session.user.id);
+  const resolvedParams = searchParams ? await searchParams : {};
+  const cookieStore = await cookies();
+  const preferredChallengeId =
+    resolvedParams.c || cookieStore.get("active_challenge_id")?.value;
+
+  const [membership, userChallenges] = await Promise.all([
+    getPrimaryChallenge(session.user.id, preferredChallengeId),
+    getUserChallenges(session.user.id),
+  ]);
   if (!membership) redirect("/challenges/new");
   const challengeId = membership.challenge.id;
 
@@ -61,9 +75,17 @@ export default async function LeaderboardsPage() {
   return (
     <AppShell>
       <div className="py-6 space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Leaderboards</h1>
-          <p className="text-muted text-xs">{membership.challenge.name}</p>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Leaderboards</h1>
+            <p className="text-muted text-xs">{membership.challenge.name}</p>
+          </div>
+          {userChallenges.length > 0 && (
+            <ChallengeSwitcher
+              challenges={userChallenges}
+              activeChallengeId={membership.challenge.id}
+            />
+          )}
         </div>
         <LeaderboardClient
           today={today}

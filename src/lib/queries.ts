@@ -7,8 +7,76 @@ import {
   computeWeeklyResultSummary,
 } from "@/lib/scoring";
 
-export async function getPrimaryChallenge(userId: string) {
-  const membership = await db.challengeMember.findFirst({
+export interface UserChallengeSummary {
+  id: string;
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  isActive: boolean;
+  ended: boolean;
+  isAdmin: boolean;
+  points: number;
+  currentStreak: number;
+  longestStreak: number;
+  memberCount: number;
+}
+
+export async function getUserChallenges(userId: string): Promise<UserChallengeSummary[]> {
+  const memberships = await db.challengeMember.findMany({
+    where: { userId },
+    orderBy: { joinedAt: "desc" },
+    include: {
+      challenge: {
+        include: {
+          _count: {
+            select: { members: true },
+          },
+        },
+      },
+    },
+  });
+
+  return memberships.map((m) => ({
+    id: m.challenge.id,
+    name: m.challenge.name,
+    description: m.challenge.description,
+    startDate: m.challenge.startDate,
+    endDate: m.challenge.endDate,
+    isActive: m.challenge.isActive,
+    ended: m.challenge.ended,
+    isAdmin: m.challenge.adminId === userId,
+    points: m.points,
+    currentStreak: m.currentStreak,
+    longestStreak: m.longestStreak,
+    memberCount: m.challenge._count.members,
+  }));
+}
+
+export async function getPrimaryChallenge(userId: string, preferredChallengeId?: string | null) {
+  if (preferredChallengeId) {
+    const specific = await db.challengeMember.findUnique({
+      where: {
+        challengeId_userId: {
+          challengeId: preferredChallengeId,
+          userId,
+        },
+      },
+      include: {
+        challenge: {
+          include: {
+            tasks: {
+              include: { tiers: true },
+            },
+          },
+        },
+      },
+    });
+    if (specific) return specific;
+  }
+
+  // Fallback 1: most recently joined active challenge
+  const activeMembership = await db.challengeMember.findFirst({
     where: { userId, challenge: { isActive: true } },
     orderBy: { joinedAt: "desc" },
     include: {
@@ -21,7 +89,23 @@ export async function getPrimaryChallenge(userId: string) {
       },
     },
   });
-  return membership ?? null;
+  if (activeMembership) return activeMembership;
+
+  // Fallback 2: any membership (even if ended/inactive)
+  const anyMembership = await db.challengeMember.findFirst({
+    where: { userId },
+    orderBy: { joinedAt: "desc" },
+    include: {
+      challenge: {
+        include: {
+          tasks: {
+            include: { tiers: true },
+          },
+        },
+      },
+    },
+  });
+  return anyMembership ?? null;
 }
 
 export async function getTodayLogs(userId: string, challengeId: string) {
@@ -50,6 +134,7 @@ export async function getWeekLogs(userId: string, challengeId: string) {
 
 export interface DashboardData {
   challenge: Awaited<ReturnType<typeof getPrimaryChallenge>>;
+  userChallenges: UserChallengeSummary[];
   todayLogs: Awaited<ReturnType<typeof getTodayLogs>>;
   completionToday: ReturnType<typeof getDailyCompletionSummary> | null;
   weekLogs: Awaited<ReturnType<typeof getWeekLogs>>;
@@ -60,13 +145,20 @@ export interface DashboardData {
   daysToLeaderboardRest: number;
 }
 
-export async function getDashboardData(userId: string): Promise<DashboardData> {
-  const membership = await getPrimaryChallenge(userId);
+export async function getDashboardData(
+  userId: string,
+  preferredChallengeId?: string | null
+): Promise<DashboardData> {
+  const [membership, userChallenges] = await Promise.all([
+    getPrimaryChallenge(userId, preferredChallengeId),
+    getUserChallenges(userId),
+  ]);
   const challenge = membership?.challenge ?? null;
 
   if (!challenge || !membership) {
     return {
       challenge: null,
+      userChallenges,
       todayLogs: [],
       completionToday: null,
       weekLogs: [],
@@ -126,6 +218,7 @@ export async function getDashboardData(userId: string): Promise<DashboardData> {
 
   return {
     challenge: membership,
+    userChallenges,
     todayLogs,
     completionToday,
     weekLogs,
