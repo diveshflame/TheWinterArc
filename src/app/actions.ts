@@ -54,7 +54,8 @@ export async function saveMultipleTaskLogs(
   if (!session?.user) return { ok: false, error: "Not signed in" };
 
   const userId = session.user.id;
-  const targetDate = startOfDay(new Date(dateStr));
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const targetDate = new Date(Date.UTC(y, m - 1, d));
 
   const membership = await db.challengeMember.findUnique({
     where: { challengeId_userId: { challengeId, userId } },

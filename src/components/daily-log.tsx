@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { saveTaskLog } from "@/app/actions";
+import { saveMultipleTaskLogs } from "@/app/actions";
 import {
   numberTaskPoints,
   DAILY_BONUS_POINTS,
@@ -10,6 +10,11 @@ import {
   type ChallengeTask,
   type TaskLog,
 } from "@/lib/scoring";
+
+const MOVEMENT_DEBOUNCE_MS = 5000;
+const GROUP_DEBOUNCE_MS = 400;
+
+type PendingUpdate = { completed: boolean; value: number; bonus: number };
 
 export function DailyLogClient({
   challengeId,
@@ -29,7 +34,6 @@ export function DailyLogClient({
   todayFormatted?: string;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [logState, setLogState] = useState<Record<string, { completed: boolean; value: number }>>(() => {
     const state: Record<string, { completed: boolean; value: number }> = {};
     tasks.forEach((task) => {
@@ -61,14 +65,24 @@ export function DailyLogClient({
 
   const [saved, setSaved] = useState(false);
   const [savePulseKey, setSavePulseKey] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
-  // Debounce timers for movement tasks
+  // Updates applied to the UI but not yet confirmed in the DB. Coalesced into
+  // batched saves so rapid toggles produce a single write to the database.
+  const pendingRef = useRef<Record<string, PendingUpdate>>({});
+  const flushInFlight = useRef(false);
+  const flushQueuedKind = useRef<"MOVEMENT" | "GROUP" | null>(null);
+  const groupTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Per-task debounce timers for movement values (5s)
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
   useEffect(() => {
     const timers = debounceTimers.current;
     return () => {
       Object.values(timers).forEach((timer) => clearTimeout(timer));
+      if (groupTimerRef.current) clearTimeout(groupTimerRef.current);
     };
   }, []);
 
@@ -105,7 +119,86 @@ export function DailyLogClient({
     return task.bonusPoints;
   }
 
-  function save(taskId: string, completed: boolean, value: number) {
+  const draftKey = `pending-log:${challengeId}:${todayKey}`;
+
+  function persistDraft() {
+    try {
+      const entries = Object.entries(pendingRef.current);
+      if (entries.length === 0) {
+        localStorage.removeItem(draftKey);
+      } else {
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify(
+            entries.map(([taskId, p]) => ({
+              taskId,
+              completed: p.completed,
+              value: p.value,
+              bonus: p.bonus,
+            }))
+          )
+        );
+      }
+    } catch {
+      // Storage unavailable; the in-memory debounce still works.
+    }
+  }
+
+  function clearDraft() {
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {
+      // ignore
+    }
+  }
+
+  function pendingEntries(kind: "MOVEMENT" | "GROUP") {
+    return Object.entries(pendingRef.current).filter(([taskId]) => {
+      const t = tasks.find((x) => x.id === taskId);
+      const isMovement = t?.type === "DAILY" && t.inputType === "NUMBER";
+      return kind === "MOVEMENT" ? isMovement : !isMovement;
+    });
+  }
+
+  async function flushPending(kind: "MOVEMENT" | "GROUP") {
+    const entries = pendingEntries(kind);
+    if (entries.length === 0) return;
+
+    if (flushInFlight.current) {
+      flushQueuedKind.current = kind;
+      return;
+    }
+
+    flushInFlight.current = true;
+    const updates = entries.map(([taskId, p]) => ({
+      taskId,
+      completed: p.completed,
+      value: p.value,
+      bonusPoints: p.bonus,
+    }));
+
+    setIsSyncing(true);
+    try {
+      await saveMultipleTaskLogs(challengeId, todayKey, updates);
+      // Only drop updates from the queue once the DB confirms them.
+      const remaining = { ...pendingRef.current };
+      entries.forEach(([taskId]) => delete remaining[taskId]);
+      pendingRef.current = remaining;
+      setPendingCount(Object.keys(remaining).length);
+      persistDraft();
+      setSaved(true);
+      setSavePulseKey((k) => k + 1);
+      router.refresh();
+    } finally {
+      setIsSyncing(false);
+      flushInFlight.current = false;
+      const next = flushQueuedKind.current;
+      flushQueuedKind.current = null;
+      if (next) void flushPending(next);
+    }
+  }
+
+  function markPending(taskId: string, completed: boolean, value: number) {
     const task = tasks.find((t) => t.id === taskId);
     let bonus = 0;
     if (task?.inputType === "NUMBER") {
@@ -114,17 +207,124 @@ export function DailyLogClient({
           ? weeklyBonus(task, value)
           : dailyBonus(task, value);
     }
+    pendingRef.current = { ...pendingRef.current, [taskId]: { completed, value, bonus } };
+    setPendingCount(Object.keys(pendingRef.current).length);
+    persistDraft();
+
+    const isMovement = task?.type === "DAILY" && task.inputType === "NUMBER";
+    if (isMovement) {
+      // Keep the 5s debounce so rapid +/- clicks produce a single DB write.
+      if (debounceTimers.current[taskId]) clearTimeout(debounceTimers.current[taskId]);
+      debounceTimers.current[taskId] = setTimeout(() => {
+        delete debounceTimers.current[taskId];
+        void flushPending("MOVEMENT");
+      }, MOVEMENT_DEBOUNCE_MS);
+    } else {
+      if (!groupTimerRef.current) {
+        groupTimerRef.current = setTimeout(() => {
+          groupTimerRef.current = null;
+          void flushPending("GROUP");
+        }, GROUP_DEBOUNCE_MS);
+      }
+    }
+  }
+
+  // Restore any draft left behind by a refresh that interrupted a debounced
+  // save, and flush it so the DB catches up with what the user last saw.
+  useEffect(() => {
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(draftKey);
+    } catch {
+      // ignore
+    }
+    if (raw) {
+      let drafts: { taskId: string; completed: boolean; value: number; bonus: number }[] = [];
+      try {
+        const parsed = JSON.parse(raw);
+        drafts = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        // ignore
+      }
+      const knownIds = new Set(tasks.map((t) => t.id));
+      const valid = drafts.filter((d) => d && knownIds.has(d.taskId));
+      if (valid.length === 0) {
+        clearDraft();
+      } else {
+        const restored: Record<string, PendingUpdate> = {};
+        const movementRestore: Record<string, number> = {};
+        valid.forEach((d) => {
+          restored[d.taskId] = { completed: d.completed, value: d.value, bonus: d.bonus };
+          const task = tasks.find((t) => t.id === d.taskId);
+          if (task?.type === "DAILY" && task.inputType === "NUMBER") {
+            movementRestore[d.taskId] = d.value;
+          }
+        });
+        pendingRef.current = { ...pendingRef.current, ...restored };
+        setPendingCount(Object.keys(pendingRef.current).length);
+        setMovementValues((prev) => ({ ...prev, ...movementRestore }));
+        setLogState((prev) => {
+          const next = { ...prev };
+          valid.forEach((d) => {
+            next[d.taskId] = { completed: d.completed, value: d.value };
+          });
+          return next;
+        });
+        void flushPending("GROUP");
+        void flushPending("MOVEMENT");
+      }
+    }
+    // Drop drafts left over from previous days/challenges.
+    try {
+      const keys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("pending-log:")) keys.push(k);
+      }
+      keys.forEach((k) => {
+        if (k !== draftKey) localStorage.removeItem(k);
+      });
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Best-effort flush when the tab is hidden/closed. The draft above is only
+  // cleared after the DB confirms, so an aborted request is restored on load.
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === "hidden") flushOnHide();
+    }
+    function flushOnHide() {
+      const entries = Object.entries(pendingRef.current);
+      if (entries.length === 0) return;
+      void saveMultipleTaskLogs(
+        challengeId,
+        todayKey,
+        entries.map(([taskId, p]) => ({
+          taskId,
+          completed: p.completed,
+          value: p.value,
+          bonusPoints: p.bonus,
+        }))
+      );
+    }
+    window.addEventListener("pagehide", flushOnHide);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flushOnHide);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function save(taskId: string, completed: boolean, value: number) {
     setLogState((prev) => ({
       ...prev,
       [taskId]: { completed, value },
     }));
-    setSaved(true);
-    setSavePulseKey((k) => k + 1);
-    startTransition(() => {
-      saveTaskLog(challengeId, taskId, completed, value, bonus).then(() => {
-        router.refresh();
-      });
-    });
+    markPending(taskId, completed, value);
   }
 
   function toggle(taskId: string) {
@@ -132,28 +332,25 @@ export function DailyLogClient({
     save(taskId, !current.completed, current.value);
   }
 
-  // Debounced handler for Movement numbers: update displayed reps immediately, wait 5s of inactivity before saving to DB & updating total points
+  // Debounced handler for Movement numbers: update displayed reps immediately,
+  // wait 5s of inactivity before persisting to the DB.
   function handleMovementChange(taskId: string, nextVal: number) {
     const validVal = Math.max(0, Math.round(nextVal * 10) / 10);
     setMovementValues((prev) => ({
       ...prev,
       [taskId]: validVal,
     }));
-
-    if (debounceTimers.current[taskId]) {
-      clearTimeout(debounceTimers.current[taskId]);
-    }
-
-    debounceTimers.current[taskId] = setTimeout(() => {
-      save(taskId, validVal > 0, validVal);
-      delete debounceTimers.current[taskId];
-    }, 5000);
+    markPending(taskId, validVal > 0, validVal);
   }
 
-  // Weekly numbers save without the 5s debounce
+  // Weekly numbers persist with the short group debounce
   function saveWeeklyValue(taskId: string, nextVal: number) {
     const validVal = Math.max(0, Math.round(nextVal * 10) / 10);
-    save(taskId, validVal > 0, validVal);
+    setLogState((prev) => ({
+      ...prev,
+      [taskId]: { completed: validVal > 0, value: validVal },
+    }));
+    markPending(taskId, validVal > 0, validVal);
   }
 
   // Task partitions: Daily Checklist (habits/penalties), Daily Movement, Weekly Challenges
@@ -235,7 +432,7 @@ export function DailyLogClient({
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-foreground">Today&apos;s completion</span>
           <div className="h-5 flex items-center">
-            {isPending ? (
+            {isSyncing || pendingCount > 0 ? (
               <span className="text-xs font-medium text-muted">Saving…</span>
             ) : saved ? (
               <span
