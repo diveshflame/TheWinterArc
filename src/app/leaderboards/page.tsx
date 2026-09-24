@@ -33,27 +33,37 @@ export default async function LeaderboardsPage({
   const dayStart = startOfDay(new Date());
   const dayEnd = endOfDay(new Date());
   const weekStart = startOfWeek(new Date());
+  const weekEnd = endOfDay(new Date());
 
   const members = await db.challengeMember.findMany({
     where: { challengeId },
     include: { user: { select: { name: true, image: true, mantra: true } } },
   });
 
-  const todayLogs = await db.daySummary.findMany({
+  const todayScores = await db.daySummary.findMany({
     where: { challengeId, date: { gte: dayStart, lte: dayEnd } },
     select: { userId: true, pointsAwarded: true },
   });
-  const weekLogs = await db.weeklyScore.findMany({
+  const weekScores = await db.daySummary.findMany({
+    where: { challengeId, date: { gte: weekStart, lte: weekEnd } },
+    select: { userId: true, pointsAwarded: true },
+  });
+  const weekChallengeScores = await db.weeklyScore.findMany({
     where: { challengeId, weekStart },
     select: { userId: true, points: true },
   });
 
   const todayByUser = new Map<string, number>();
-  todayLogs.forEach((l) =>
+  todayScores.forEach((l) =>
     todayByUser.set(l.userId, (todayByUser.get(l.userId) ?? 0) + l.pointsAwarded)
   );
+  // "This Week" = every point earned since Monday (daily + streak/bonus points)
+  // plus any points earned from weekly challenges logged this week.
   const weekByUser = new Map<string, number>();
-  weekLogs.forEach((l) =>
+  weekScores.forEach((l) =>
+    weekByUser.set(l.userId, (weekByUser.get(l.userId) ?? 0) + l.pointsAwarded)
+  );
+  weekChallengeScores.forEach((l) =>
     weekByUser.set(l.userId, (weekByUser.get(l.userId) ?? 0) + l.points)
   );
 

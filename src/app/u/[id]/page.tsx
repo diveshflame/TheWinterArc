@@ -44,6 +44,9 @@ export default async function PublicProfilePage({
     const task = log.task;
     if (!task) return;
 
+    // Only daily tasks accrue per-log points; weekly tasks are one reward per week.
+    if (task.type !== "DAILY") return;
+
     let pts = 0;
     if (task.inputType === "NUMBER") {
       const count = task.unitCount && task.unitCount > 0 ? task.unitCount : 1;
