@@ -10,6 +10,8 @@ CREATE TABLE "users" (
     "image" TEXT,
     "displayName" TEXT,
     "totalPoints" INTEGER NOT NULL DEFAULT 0,
+    "peakLeaguePoints" INTEGER NOT NULL DEFAULT 0,
+    "lastCelebratedLeague" TEXT,
     "currentStreak" INTEGER NOT NULL DEFAULT 0,
     "longestStreak" INTEGER NOT NULL DEFAULT 0,
     "mantra" TEXT DEFAULT 'I am inevitable',
@@ -79,6 +81,7 @@ CREATE TABLE "challenge_members" (
     "userId" TEXT NOT NULL,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "points" INTEGER NOT NULL DEFAULT 0,
+    "peakLeaguePoints" INTEGER NOT NULL DEFAULT 0,
     "currentStreak" INTEGER NOT NULL DEFAULT 0,
     "longestStreak" INTEGER NOT NULL DEFAULT 0,
     "isAlcoholDrinker" BOOLEAN NOT NULL DEFAULT false,
@@ -140,6 +143,8 @@ CREATE TABLE "day_summaries" (
     "pointsAwarded" INTEGER NOT NULL DEFAULT 0,
     "dailyBonusAwarded" BOOLEAN NOT NULL DEFAULT false,
     "streakBonusAwarded" BOOLEAN NOT NULL DEFAULT false,
+    "leagueBonusAwarded" BOOLEAN NOT NULL DEFAULT false,
+    "leagueBonusPoints" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "day_summaries_pkey" PRIMARY KEY ("id")
 );

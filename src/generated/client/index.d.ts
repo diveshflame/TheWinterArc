@@ -2085,6 +2085,7 @@ export namespace Prisma {
 
   export type UserAvgAggregateOutputType = {
     totalPoints: number | null
+    peakLeaguePoints: number | null
     currentStreak: number | null
     longestStreak: number | null
     streakTokens: number | null
@@ -2092,6 +2093,7 @@ export namespace Prisma {
 
   export type UserSumAggregateOutputType = {
     totalPoints: number | null
+    peakLeaguePoints: number | null
     currentStreak: number | null
     longestStreak: number | null
     streakTokens: number | null
@@ -2105,6 +2107,8 @@ export namespace Prisma {
     image: string | null
     displayName: string | null
     totalPoints: number | null
+    peakLeaguePoints: number | null
+    lastCelebratedLeague: string | null
     currentStreak: number | null
     longestStreak: number | null
     mantra: string | null
@@ -2120,6 +2124,8 @@ export namespace Prisma {
     image: string | null
     displayName: string | null
     totalPoints: number | null
+    peakLeaguePoints: number | null
+    lastCelebratedLeague: string | null
     currentStreak: number | null
     longestStreak: number | null
     mantra: string | null
@@ -2135,6 +2141,8 @@ export namespace Prisma {
     image: number
     displayName: number
     totalPoints: number
+    peakLeaguePoints: number
+    lastCelebratedLeague: number
     currentStreak: number
     longestStreak: number
     mantra: number
@@ -2146,6 +2154,7 @@ export namespace Prisma {
 
   export type UserAvgAggregateInputType = {
     totalPoints?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
     streakTokens?: true
@@ -2153,6 +2162,7 @@ export namespace Prisma {
 
   export type UserSumAggregateInputType = {
     totalPoints?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
     streakTokens?: true
@@ -2166,6 +2176,8 @@ export namespace Prisma {
     image?: true
     displayName?: true
     totalPoints?: true
+    peakLeaguePoints?: true
+    lastCelebratedLeague?: true
     currentStreak?: true
     longestStreak?: true
     mantra?: true
@@ -2181,6 +2193,8 @@ export namespace Prisma {
     image?: true
     displayName?: true
     totalPoints?: true
+    peakLeaguePoints?: true
+    lastCelebratedLeague?: true
     currentStreak?: true
     longestStreak?: true
     mantra?: true
@@ -2196,6 +2210,8 @@ export namespace Prisma {
     image?: true
     displayName?: true
     totalPoints?: true
+    peakLeaguePoints?: true
+    lastCelebratedLeague?: true
     currentStreak?: true
     longestStreak?: true
     mantra?: true
@@ -2298,6 +2314,8 @@ export namespace Prisma {
     image: string | null
     displayName: string | null
     totalPoints: number
+    peakLeaguePoints: number
+    lastCelebratedLeague: string | null
     currentStreak: number
     longestStreak: number
     mantra: string | null
@@ -2332,6 +2350,8 @@ export namespace Prisma {
     image?: boolean
     displayName?: boolean
     totalPoints?: boolean
+    peakLeaguePoints?: boolean
+    lastCelebratedLeague?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     mantra?: boolean
@@ -2356,6 +2376,8 @@ export namespace Prisma {
     image?: boolean
     displayName?: boolean
     totalPoints?: boolean
+    peakLeaguePoints?: boolean
+    lastCelebratedLeague?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     mantra?: boolean
@@ -2371,6 +2393,8 @@ export namespace Prisma {
     image?: boolean
     displayName?: boolean
     totalPoints?: boolean
+    peakLeaguePoints?: boolean
+    lastCelebratedLeague?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     mantra?: boolean
@@ -2386,6 +2410,8 @@ export namespace Prisma {
     image?: boolean
     displayName?: boolean
     totalPoints?: boolean
+    peakLeaguePoints?: boolean
+    lastCelebratedLeague?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     mantra?: boolean
@@ -2393,7 +2419,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "displayName" | "totalPoints" | "currentStreak" | "longestStreak" | "mantra" | "streakTokens" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "displayName" | "totalPoints" | "peakLeaguePoints" | "lastCelebratedLeague" | "currentStreak" | "longestStreak" | "mantra" | "streakTokens" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
@@ -2428,6 +2454,8 @@ export namespace Prisma {
       image: string | null
       displayName: string | null
       totalPoints: number
+      peakLeaguePoints: number
+      lastCelebratedLeague: string | null
       currentStreak: number
       longestStreak: number
       mantra: string | null
@@ -2871,6 +2899,8 @@ export namespace Prisma {
     readonly image: FieldRef<"User", 'String'>
     readonly displayName: FieldRef<"User", 'String'>
     readonly totalPoints: FieldRef<"User", 'Int'>
+    readonly peakLeaguePoints: FieldRef<"User", 'Int'>
+    readonly lastCelebratedLeague: FieldRef<"User", 'String'>
     readonly currentStreak: FieldRef<"User", 'Int'>
     readonly longestStreak: FieldRef<"User", 'Int'>
     readonly mantra: FieldRef<"User", 'String'>
@@ -8038,12 +8068,14 @@ export namespace Prisma {
 
   export type ChallengeMemberAvgAggregateOutputType = {
     points: number | null
+    peakLeaguePoints: number | null
     currentStreak: number | null
     longestStreak: number | null
   }
 
   export type ChallengeMemberSumAggregateOutputType = {
     points: number | null
+    peakLeaguePoints: number | null
     currentStreak: number | null
     longestStreak: number | null
   }
@@ -8054,6 +8086,7 @@ export namespace Prisma {
     userId: string | null
     joinedAt: Date | null
     points: number | null
+    peakLeaguePoints: number | null
     currentStreak: number | null
     longestStreak: number | null
     isAlcoholDrinker: boolean | null
@@ -8065,6 +8098,7 @@ export namespace Prisma {
     userId: string | null
     joinedAt: Date | null
     points: number | null
+    peakLeaguePoints: number | null
     currentStreak: number | null
     longestStreak: number | null
     isAlcoholDrinker: boolean | null
@@ -8076,6 +8110,7 @@ export namespace Prisma {
     userId: number
     joinedAt: number
     points: number
+    peakLeaguePoints: number
     currentStreak: number
     longestStreak: number
     isAlcoholDrinker: number
@@ -8085,12 +8120,14 @@ export namespace Prisma {
 
   export type ChallengeMemberAvgAggregateInputType = {
     points?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
   }
 
   export type ChallengeMemberSumAggregateInputType = {
     points?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
   }
@@ -8101,6 +8138,7 @@ export namespace Prisma {
     userId?: true
     joinedAt?: true
     points?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
     isAlcoholDrinker?: true
@@ -8112,6 +8150,7 @@ export namespace Prisma {
     userId?: true
     joinedAt?: true
     points?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
     isAlcoholDrinker?: true
@@ -8123,6 +8162,7 @@ export namespace Prisma {
     userId?: true
     joinedAt?: true
     points?: true
+    peakLeaguePoints?: true
     currentStreak?: true
     longestStreak?: true
     isAlcoholDrinker?: true
@@ -8221,6 +8261,7 @@ export namespace Prisma {
     userId: string
     joinedAt: Date
     points: number
+    peakLeaguePoints: number
     currentStreak: number
     longestStreak: number
     isAlcoholDrinker: boolean
@@ -8251,6 +8292,7 @@ export namespace Prisma {
     userId?: boolean
     joinedAt?: boolean
     points?: boolean
+    peakLeaguePoints?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     isAlcoholDrinker?: boolean
@@ -8264,6 +8306,7 @@ export namespace Prisma {
     userId?: boolean
     joinedAt?: boolean
     points?: boolean
+    peakLeaguePoints?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     isAlcoholDrinker?: boolean
@@ -8277,6 +8320,7 @@ export namespace Prisma {
     userId?: boolean
     joinedAt?: boolean
     points?: boolean
+    peakLeaguePoints?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     isAlcoholDrinker?: boolean
@@ -8290,12 +8334,13 @@ export namespace Prisma {
     userId?: boolean
     joinedAt?: boolean
     points?: boolean
+    peakLeaguePoints?: boolean
     currentStreak?: boolean
     longestStreak?: boolean
     isAlcoholDrinker?: boolean
   }
 
-  export type ChallengeMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "joinedAt" | "points" | "currentStreak" | "longestStreak" | "isAlcoholDrinker", ExtArgs["result"]["challengeMember"]>
+  export type ChallengeMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "joinedAt" | "points" | "peakLeaguePoints" | "currentStreak" | "longestStreak" | "isAlcoholDrinker", ExtArgs["result"]["challengeMember"]>
   export type ChallengeMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8321,6 +8366,7 @@ export namespace Prisma {
       userId: string
       joinedAt: Date
       points: number
+      peakLeaguePoints: number
       currentStreak: number
       longestStreak: number
       isAlcoholDrinker: boolean
@@ -8754,6 +8800,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"ChallengeMember", 'String'>
     readonly joinedAt: FieldRef<"ChallengeMember", 'DateTime'>
     readonly points: FieldRef<"ChallengeMember", 'Int'>
+    readonly peakLeaguePoints: FieldRef<"ChallengeMember", 'Int'>
     readonly currentStreak: FieldRef<"ChallengeMember", 'Int'>
     readonly longestStreak: FieldRef<"ChallengeMember", 'Int'>
     readonly isAlcoholDrinker: FieldRef<"ChallengeMember", 'Boolean'>
@@ -12691,12 +12738,14 @@ export namespace Prisma {
     completedCount: number | null
     totalCount: number | null
     pointsAwarded: number | null
+    leagueBonusPoints: number | null
   }
 
   export type DaySummarySumAggregateOutputType = {
     completedCount: number | null
     totalCount: number | null
     pointsAwarded: number | null
+    leagueBonusPoints: number | null
   }
 
   export type DaySummaryMinAggregateOutputType = {
@@ -12709,6 +12758,8 @@ export namespace Prisma {
     pointsAwarded: number | null
     dailyBonusAwarded: boolean | null
     streakBonusAwarded: boolean | null
+    leagueBonusAwarded: boolean | null
+    leagueBonusPoints: number | null
   }
 
   export type DaySummaryMaxAggregateOutputType = {
@@ -12721,6 +12772,8 @@ export namespace Prisma {
     pointsAwarded: number | null
     dailyBonusAwarded: boolean | null
     streakBonusAwarded: boolean | null
+    leagueBonusAwarded: boolean | null
+    leagueBonusPoints: number | null
   }
 
   export type DaySummaryCountAggregateOutputType = {
@@ -12733,6 +12786,8 @@ export namespace Prisma {
     pointsAwarded: number
     dailyBonusAwarded: number
     streakBonusAwarded: number
+    leagueBonusAwarded: number
+    leagueBonusPoints: number
     _all: number
   }
 
@@ -12741,12 +12796,14 @@ export namespace Prisma {
     completedCount?: true
     totalCount?: true
     pointsAwarded?: true
+    leagueBonusPoints?: true
   }
 
   export type DaySummarySumAggregateInputType = {
     completedCount?: true
     totalCount?: true
     pointsAwarded?: true
+    leagueBonusPoints?: true
   }
 
   export type DaySummaryMinAggregateInputType = {
@@ -12759,6 +12816,8 @@ export namespace Prisma {
     pointsAwarded?: true
     dailyBonusAwarded?: true
     streakBonusAwarded?: true
+    leagueBonusAwarded?: true
+    leagueBonusPoints?: true
   }
 
   export type DaySummaryMaxAggregateInputType = {
@@ -12771,6 +12830,8 @@ export namespace Prisma {
     pointsAwarded?: true
     dailyBonusAwarded?: true
     streakBonusAwarded?: true
+    leagueBonusAwarded?: true
+    leagueBonusPoints?: true
   }
 
   export type DaySummaryCountAggregateInputType = {
@@ -12783,6 +12844,8 @@ export namespace Prisma {
     pointsAwarded?: true
     dailyBonusAwarded?: true
     streakBonusAwarded?: true
+    leagueBonusAwarded?: true
+    leagueBonusPoints?: true
     _all?: true
   }
 
@@ -12882,6 +12945,8 @@ export namespace Prisma {
     pointsAwarded: number
     dailyBonusAwarded: boolean
     streakBonusAwarded: boolean
+    leagueBonusAwarded: boolean
+    leagueBonusPoints: number
     _count: DaySummaryCountAggregateOutputType | null
     _avg: DaySummaryAvgAggregateOutputType | null
     _sum: DaySummarySumAggregateOutputType | null
@@ -12913,6 +12978,8 @@ export namespace Prisma {
     pointsAwarded?: boolean
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["daySummary"]>
@@ -12927,6 +12994,8 @@ export namespace Prisma {
     pointsAwarded?: boolean
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["daySummary"]>
@@ -12941,6 +13010,8 @@ export namespace Prisma {
     pointsAwarded?: boolean
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["daySummary"]>
@@ -12955,9 +13026,11 @@ export namespace Prisma {
     pointsAwarded?: boolean
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: boolean
   }
 
-  export type DaySummaryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "date" | "completedCount" | "totalCount" | "pointsAwarded" | "dailyBonusAwarded" | "streakBonusAwarded", ExtArgs["result"]["daySummary"]>
+  export type DaySummaryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "date" | "completedCount" | "totalCount" | "pointsAwarded" | "dailyBonusAwarded" | "streakBonusAwarded" | "leagueBonusAwarded" | "leagueBonusPoints", ExtArgs["result"]["daySummary"]>
   export type DaySummaryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12987,6 +13060,8 @@ export namespace Prisma {
       pointsAwarded: number
       dailyBonusAwarded: boolean
       streakBonusAwarded: boolean
+      leagueBonusAwarded: boolean
+      leagueBonusPoints: number
     }, ExtArgs["result"]["daySummary"]>
     composites: {}
   }
@@ -13421,6 +13496,8 @@ export namespace Prisma {
     readonly pointsAwarded: FieldRef<"DaySummary", 'Int'>
     readonly dailyBonusAwarded: FieldRef<"DaySummary", 'Boolean'>
     readonly streakBonusAwarded: FieldRef<"DaySummary", 'Boolean'>
+    readonly leagueBonusAwarded: FieldRef<"DaySummary", 'Boolean'>
+    readonly leagueBonusPoints: FieldRef<"DaySummary", 'Int'>
   }
     
 
@@ -16113,6 +16190,8 @@ export namespace Prisma {
     image: 'image',
     displayName: 'displayName',
     totalPoints: 'totalPoints',
+    peakLeaguePoints: 'peakLeaguePoints',
+    lastCelebratedLeague: 'lastCelebratedLeague',
     currentStreak: 'currentStreak',
     longestStreak: 'longestStreak',
     mantra: 'mantra',
@@ -16184,6 +16263,7 @@ export namespace Prisma {
     userId: 'userId',
     joinedAt: 'joinedAt',
     points: 'points',
+    peakLeaguePoints: 'peakLeaguePoints',
     currentStreak: 'currentStreak',
     longestStreak: 'longestStreak',
     isAlcoholDrinker: 'isAlcoholDrinker'
@@ -16244,7 +16324,9 @@ export namespace Prisma {
     totalCount: 'totalCount',
     pointsAwarded: 'pointsAwarded',
     dailyBonusAwarded: 'dailyBonusAwarded',
-    streakBonusAwarded: 'streakBonusAwarded'
+    streakBonusAwarded: 'streakBonusAwarded',
+    leagueBonusAwarded: 'leagueBonusAwarded',
+    leagueBonusPoints: 'leagueBonusPoints'
   };
 
   export type DaySummaryScalarFieldEnum = (typeof DaySummaryScalarFieldEnum)[keyof typeof DaySummaryScalarFieldEnum]
@@ -16382,6 +16464,8 @@ export namespace Prisma {
     image?: StringNullableFilter<"User"> | string | null
     displayName?: StringNullableFilter<"User"> | string | null
     totalPoints?: IntFilter<"User"> | number
+    peakLeaguePoints?: IntFilter<"User"> | number
+    lastCelebratedLeague?: StringNullableFilter<"User"> | string | null
     currentStreak?: IntFilter<"User"> | number
     longestStreak?: IntFilter<"User"> | number
     mantra?: StringNullableFilter<"User"> | string | null
@@ -16405,6 +16489,8 @@ export namespace Prisma {
     image?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
+    lastCelebratedLeague?: SortOrderInput | SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     mantra?: SortOrderInput | SortOrder
@@ -16431,6 +16517,8 @@ export namespace Prisma {
     image?: StringNullableFilter<"User"> | string | null
     displayName?: StringNullableFilter<"User"> | string | null
     totalPoints?: IntFilter<"User"> | number
+    peakLeaguePoints?: IntFilter<"User"> | number
+    lastCelebratedLeague?: StringNullableFilter<"User"> | string | null
     currentStreak?: IntFilter<"User"> | number
     longestStreak?: IntFilter<"User"> | number
     mantra?: StringNullableFilter<"User"> | string | null
@@ -16454,6 +16542,8 @@ export namespace Prisma {
     image?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
+    lastCelebratedLeague?: SortOrderInput | SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     mantra?: SortOrderInput | SortOrder
@@ -16477,6 +16567,8 @@ export namespace Prisma {
     image?: StringNullableWithAggregatesFilter<"User"> | string | null
     displayName?: StringNullableWithAggregatesFilter<"User"> | string | null
     totalPoints?: IntWithAggregatesFilter<"User"> | number
+    peakLeaguePoints?: IntWithAggregatesFilter<"User"> | number
+    lastCelebratedLeague?: StringNullableWithAggregatesFilter<"User"> | string | null
     currentStreak?: IntWithAggregatesFilter<"User"> | number
     longestStreak?: IntWithAggregatesFilter<"User"> | number
     mantra?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -16789,6 +16881,7 @@ export namespace Prisma {
     userId?: StringFilter<"ChallengeMember"> | string
     joinedAt?: DateTimeFilter<"ChallengeMember"> | Date | string
     points?: IntFilter<"ChallengeMember"> | number
+    peakLeaguePoints?: IntFilter<"ChallengeMember"> | number
     currentStreak?: IntFilter<"ChallengeMember"> | number
     longestStreak?: IntFilter<"ChallengeMember"> | number
     isAlcoholDrinker?: BoolFilter<"ChallengeMember"> | boolean
@@ -16802,6 +16895,7 @@ export namespace Prisma {
     userId?: SortOrder
     joinedAt?: SortOrder
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     isAlcoholDrinker?: SortOrder
@@ -16819,6 +16913,7 @@ export namespace Prisma {
     userId?: StringFilter<"ChallengeMember"> | string
     joinedAt?: DateTimeFilter<"ChallengeMember"> | Date | string
     points?: IntFilter<"ChallengeMember"> | number
+    peakLeaguePoints?: IntFilter<"ChallengeMember"> | number
     currentStreak?: IntFilter<"ChallengeMember"> | number
     longestStreak?: IntFilter<"ChallengeMember"> | number
     isAlcoholDrinker?: BoolFilter<"ChallengeMember"> | boolean
@@ -16832,6 +16927,7 @@ export namespace Prisma {
     userId?: SortOrder
     joinedAt?: SortOrder
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     isAlcoholDrinker?: SortOrder
@@ -16851,6 +16947,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"ChallengeMember"> | string
     joinedAt?: DateTimeWithAggregatesFilter<"ChallengeMember"> | Date | string
     points?: IntWithAggregatesFilter<"ChallengeMember"> | number
+    peakLeaguePoints?: IntWithAggregatesFilter<"ChallengeMember"> | number
     currentStreak?: IntWithAggregatesFilter<"ChallengeMember"> | number
     longestStreak?: IntWithAggregatesFilter<"ChallengeMember"> | number
     isAlcoholDrinker?: BoolWithAggregatesFilter<"ChallengeMember"> | boolean
@@ -17103,6 +17200,8 @@ export namespace Prisma {
     pointsAwarded?: IntFilter<"DaySummary"> | number
     dailyBonusAwarded?: BoolFilter<"DaySummary"> | boolean
     streakBonusAwarded?: BoolFilter<"DaySummary"> | boolean
+    leagueBonusAwarded?: BoolFilter<"DaySummary"> | boolean
+    leagueBonusPoints?: IntFilter<"DaySummary"> | number
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -17117,6 +17216,8 @@ export namespace Prisma {
     pointsAwarded?: SortOrder
     dailyBonusAwarded?: SortOrder
     streakBonusAwarded?: SortOrder
+    leagueBonusAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
     challenge?: ChallengeOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
   }
@@ -17135,6 +17236,8 @@ export namespace Prisma {
     pointsAwarded?: IntFilter<"DaySummary"> | number
     dailyBonusAwarded?: BoolFilter<"DaySummary"> | boolean
     streakBonusAwarded?: BoolFilter<"DaySummary"> | boolean
+    leagueBonusAwarded?: BoolFilter<"DaySummary"> | boolean
+    leagueBonusPoints?: IntFilter<"DaySummary"> | number
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "userId_challengeId_date">
@@ -17149,6 +17252,8 @@ export namespace Prisma {
     pointsAwarded?: SortOrder
     dailyBonusAwarded?: SortOrder
     streakBonusAwarded?: SortOrder
+    leagueBonusAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
     _count?: DaySummaryCountOrderByAggregateInput
     _avg?: DaySummaryAvgOrderByAggregateInput
     _max?: DaySummaryMaxOrderByAggregateInput
@@ -17169,6 +17274,8 @@ export namespace Prisma {
     pointsAwarded?: IntWithAggregatesFilter<"DaySummary"> | number
     dailyBonusAwarded?: BoolWithAggregatesFilter<"DaySummary"> | boolean
     streakBonusAwarded?: BoolWithAggregatesFilter<"DaySummary"> | boolean
+    leagueBonusAwarded?: BoolWithAggregatesFilter<"DaySummary"> | boolean
+    leagueBonusPoints?: IntWithAggregatesFilter<"DaySummary"> | number
   }
 
   export type WeeklyScoreWhereInput = {
@@ -17320,6 +17427,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -17343,6 +17452,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -17366,6 +17477,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17389,6 +17502,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17412,6 +17527,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -17427,6 +17544,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17442,6 +17561,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17775,6 +17896,7 @@ export namespace Prisma {
     id?: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -17788,6 +17910,7 @@ export namespace Prisma {
     userId: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -17797,6 +17920,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -17810,6 +17934,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -17821,6 +17946,7 @@ export namespace Prisma {
     userId: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -17830,6 +17956,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -17841,6 +17968,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -18095,6 +18223,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
     challenge: ChallengeCreateNestedOneWithoutDaySummariesInput
     user: UserCreateNestedOneWithoutDaySummariesInput
   }
@@ -18109,6 +18239,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
   }
 
   export type DaySummaryUpdateInput = {
@@ -18119,6 +18251,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
     challenge?: ChallengeUpdateOneRequiredWithoutDaySummariesNestedInput
     user?: UserUpdateOneRequiredWithoutDaySummariesNestedInput
   }
@@ -18133,6 +18267,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryCreateManyInput = {
@@ -18145,6 +18281,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
   }
 
   export type DaySummaryUpdateManyMutationInput = {
@@ -18155,6 +18293,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryUncheckedUpdateManyInput = {
@@ -18167,6 +18307,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type WeeklyScoreCreateInput = {
@@ -18461,6 +18603,8 @@ export namespace Prisma {
     image?: SortOrder
     displayName?: SortOrder
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
+    lastCelebratedLeague?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     mantra?: SortOrder
@@ -18470,6 +18614,7 @@ export namespace Prisma {
 
   export type UserAvgOrderByAggregateInput = {
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     streakTokens?: SortOrder
@@ -18483,6 +18628,8 @@ export namespace Prisma {
     image?: SortOrder
     displayName?: SortOrder
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
+    lastCelebratedLeague?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     mantra?: SortOrder
@@ -18498,6 +18645,8 @@ export namespace Prisma {
     image?: SortOrder
     displayName?: SortOrder
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
+    lastCelebratedLeague?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     mantra?: SortOrder
@@ -18507,6 +18656,7 @@ export namespace Prisma {
 
   export type UserSumOrderByAggregateInput = {
     totalPoints?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     streakTokens?: SortOrder
@@ -18818,6 +18968,7 @@ export namespace Prisma {
     userId?: SortOrder
     joinedAt?: SortOrder
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     isAlcoholDrinker?: SortOrder
@@ -18825,6 +18976,7 @@ export namespace Prisma {
 
   export type ChallengeMemberAvgOrderByAggregateInput = {
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
   }
@@ -18835,6 +18987,7 @@ export namespace Prisma {
     userId?: SortOrder
     joinedAt?: SortOrder
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     isAlcoholDrinker?: SortOrder
@@ -18846,6 +18999,7 @@ export namespace Prisma {
     userId?: SortOrder
     joinedAt?: SortOrder
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
     isAlcoholDrinker?: SortOrder
@@ -18853,6 +19007,7 @@ export namespace Prisma {
 
   export type ChallengeMemberSumOrderByAggregateInput = {
     points?: SortOrder
+    peakLeaguePoints?: SortOrder
     currentStreak?: SortOrder
     longestStreak?: SortOrder
   }
@@ -19086,12 +19241,15 @@ export namespace Prisma {
     pointsAwarded?: SortOrder
     dailyBonusAwarded?: SortOrder
     streakBonusAwarded?: SortOrder
+    leagueBonusAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
   }
 
   export type DaySummaryAvgOrderByAggregateInput = {
     completedCount?: SortOrder
     totalCount?: SortOrder
     pointsAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
   }
 
   export type DaySummaryMaxOrderByAggregateInput = {
@@ -19104,6 +19262,8 @@ export namespace Prisma {
     pointsAwarded?: SortOrder
     dailyBonusAwarded?: SortOrder
     streakBonusAwarded?: SortOrder
+    leagueBonusAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
   }
 
   export type DaySummaryMinOrderByAggregateInput = {
@@ -19116,12 +19276,15 @@ export namespace Prisma {
     pointsAwarded?: SortOrder
     dailyBonusAwarded?: SortOrder
     streakBonusAwarded?: SortOrder
+    leagueBonusAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
   }
 
   export type DaySummarySumOrderByAggregateInput = {
     completedCount?: SortOrder
     totalCount?: SortOrder
     pointsAwarded?: SortOrder
+    leagueBonusPoints?: SortOrder
   }
 
   export type WeeklyScoreUserIdChallengeIdWeekStartCompoundUniqueInput = {
@@ -20453,6 +20616,7 @@ export namespace Prisma {
     id?: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -20464,6 +20628,7 @@ export namespace Prisma {
     challengeId: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -20517,6 +20682,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
     challenge: ChallengeCreateNestedOneWithoutDaySummariesInput
   }
 
@@ -20529,6 +20696,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
   }
 
   export type DaySummaryCreateOrConnectWithoutUserInput = {
@@ -20732,6 +20901,7 @@ export namespace Prisma {
     userId?: StringFilter<"ChallengeMember"> | string
     joinedAt?: DateTimeFilter<"ChallengeMember"> | Date | string
     points?: IntFilter<"ChallengeMember"> | number
+    peakLeaguePoints?: IntFilter<"ChallengeMember"> | number
     currentStreak?: IntFilter<"ChallengeMember"> | number
     longestStreak?: IntFilter<"ChallengeMember"> | number
     isAlcoholDrinker?: BoolFilter<"ChallengeMember"> | boolean
@@ -20796,6 +20966,8 @@ export namespace Prisma {
     pointsAwarded?: IntFilter<"DaySummary"> | number
     dailyBonusAwarded?: BoolFilter<"DaySummary"> | boolean
     streakBonusAwarded?: BoolFilter<"DaySummary"> | boolean
+    leagueBonusAwarded?: BoolFilter<"DaySummary"> | boolean
+    leagueBonusPoints?: IntFilter<"DaySummary"> | number
   }
 
   export type WeeklyScoreUpsertWithWhereUniqueWithoutUserInput = {
@@ -20898,6 +21070,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -20920,6 +21094,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -20958,6 +21134,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20980,6 +21158,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21002,6 +21182,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -21024,6 +21206,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -21062,6 +21246,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21084,6 +21270,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21106,6 +21294,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -21128,6 +21318,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -21151,6 +21343,7 @@ export namespace Prisma {
     id?: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -21162,6 +21355,7 @@ export namespace Prisma {
     userId: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -21259,6 +21453,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
     user: UserCreateNestedOneWithoutDaySummariesInput
   }
 
@@ -21271,6 +21467,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
   }
 
   export type DaySummaryCreateOrConnectWithoutChallengeInput = {
@@ -21358,6 +21556,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21380,6 +21580,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21562,6 +21764,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -21584,6 +21788,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -21673,6 +21879,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21695,6 +21903,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22036,6 +22246,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22058,6 +22270,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22186,6 +22400,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22208,6 +22424,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22320,6 +22538,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22342,6 +22562,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22431,6 +22653,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22453,6 +22677,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22520,6 +22746,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22542,6 +22770,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22631,6 +22861,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22653,6 +22885,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22720,6 +22954,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22742,6 +22978,8 @@ export namespace Prisma {
     image?: string | null
     displayName?: string | null
     totalPoints?: number
+    peakLeaguePoints?: number
+    lastCelebratedLeague?: string | null
     currentStreak?: number
     longestStreak?: number
     mantra?: string | null
@@ -22831,6 +23069,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22853,6 +23093,8 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     totalPoints?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
+    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     mantra?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22892,6 +23134,7 @@ export namespace Prisma {
     challengeId: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -22916,6 +23159,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
   }
 
   export type WeeklyScoreCreateManyUserInput = {
@@ -23014,6 +23259,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -23025,6 +23271,7 @@ export namespace Prisma {
     challengeId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -23035,6 +23282,7 @@ export namespace Prisma {
     challengeId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -23078,6 +23326,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
     challenge?: ChallengeUpdateOneRequiredWithoutDaySummariesNestedInput
   }
 
@@ -23090,6 +23340,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryUncheckedUpdateManyWithoutUserInput = {
@@ -23101,6 +23353,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type WeeklyScoreUpdateWithoutUserInput = {
@@ -23216,6 +23470,7 @@ export namespace Prisma {
     userId: string
     joinedAt?: Date | string
     points?: number
+    peakLeaguePoints?: number
     currentStreak?: number
     longestStreak?: number
     isAlcoholDrinker?: boolean
@@ -23255,6 +23510,8 @@ export namespace Prisma {
     pointsAwarded?: number
     dailyBonusAwarded?: boolean
     streakBonusAwarded?: boolean
+    leagueBonusAwarded?: boolean
+    leagueBonusPoints?: number
   }
 
   export type WeeklyScoreCreateManyChallengeInput = {
@@ -23279,6 +23536,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -23290,6 +23548,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -23300,6 +23559,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: IntFieldUpdateOperationsInput | number
+    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
     currentStreak?: IntFieldUpdateOperationsInput | number
     longestStreak?: IntFieldUpdateOperationsInput | number
     isAlcoholDrinker?: BoolFieldUpdateOperationsInput | boolean
@@ -23392,6 +23652,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutDaySummariesNestedInput
   }
 
@@ -23404,6 +23666,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type DaySummaryUncheckedUpdateManyWithoutChallengeInput = {
@@ -23415,6 +23679,8 @@ export namespace Prisma {
     pointsAwarded?: IntFieldUpdateOperationsInput | number
     dailyBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
     streakBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    leagueBonusPoints?: IntFieldUpdateOperationsInput | number
   }
 
   export type WeeklyScoreUpdateWithoutChallengeInput = {

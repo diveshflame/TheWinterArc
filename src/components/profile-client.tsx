@@ -1,9 +1,21 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SignOutButton } from "@/components/sign-out-button";
-import { updateUserMantra, updateUserProfile, useStreakInsurance } from "@/app/actions";
+import {
+  updateUserMantra,
+  updateUserProfile,
+  useStreakInsurance,
+  markLeagueCelebrated,
+} from "@/app/actions";
+import { getLeagueState } from "@/lib/leagues";
+import {
+  LeagueEmblemCard,
+  LeagueRoad,
+  RankStrip,
+  RankUpModal,
+} from "@/components/league-components";
 
 export interface UserSummaryLog {
   id: string;
@@ -42,11 +54,14 @@ export interface ProfileClientProps {
     email: string;
     image: string | null;
     totalPoints: number;
+    peakLeaguePoints?: number;
+    lastCelebratedLeague?: string | null;
     currentStreak: number;
     longestStreak: number;
     mantra: string | null;
     streakTokens: number | null;
   };
+  challengeName?: string;
   stats: {
     daysLogged: number;
     perfectDays: number;
@@ -58,6 +73,7 @@ export interface ProfileClientProps {
 
 export function ProfileClient({
   user,
+  challengeName = "Winter Arc 2026",
   stats,
   summaries,
   activeMemberships,
@@ -72,13 +88,13 @@ export function ProfileClient({
   // Display Name inline editing
   const [isEditingName, setIsEditingName] = useState(false);
   const [displayNameText, setDisplayNameText] = useState(
-    user.displayName || user.name || "I am inevitable"
+    user.displayName || user.name || "Divesh Shetty"
   );
 
   // Mantra inline editing
   const [isEditingMantra, setIsEditingMantra] = useState(false);
   const [mantraText, setMantraText] = useState(
-    user.mantra || "I show up even when I don't feel like it."
+    user.mantra || "I always win"
   );
 
   // Modals state
@@ -86,6 +102,59 @@ export function ProfileClient({
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
   const [insuranceStatus, setInsuranceStatus] = useState<string | null>(null);
   const [showRecapModal, setShowRecapModal] = useState(false);
+
+  // League State & Sticky Rank Strip state
+  const peakPoints = user.peakLeaguePoints ?? user.totalPoints ?? 0;
+  const leagueState = getLeagueState(peakPoints);
+
+  const [showStickyStrip, setShowStickyStrip] = useState(false);
+  const emblemCardRef = useRef<HTMLElement | null>(null);
+
+  // Rank-up celebration modal
+  const [showRankUpModal, setShowRankUpModal] = useState(false);
+
+  useEffect(() => {
+    // Check if current league/division was celebrated
+    const storageKey = `winter_arc_celebrated_${user.id}`;
+    const lastCelebrated =
+      localStorage.getItem(storageKey) || user.lastCelebratedLeague;
+
+    if (
+      lastCelebrated &&
+      lastCelebrated !== leagueState.title &&
+      peakPoints > 0
+    ) {
+      setShowRankUpModal(true);
+    }
+  }, [user.id, leagueState.title, user.lastCelebratedLeague, peakPoints]);
+
+  function handleDismissRankUp() {
+    setShowRankUpModal(false);
+    const storageKey = `winter_arc_celebrated_${user.id}`;
+    try {
+      localStorage.setItem(storageKey, leagueState.title);
+    } catch (_e) {
+      // Ignore localStorage errors
+    }
+    markLeagueCelebrated(leagueState.title);
+  }
+
+  // IntersectionObserver for Emblem Card to trigger sticky RankStrip
+  useEffect(() => {
+    const el = emblemCardRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // When emblem card is out of view (bounding client top < 0), show sticky strip
+        setShowStickyStrip(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Inline challenge expansion
   const [expandedChallengeId, setExpandedChallengeId] = useState<string | null>(null);
@@ -208,8 +277,22 @@ export function ProfileClient({
 
   const currentWeekNumber = Math.max(1, Math.ceil(stats.daysLogged / 7));
 
+  // Compute days logged this week
+  const thisWeekStart = new Date(today);
+  const dayOfWeek = (thisWeekStart.getDay() + 6) % 7;
+  thisWeekStart.setDate(thisWeekStart.getDate() - dayOfWeek);
+  thisWeekStart.setHours(0, 0, 0, 0);
+  const thisWeekKey = `${thisWeekStart.getFullYear()}-${String(thisWeekStart.getMonth() + 1).padStart(2, "0")}-${String(thisWeekStart.getDate()).padStart(2, "0")}`;
+
+  const thisWeekDaysSet = new Set(
+    summaries
+      .filter((s) => s.date.slice(0, 10) >= thisWeekKey)
+      .map((s) => s.date.slice(0, 10))
+  );
+  const daysLoggedThisWeek = thisWeekDaysSet.size;
+
   return (
-    <div className="min-h-screen text-[#EAE6DF] p-4 sm:p-5 font-sans space-y-5 max-w-md mx-auto relative">
+    <div className="min-h-screen text-[#e8ecf7] px-4 sm:px-5 pt-0 pb-16 font-sans space-y-3.5 max-w-md mx-auto relative">
       {/* Hidden File Input for Avatar */}
       <input
         type="file"
@@ -220,34 +303,37 @@ export function ProfileClient({
       />
 
       {/* 1. Header */}
-      <header className="flex items-center justify-between pt-2 pb-1">
+      <header className="flex items-center justify-between pt-0 pb-0.5">
         <button
           onClick={() => router.back()}
-          className="text-base text-[#8B8F9C] hover:text-[#EAE6DF] transition px-1"
+          className="text-lg text-[#8a97b2] hover:text-[#e8ecf7] transition px-2 py-1 cursor-pointer"
           aria-label="Back"
         >
           ‹
         </button>
-        <h1 className="font-display font-bold text-sm tracking-[0.25em] text-[#EAE6DF] uppercase">
+        <h1 className="font-display font-bold text-sm tracking-[0.25em] text-[#e8ecf7] uppercase">
           PROFILE
         </h1>
         <button
           onClick={() => setIsEditingName(true)}
-          className="text-xs font-semibold text-[#D4AF37] hover:underline"
+          className="text-xs font-semibold text-[#e8b73a] hover:underline cursor-pointer px-2 py-1"
         >
           Edit
         </button>
       </header>
 
       {/* 2. Identity Section */}
-      <section className="flex flex-col items-center text-center space-y-2 pt-1">
-        {/* Avatar Trigger: #262A36 circle with brass/ember dashed ring & camera icon */}
+      <section className="flex flex-col items-center text-center space-y-2 pt-0">
+        {/* Avatar Trigger */}
         <button
           onClick={handleAvatarClick}
           className="relative group cursor-pointer focus:outline-none"
           title="Click to change profile picture"
         >
-          <div className="w-16 h-16 rounded-full bg-[#262A36] border-2 border-dashed border-[#D4AF37]/60 flex items-center justify-center overflow-hidden shadow-lg transition transform group-hover:scale-105">
+          <div
+            className="w-18 h-18 rounded-full bg-[#162038] border-2 border-dashed flex items-center justify-center overflow-hidden shadow-lg transition transform group-hover:scale-105"
+            style={{ borderColor: `${leagueState.league.color}70` }}
+          >
             {userImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -256,12 +342,12 @@ export function ProfileClient({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <svg className="w-7 h-7 text-[#8B8F9C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-8 h-8 text-[#8a97b2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
               </svg>
             )}
           </div>
-          <div className="absolute bottom-0 right-0 bg-[#FF5D3A] text-white p-1 rounded-full text-[10px] shadow group-hover:brightness-110 flex items-center justify-center w-5 h-5 border border-[#111319]">
+          <div className="absolute bottom-0 right-0 bg-[#ff5f3a] text-white p-1 rounded-full text-[10px] shadow group-hover:brightness-110 flex items-center justify-center w-5 h-5 border border-[#0b1020]">
             <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M68 9a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-3.172a2 2 0 01-1.414-.586l-1.828-1.828A2 2 0 0011.172 6H8.828a2 2 0 00-1.414.586L5.586 8.414A2 2 0 014.172 9H4z" />
               <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="2" />
@@ -276,25 +362,25 @@ export function ProfileClient({
               type="text"
               value={displayNameText}
               onChange={(e) => setDisplayNameText(e.target.value)}
-              className="bg-[#1A1D27] border border-[#FF5D3A] rounded-xl px-3 py-1 text-sm font-display font-bold text-[#EAE6DF] text-center outline-none"
+              className="bg-[#111a2e] border border-accent rounded-xl px-3 py-1 text-sm font-display font-bold text-[#e8ecf7] text-center outline-none"
               autoFocus
             />
             <button
               type="submit"
               disabled={isPending}
-              className="bg-[#FF5D3A] text-white text-xs px-2.5 py-1 rounded-lg font-bold"
+              className="bg-accent text-white text-xs px-2.5 py-1 rounded-lg font-bold"
             >
               Save
             </button>
           </form>
         ) : (
           <div className="flex items-center gap-1.5 justify-center">
-            <h2 className="font-display font-bold text-xl text-[#EAE6DF] tracking-wide">
+            <h2 className="font-display font-bold text-xl text-[#e8ecf7] tracking-wide">
               {displayNameText}
             </h2>
             <button
               onClick={() => setIsEditingName(true)}
-              className="p-1 opacity-70 hover:opacity-100 text-[#8B8F9C] hover:text-[#D4AF37] transition cursor-pointer"
+              className="p-1 opacity-70 hover:opacity-100 text-[#8a97b2] hover:text-[#e8b73a] transition cursor-pointer"
               title="Edit name"
               aria-label="Edit name"
             >
@@ -305,148 +391,31 @@ export function ProfileClient({
           </div>
         )}
 
-        <p className="text-xs text-[#6F7482] font-mono tracking-tight">
+        <p className="text-xs text-[#8a97b2] font-mono tracking-tight">
           {user.email}
         </p>
       </section>
 
-      {/* 3. Monument Ziggurat Component */}
-      <section
-        className="cursor-pointer bg-[#1E212B] border border-[rgba(245,241,232,0.08)] rounded-3xl px-10 pt-8 pb-7 text-center"
-        onClick={() => setShowReplayModal(true)}
-      >
-        <svg
-          width="140"
-          height="190"
-          viewBox="0 0 140 190"
-          xmlns="http://www.w3.org/2000/svg"
-          className="mx-auto block"
-        >
-          <defs>
-            <linearGradient id="block" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3A3F4E" />
-              <stop offset="100%" stopColor="#262A36" />
-            </linearGradient>
-          </defs>
+      {/* 3. Emblem Card */}
+      <div ref={(el) => { emblemCardRef.current = el; }}>
+        <LeagueEmblemCard state={leagueState} />
+      </div>
 
-          {/* GHOST BLOCKS — unbuilt future blocks awaiting the next levels */}
-          <polygon
-            points="45,58 95,58 88,72 52,72"
-            fill="none"
-            stroke="#3A3F4E"
-            strokeWidth="1"
-            strokeDasharray="3,3"
-          />
-          <polygon
-            points="50,74 90,74 84,88 56,88"
-            fill="none"
-            stroke="#3A3F4E"
-            strokeWidth="1"
-            strokeDasharray="3,3"
-          />
-
-          {/* BUILT BLOCKS — dynamic based on daysLogged */}
-          {(() => {
-            const count = Math.min(Math.max(1, stats.daysLogged), 5);
-            const insets = [10, 6, 4, 2, 1];
-            const blocks = [];
-            for (let i = 0; i < count; i++) {
-              const wideL = 30 + i * 6;
-              const wideR = 110 - i * 6;
-              const topY = 150 - i * 22;
-              const bottomY = topY + (i === 0 ? 18 : 20);
-              const inset = insets[i] ?? 2;
-              blocks.push(
-                <polygon
-                  key={i}
-                  points={`${wideL},${topY} ${wideR},${topY} ${wideR - inset},${bottomY} ${wideL + inset},${bottomY}`}
-                  fill="url(#block)"
-                  stroke="#454A59"
-                  strokeWidth="1"
-                />
-              );
-            }
-            return blocks;
-          })()}
-
-          {/* EMBERS + FLAME — lit when streakActive is true, unlit variant when false */}
-          {streakActive ? (
-            <g>
-              {/* Ember particles rising off the flame */}
-              {(
-                [
-                  [62, 86, 1.8, "#FFB88A", "ep1"],
-                  [78, 82, 1.4, "#FF8A65", "ep2"],
-                  [70, 90, 1.6, "#FFD9A0", "ep3"],
-                  [58, 80, 1.3, "#FF8A65", "ep4"],
-                  [82, 88, 1.5, "#FFB88A", "ep5"],
-                  [66, 76, 1.2, "#FFD9A0", "ep6"],
-                  [74, 94, 1.4, "#FF8A65", "ep7"],
-                ] as const
-              ).map(([cx, cy, r, fill, ep], idx) => (
-                <circle
-                  key={idx}
-                  className={`ember-p ${ep}`}
-                  cx={cx}
-                  cy={cy}
-                  r={r}
-                  fill={fill}
-                />
-              ))}
-
-              {/* Lit flame */}
-              <g transform="translate(70,92) scale(1.35) translate(-70,-92)">
-                <path
-                  className="flame-outer"
-                  d="M70 78 C 76 88, 78 94, 70 104 C 62 94, 64 88, 70 78 Z"
-                  fill="#FF5D3A"
-                />
-                <path
-                  className="flame-inner"
-                  d="M70 86 C 73 92, 74 96, 70 101 C 66 96, 67 92, 70 86 Z"
-                  fill="#FFD9A0"
-                />
-              </g>
-            </g>
-          ) : (
-            <g className="flame flame-unlit" transform="translate(70,92) scale(1.35) translate(-70,-92)">
-              <path
-                d="M70 78 C 76 88, 78 94, 70 104 C 62 94, 64 88, 70 78 Z"
-                fill="#3A3F4E"
-              />
-              <path
-                d="M70 86 C 73 92, 74 96, 70 101 C 66 96, 67 92, 70 86 Z"
-                fill="#262A36"
-              />
-            </g>
-          )}
-        </svg>
-
-        {/* Caption */}
-        <div className="mt-2 text-[12.5px] text-[#8B8F9C]">
-          <b className="font-semibold text-[#F5F1E8]">
-            Level {stats.daysLogged || 1}
-          </b>{" "}
-          of the forge &middot;{" "}
-          {streakActive ? "streak keeps it lit" : "streak is dormant"}
-        </div>
-      </section>
-
-      {/* 4. Mantra Card */}
-      <section className="bg-[#1A1D27] p-3.5 rounded-2xl border border-white/5 flex items-center justify-between">
+      {/* 4. Quote Card */}
+      <section className="bg-[#111a2e] border border-[#1f2a44] p-3.5 rounded-[14px] flex items-center justify-between shadow-sm">
         {isEditingMantra ? (
           <form onSubmit={handleSaveMantra} className="flex-1 flex gap-2">
             <input
               type="text"
               value={mantraText}
               onChange={(e) => setMantraText(e.target.value)}
-              className="flex-1 bg-[#111319] border border-[#FF5D3A] rounded-xl px-3 py-1.5 text-xs text-[#EAE6DF] outline-none"
+              className="flex-1 bg-[#162038] border border-accent rounded-xl px-3 py-1.5 text-xs text-[#e8ecf7] outline-none"
               autoFocus
             />
             <button
               type="submit"
               disabled={isPending}
-              className="bg-[#FF5D3A] text-white text-xs px-3 py-1.5 rounded-xl font-bold"
+              className="bg-accent text-white text-xs px-3 py-1.5 rounded-xl font-bold"
             >
               Save
             </button>
@@ -457,18 +426,18 @@ export function ProfileClient({
             className="flex-1 flex items-center justify-between cursor-pointer group"
           >
             <div className="flex items-center gap-2 pr-2">
-              <span className="text-[#FF5D3A] font-serif text-xl font-bold leading-none">
+              <span className="text-[#ff5f3a] font-serif text-lg font-bold leading-none">
                 “
               </span>
-              <p className="text-xs text-[#EAE6DF] font-medium leading-tight">
+              <p className="text-xs text-[#e8ecf7] font-semibold leading-tight">
                 {mantraText}
               </p>
             </div>
             <button
               type="button"
-              className="p-1 opacity-70 hover:opacity-100 text-[#8B8F9C] hover:text-[#D4AF37] transition cursor-pointer"
-              title="Edit mantra"
-              aria-label="Edit mantra"
+              className="p-1 opacity-70 hover:opacity-100 text-[#8a97b2] hover:text-[#e8b73a] transition cursor-pointer shrink-0"
+              title="Edit quote"
+              aria-label="Edit quote"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -478,433 +447,311 @@ export function ProfileClient({
         )}
       </section>
 
-      {/* 5. Stat Medallions */}
+      {/* 5. Stats Row: Points, Streak, Active */}
       <section className="grid grid-cols-3 gap-3">
         {/* Points Medallion */}
-        <div className="bg-[#1A1D27] p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center space-y-1.5">
-          <div className="w-11 h-11 rounded-full bg-[#E5B537] flex items-center justify-center text-[#111319] font-display font-bold text-lg shadow">
-            {user.totalPoints}
-          </div>
-          <span className="text-[11px] font-medium text-[#8B8F9C]">Points</span>
+        <div className="bg-[#111a2e] border border-[#1f2a44] p-3.5 rounded-[14px] flex flex-col items-center justify-center text-center shadow-sm">
+          <span className="font-display font-bold text-2xl text-[#e8b73a]">
+            {user.totalPoints.toLocaleString()}
+          </span>
+          <span className="text-[11px] font-medium text-[#8a97b2] mt-0.5">Points</span>
         </div>
 
         {/* Streak Medallion */}
         <button
           onClick={() => setShowInsuranceModal(true)}
-          className="bg-[#1A1D27] p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center space-y-1.5 hover:bg-[#222634] transition cursor-pointer"
+          className="bg-[#111a2e] border border-[#1f2a44] p-3.5 rounded-[14px] flex flex-col items-center justify-center text-center shadow-sm hover:border-[#ff5f3a]/40 transition cursor-pointer"
         >
-          <div className="w-11 h-11 rounded-full bg-[#FF5D3A] flex items-center justify-center text-[#111319] font-display font-bold text-lg shadow">
+          <span className="font-display font-bold text-2xl text-[#ff5f3a]">
             {user.currentStreak}
-          </div>
-          <span className="text-[11px] font-medium text-[#8B8F9C]">Streak</span>
+          </span>
+          <span className="text-[11px] font-medium text-[#8a97b2] mt-0.5">Streak</span>
         </button>
 
         {/* Active Challenges Medallion */}
-        <div className="bg-[#1A1D27] p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center space-y-1.5">
-          <div className="w-11 h-11 rounded-full bg-[#2A2F3D] flex items-center justify-center text-[#EAE6DF] font-display font-bold text-lg shadow border border-white/10">
+        <div className="bg-[#111a2e] border border-[#1f2a44] p-3.5 rounded-[14px] flex flex-col items-center justify-center text-center shadow-sm">
+          <span className="font-display font-bold text-2xl text-[#e8ecf7]">
             {activeMemberships.length}
-          </div>
-          <span className="text-[11px] font-medium text-[#8B8F9C]">Active</span>
+          </span>
+          <span className="text-[11px] font-medium text-[#8a97b2] mt-0.5">Active</span>
         </div>
       </section>
 
-      {/* 6. Section: The forge */}
+      {/* 6. League Road */}
+      <LeagueRoad
+        currentPoints={peakPoints}
+        challengeName={challengeName}
+      />
+
+      {/* 7. Sticky Rank Strip */}
+      <RankStrip state={leagueState} visible={showStickyStrip} />
+
+      {/* 8. Rank-Up Celebration Modal */}
+      <RankUpModal
+        leagueState={leagueState}
+        isOpen={showRankUpModal}
+        onClose={handleDismissRankUp}
+      />
+
+      {/* 9. Proof (14-day Heatmap Wall) */}
       <section className="space-y-2.5 pt-1">
         <div className="flex items-center justify-between font-mono text-xs">
-          <h2 className="font-display font-bold text-sm text-[#EAE6DF] tracking-wide">
-            The forge
-          </h2>
-          <span className="text-[#8B8F9C]">{activeMemberships.length} active</span>
-        </div>
-
-        {activeMemberships.length === 0 ? (
-          <div className="bg-[#1A1D27] p-4 rounded-2xl border border-white/5 text-xs text-[#8B8F9C] text-center">
-            No active challenges in the forge.
-          </div>
-        ) : (
-          activeMemberships.map((m) => {
-            const totalTasks = m.challenge.tasks.length;
-            const completedTasks = m.todayLogs.filter((l) => l.completed).length;
-            const percent =
-              totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            const isExpanded = expandedChallengeId === m.challenge.id;
-
-            return (
-              <div
-                key={m.id}
-                onMouseDown={() => {
-                  longPressTimer.current = setTimeout(() => {
-                    setExpandedChallengeId((prev) => (prev === m.challenge.id ? null : m.challenge.id));
-                  }, 500);
-                }}
-                onMouseUp={() => {
-                  if (longPressTimer.current) clearTimeout(longPressTimer.current);
-                }}
-                onTouchStart={() => {
-                  longPressTimer.current = setTimeout(() => {
-                    setExpandedChallengeId((prev) => (prev === m.challenge.id ? null : m.challenge.id));
-                  }, 500);
-                }}
-                onTouchEnd={() => {
-                  if (longPressTimer.current) clearTimeout(longPressTimer.current);
-                }}
-                onClick={() => {
-                  setExpandedChallengeId((prev) => (prev === m.challenge.id ? null : m.challenge.id));
-                }}
-                className="bg-[#1A1D27] p-4 rounded-2xl border border-white/5 cursor-pointer hover:border-white/20 transition space-y-3"
-              >
-                <div className="flex items-center gap-3">
-                  {/* SVG Ring Progress */}
-                  <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-                    <svg className="w-12 h-12 transform -rotate-90">
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="18"
-                        stroke="#2A2F3D"
-                        strokeWidth="4"
-                        fill="transparent"
-                      />
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="18"
-                        stroke="#FF5D3A"
-                        strokeWidth="4"
-                        fill="transparent"
-                        strokeDasharray={2 * Math.PI * 18}
-                        strokeDashoffset={
-                          2 * Math.PI * 18 * (1 - percent / 100)
-                        }
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span className="absolute font-mono text-[10px] font-bold text-[#EAE6DF]">
-                      {percent}%
-                    </span>
-                  </div>
-
-                  <div className="flex-1 truncate">
-                    <h3 className="font-display font-bold text-sm text-[#EAE6DF]">
-                      {m.challenge.name}
-                    </h3>
-                    <p className="text-[11px] text-[#8B8F9C]">
-                      {m.points} pts · {m.currentStreak} 🔥 streak · today&apos;s task open
-                    </p>
-                  </div>
-                </div>
-
-                {/* Expanded Task Overview */}
-                {isExpanded && (
-                  <div className="border-t border-white/5 pt-2.5 space-y-1.5 text-xs font-mono">
-                    <p className="text-[10px] text-[#8B8F9C] uppercase">
-                      Today&apos;s Tasks:
-                    </p>
-                    {m.challenge.tasks.map((t) => {
-                      const log = m.todayLogs.find((l) => l.taskId === t.id);
-                      return (
-                        <div
-                          key={t.id}
-                          className="flex items-center justify-between bg-[#222634] px-2.5 py-1.5 rounded-xl"
-                        >
-                          <span className="text-[#EAE6DF] font-sans">{t.name}</span>
-                          <span className={log?.completed ? "text-[#34d399]" : "text-[#8B8F9C]"}>
-                            {log?.completed ? "Done ✓" : "Pending"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </section>
-
-      {/* 7. Section: Proof */}
-      <section className="space-y-2 pt-1">
-        <div className="flex items-center justify-between font-mono text-xs">
-          <h2 className="font-display font-bold text-sm text-[#EAE6DF] tracking-wide">
+          <h2 className="font-display font-bold text-sm text-[#e8ecf7] tracking-wide">
             Proof
           </h2>
-          <span className="text-[#8B8F9C]">last 14 days</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFilterPerfectDaysOnly((prev) => !prev)}
+              className={`text-[10px] px-2 py-0.5 rounded-full border transition cursor-pointer ${
+                filterPerfectDaysOnly
+                  ? "bg-[#e8b73a]/20 border-[#e8b73a] text-[#e8b73a]"
+                  : "border-[#1f2a44] text-[#8a97b2] hover:text-[#e8ecf7]"
+              }`}
+            >
+              {filterPerfectDaysOnly ? "★ Perfect only" : "All days"}
+            </button>
+            <span className="text-[#8a97b2]">14-day record</span>
+          </div>
         </div>
 
-        {/* 14-Day Mosaic Row */}
-        <div className="grid grid-cols-7 sm:grid-cols-14 gap-1.5 py-1">
-          {mosaicDays.map((day) => {
-            const hasLog = Boolean(day.summary);
-            const isPerfect = day.summary?.dailyBonusAwarded || (hasLog && day.summary?.completedCount && day.summary.completedCount > 0);
+        <div className="bg-[#111a2e] p-4 rounded-[14px] border border-[#1f2a44] shadow-sm">
+          <div className="grid grid-cols-7 gap-2">
+            {mosaicDays.map((day, idx) => {
+              const summary = day.summary;
+              const hasLog = !!summary;
+              const isPerfect = summary?.dailyBonusAwarded;
+              const points = summary?.pointsAwarded || 0;
+              const isSelected = selectedDayLog?.id === summary?.id && hasLog;
 
-            let bgColor = "bg-[#252A36]";
-            if (hasLog) {
-              bgColor = isPerfect ? "bg-[#FF5D3A]" : "bg-[#D48937]";
-            }
+              let tileBg = "bg-[#162038] border border-[#1f2a44]";
+              if (hasLog) {
+                if (isPerfect) {
+                  tileBg = "bg-[#e8b73a] text-[#0b1020] font-bold border-none shadow-[0_0_8px_rgba(232,183,58,0.4)]";
+                } else if (points > 0) {
+                  tileBg = "bg-[#38bdf8] text-[#0b1020] font-bold border-none";
+                } else {
+                  tileBg = "bg-[#1c2742] border border-[#24314f] text-[#8a97b2]";
+                }
+              }
 
-            return (
-              <button
-                key={day.dateKey}
-                onClick={() => setSelectedDayLog(day.summary || null)}
-                className={`h-7 rounded-md border border-white/5 ${bgColor} transition hover:scale-110 flex items-center justify-center`}
-                title={`${day.displayDate}: ${
-                  day.summary ? `${day.summary.completedCount} tasks` : "No log"
-                }`}
-              />
-            );
-          })}
-        </div>
+              if (filterPerfectDaysOnly && !isPerfect) {
+                tileBg = "bg-[#162038]/40 border border-[#1f2a44]/50 opacity-40";
+              }
 
-        {/* Mosaic Legend */}
-        <div className="flex items-center gap-1.5 text-[10px] text-[#8B8F9C] font-mono pt-0.5">
-          <span>Lighter</span>
-          <span className="w-2.5 h-2.5 rounded bg-[#252A36]" />
-          <span className="w-2.5 h-2.5 rounded bg-[#9A6230]" />
-          <span className="w-2.5 h-2.5 rounded bg-[#D48937]" />
-          <span className="w-2.5 h-2.5 rounded bg-[#FF5D3A]" />
-          <span>Inevitable</span>
+              return (
+                <button
+                  key={idx}
+                  onClick={() => hasLog && setSelectedDayLog(summary)}
+                  disabled={!hasLog}
+                  className={`h-11 rounded-xl flex flex-col items-center justify-center text-[10px] transition transform active:scale-95 ${tileBg} ${
+                    isSelected ? "ring-2 ring-white" : ""
+                  }`}
+                  title={`${day.displayDate}: ${points} pts`}
+                >
+                  <span className="leading-tight font-mono text-[9px] opacity-75">
+                    {day.displayDate.split(" ")[1]}
+                  </span>
+                  <span className="font-bold leading-none">
+                    {hasLog ? (isPerfect ? "★" : points) : "·"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Day Inspector Details */}
+          {selectedDayLog && (
+            <div className="mt-3.5 pt-3 border-t border-[#1f2a44] flex items-center justify-between text-xs font-mono animate-fadeIn">
+              <div>
+                <p className="text-[#e8ecf7] font-bold">
+                  {new Date(selectedDayLog.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+                <p className="text-[11px] text-[#8a97b2]">
+                  {selectedDayLog.completedCount}/{selectedDayLog.totalCount} tasks completed
+                  {selectedDayLog.dailyBonusAwarded && " · Perfect Day ★"}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-accent font-bold text-sm">
+                  +{selectedDayLog.pointsAwarded} pts
+                </span>
+                <button
+                  onClick={() => setSelectedDayLog(null)}
+                  className="block text-[10px] text-[#8a97b2] hover:underline mt-0.5"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* 8. Section: Record */}
-      <section className="space-y-2 pt-1">
-        <h2 className="font-display font-bold text-sm text-[#EAE6DF] tracking-wide">
+      {/* 10. Record Stats Grid */}
+      <section className="space-y-2.5 pt-1">
+        <h2 className="font-display font-bold text-sm text-[#e8ecf7] tracking-wide font-mono">
           Record
         </h2>
-
-        <div className="bg-[#1A1D27] rounded-2xl border border-white/5 divide-y divide-white/5 text-xs">
-          <div className="p-3 flex justify-between items-center">
-            <span className="text-[#8B8F9C]">Longest streak</span>
-            <span className="text-[#EAE6DF]">
-              <strong className="font-bold">{user.longestStreak} day</strong> · ongoing
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#111a2e] p-3.5 rounded-[14px] border border-[#1f2a44] text-center shadow-sm">
+            <span className="text-xl font-bold font-display text-[#e8ecf7]">
+              {stats.daysLogged}
             </span>
+            <p className="text-[11px] text-[#8a97b2] mt-0.5 font-medium">Days Logged</p>
           </div>
-
-          <div className="p-3 flex justify-between items-center">
-            <span className="text-[#8B8F9C]">Days logged</span>
-            <span className="font-bold text-[#EAE6DF]">{stats.daysLogged}</span>
-          </div>
-
-          <button
-            onClick={() => setFilterPerfectDaysOnly((p) => !p)}
-            className="w-full p-3 flex justify-between items-center text-left hover:bg-[#222634] transition"
-          >
-            <span className="text-[#8B8F9C]">Perfect days</span>
-            <span className="text-[#EAE6DF]">
-              <strong className="font-bold">{stats.perfectDays}</strong> · {recentDatesRange}
+          <div className="bg-[#111a2e] p-3.5 rounded-[14px] border border-[#1f2a44] text-center shadow-sm">
+            <span className="text-xl font-bold font-display text-[#e8b73a]">
+              {stats.perfectDays}
             </span>
-          </button>
-
-          <div className="p-3 flex justify-between items-center">
-            <span className="text-[#8B8F9C]">Daily completion</span>
-            <span className="font-bold text-[#EAE6DF]">
+            <p className="text-[11px] text-[#8a97b2] mt-0.5 font-medium">Perfect Days</p>
+          </div>
+          <div className="bg-[#111a2e] p-3.5 rounded-[14px] border border-[#1f2a44] text-center shadow-sm">
+            <span className="text-xl font-bold font-display text-accent">
               {stats.avgCompletion}%
             </span>
+            <p className="text-[11px] text-[#8a97b2] mt-0.5 font-medium">Avg Completion</p>
+          </div>
+          <div className="bg-[#111a2e] p-3.5 rounded-[14px] border border-[#1f2a44] text-center shadow-sm">
+            <span className="text-xl font-bold font-display text-[#ff5f3a]">
+              {user.longestStreak}
+            </span>
+            <p className="text-[11px] text-[#8a97b2] mt-0.5 font-medium">Longest Streak</p>
           </div>
         </div>
       </section>
 
-      {/* 9. Section: Week 1 Recap Card */}
-      <section className="relative overflow-hidden bg-[#1A1D27] p-5 rounded-2xl border border-white/5 space-y-2">
-        {/* Upper Right Glowing Accent */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-[#FF5D3A]/25 blur-2xl pointer-events-none" />
-
-        <span className="text-[10px] font-mono font-bold tracking-widest text-[#D4AF37] uppercase">
-          WEEK {currentWeekNumber} RECAP
-        </span>
-
-        <h3 className="font-display font-bold text-xl text-[#EAE6DF] leading-tight">
-          You forged {stats.daysLogged} days straight.
-        </h3>
-
-        <p className="text-xs text-[#8B8F9C] leading-relaxed">
-          Zero missed check-ins, {user.totalPoints} points earned. Ready to share it or send it to a friend?
-        </p>
-
-        <div className="pt-2">
-          <button
-            onClick={() => setShowRecapModal(true)}
-            className="bg-[#FF5D3A] text-[#111319] font-bold text-xs px-4 py-2.5 rounded-full hover:brightness-110 transition shadow"
-          >
-            View recap →
-          </button>
-        </div>
-      </section>
-
-      {/* 10. De-emphasized Sign Out (no full width card / background box) */}
-      <div className="py-3 text-center">
-        <SignOutButton />
-      </div>
-
-      {/* MODAL 1: Day-by-Day Replay Modal */}
-      {showReplayModal && (
-        <Modal onClose={() => setShowReplayModal(false)} title="DAY-BY-DAY FORGING HISTORY">
-          <div className="space-y-2.5 font-mono text-xs max-h-80 overflow-y-auto pr-1">
-            {summaries.length === 0 ? (
-              <p className="text-[#8B8F9C] text-center py-4">No forging logs recorded yet.</p>
-            ) : (
-              summaries.map((s, idx) => (
-                <div
-                  key={s.id}
-                  className="bg-[#222634] p-3 rounded-xl border border-white/5 flex items-center justify-between"
-                >
-                  <div>
-                    <p className="font-bold text-[#EAE6DF]">
-                      Day {idx + 1} · {s.date.slice(0, 10)}
-                    </p>
-                    <p className="text-[11px] text-[#8B8F9C]">
-                      Completed {s.completedCount}/{s.totalCount} tasks
-                    </p>
-                  </div>
-                  <span className="text-[#D4AF37] font-bold">
-                    +{s.pointsAwarded} pts
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </Modal>
-      )}
-
-      {/* MODAL 2: Streak Insurance Modal */}
-      {showInsuranceModal && (
-        <Modal onClose={() => setShowInsuranceModal(false)} title="STREAK INSURANCE">
-          <div className="space-y-3.5 font-mono text-xs">
-            <p className="text-[#8B8F9C]">
-              Protect your missed day streak by using a Streak Token or spending earned points.
+      {/* 11. Week Recap Trigger */}
+      <section className="pt-1">
+        <button
+          onClick={() => setShowRecapModal(true)}
+          className="w-full bg-[#111a2e] border border-[#1f2a44] hover:border-accent/40 p-4 rounded-[14px] flex items-center justify-between text-left transition cursor-pointer shadow-sm group"
+        >
+          <div>
+            <h3 className="font-display font-bold text-sm text-[#e8ecf7] group-hover:text-accent transition">
+              Week {currentWeekNumber} Recap
+            </h3>
+            <p className="text-xs text-[#8a97b2] mt-0.5 font-mono">
+              {stats.daysLogged} days logged · Summary & badges
             </p>
-            <div className="bg-[#222634] p-3 rounded-xl border border-white/5 space-y-1">
-              <p className="text-[#EAE6DF]">
-                Available Tokens:{" "}
-                <span className="text-[#FF5D3A] font-bold">
-                  {user.streakTokens ?? 1}
-                </span>
+          </div>
+          <span className="text-accent text-sm font-semibold">
+            View →
+          </span>
+        </button>
+      </section>
+
+      {/* 12. Sign Out Button */}
+      <section className="pt-3">
+        <SignOutButton />
+      </section>
+
+      {/* Streak Insurance Modal */}
+      {showInsuranceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#111a2e] border border-[#1f2a44] rounded-2xl max-w-sm w-full p-5 text-center space-y-4 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-[#ff5f3a]/20 text-[#ff5f3a] flex items-center justify-center mx-auto text-2xl">
+              🔥
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-lg text-[#e8ecf7]">
+                Streak Protection
+              </h3>
+              <p className="text-xs text-[#8a97b2] mt-1">
+                Protect your current streak if you missed logging yesterday.
               </p>
-              <p className="text-[#8B8F9C] text-[11px]">
-                Cost: 1 Token or 50 Points
+            </div>
+
+            <div className="bg-[#162038] border border-[#1f2a44] p-3 rounded-xl text-xs space-y-1">
+              <p className="text-[#e8ecf7] font-semibold">
+                Available Tokens: {user.streakTokens ?? 1}
+              </p>
+              <p className="text-[11px] text-[#8a97b2]">
+                Costs 1 Token or 50 Points.
               </p>
             </div>
 
             {insuranceStatus && (
-              <div className="p-2 rounded-xl bg-[#FF5D3A]/20 text-[#FF5D3A] text-center">
+              <p className="text-xs font-semibold text-accent">
                 {insuranceStatus}
-              </div>
+              </p>
             )}
 
-            <button
-              onClick={handleUseStreakInsurance}
-              disabled={isPending}
-              className="w-full bg-[#FF5D3A] text-[#111319] py-2.5 rounded-xl font-bold uppercase tracking-wider hover:brightness-110 transition disabled:opacity-50"
-            >
-              {isPending ? "Protecting..." : "Redeem Streak Insurance"}
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {/* MODAL 3: Day Inspector Popup */}
-      {selectedDayLog !== null && (
-        <Modal onClose={() => setSelectedDayLog(null)} title={`LOG DETAIL (${selectedDayLog.date.slice(0, 10)})`}>
-          <div className="space-y-2 font-mono text-xs">
-            <div className="flex justify-between py-1 border-b border-white/5">
-              <span className="text-[#8B8F9C]">Tasks Completed</span>
-              <span className="text-[#EAE6DF]">
-                {selectedDayLog.completedCount} / {selectedDayLog.totalCount}
-              </span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-white/5">
-              <span className="text-[#8B8F9C]">Points Awarded</span>
-              <span className="text-[#D4AF37] font-bold">
-                +{selectedDayLog.pointsAwarded} pts
-              </span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span className="text-[#8B8F9C]">Daily Bonus</span>
-              <span className={selectedDayLog.dailyBonusAwarded ? "text-[#34d399]" : "text-[#8B8F9C]"}>
-                {selectedDayLog.dailyBonusAwarded ? "Earned ✓" : "None"}
-              </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowInsuranceModal(false)}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold bg-[#162038] text-[#8a97b2] hover:text-[#e8ecf7]"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleUseStreakInsurance}
+                disabled={isPending}
+                className="flex-1 py-2 rounded-xl text-xs font-bold bg-[#ff5f3a] text-white hover:brightness-110"
+              >
+                {isPending ? "Applying..." : "Use Protection"}
+              </button>
             </div>
           </div>
-        </Modal>
-      )}
-
-      {/* MODAL 4: Shareable Weekly Recap Sheet */}
-      {showRecapModal && (
-        <Modal onClose={() => setShowRecapModal(false)} title="WEEKLY RECAP CARD">
-          <div className="bg-[#111319] p-4 rounded-2xl border border-[#FF5D3A]/40 space-y-4 text-center font-mono">
-            <h3 className="font-display text-lg font-bold uppercase text-[#FF5D3A] tracking-wider">
-              FORGED THIS WEEK
-            </h3>
-
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              <div className="bg-[#1A1D27] p-2.5 rounded-xl border border-white/5">
-                <p className="text-[10px] text-[#8B8F9C]">Forged</p>
-                <p className="text-base font-bold text-[#EAE6DF]">{stats.daysLogged} days</p>
-              </div>
-              <div className="bg-[#1A1D27] p-2.5 rounded-xl border border-white/5">
-                <p className="text-[10px] text-[#8B8F9C]">Points</p>
-                <p className="text-base font-bold text-[#D4AF37]">{user.totalPoints}</p>
-              </div>
-              <div className="bg-[#1A1D27] p-2.5 rounded-xl border border-white/5">
-                <p className="text-[10px] text-[#8B8F9C]">Streak</p>
-                <p className="text-base font-bold text-[#FF5D3A]">{user.currentStreak}🔥</p>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-white/5">
-              <p className="text-xs italic text-[#EAE6DF]">
-                &ldquo;{mantraText}&rdquo;
-              </p>
-              <p className="text-[10px] text-[#8B8F9C] uppercase mt-1">
-                — {displayNameText}
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                if (navigator.clipboard) {
-                  navigator.clipboard.writeText(
-                    `Forged ${stats.daysLogged} days on Winter Arc! Points: ${user.totalPoints} | Streak: ${user.currentStreak}🔥. "${mantraText}"`
-                  );
-                  alert("Recap summary copied to clipboard!");
-                }
-              }}
-              className="w-full bg-[#D4AF37] text-[#111319] font-bold py-2.5 rounded-xl text-xs uppercase tracking-widest hover:brightness-110 transition"
-            >
-              Copy Share Summary
-            </button>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-function Modal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#1A1D27] border border-white/10 rounded-2xl w-full max-w-sm p-4 space-y-3.5 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/5 pb-2">
-          <h3 className="font-mono text-xs font-bold text-[#FF5D3A] uppercase tracking-wider">
-            {title}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-xs text-[#8B8F9C] hover:text-[#EAE6DF]"
-          >
-            ✕
-          </button>
         </div>
-        {children}
-      </div>
+      )}
+
+      {/* Recap Modal */}
+      {showRecapModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#111a2e] border border-[#1f2a44] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#1f2a44] pb-3">
+              <h3 className="font-display font-bold text-base text-[#e8ecf7]">
+                Week {currentWeekNumber} Recap
+              </h3>
+              <button
+                onClick={() => setShowRecapModal(false)}
+                className="text-[#8a97b2] hover:text-[#e8ecf7] text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between py-1 border-b border-[#1f2a44]/50">
+                <span className="text-[#8a97b2]">Days completed</span>
+                <span className="font-bold text-[#e8ecf7]">{stats.daysLogged} days</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-[#1f2a44]/50">
+                <span className="text-[#8a97b2]">This week</span>
+                <span className="font-bold text-accent">{daysLoggedThisWeek} / 7 days</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-[#1f2a44]/50">
+                <span className="text-[#8a97b2]">Perfect days logged</span>
+                <span className="font-bold text-[#e8b73a]">{stats.perfectDays}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-[#1f2a44]/50">
+                <span className="text-[#8a97b2]">Current League</span>
+                <span
+                  className="font-bold"
+                  style={{ color: leagueState.league.textColor || leagueState.league.color }}
+                >
+                  {leagueState.title}
+                </span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-[#8a97b2]">Daily Bonus</span>
+                <span className="font-bold text-accent">+{leagueState.league.dailyBonus} pts/day</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowRecapModal(false)}
+              className="w-full py-2.5 rounded-xl text-xs font-bold bg-accent text-white hover:brightness-110 cursor-pointer"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

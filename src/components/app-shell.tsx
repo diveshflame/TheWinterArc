@@ -14,9 +14,34 @@ const NAV = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh flex flex-col">
-      <div className="flex-1 pb-20 md:pb-6 max-w-2xl w-full mx-auto px-4">
+      {/* Desktop Top Navigation Header */}
+      <header className="hidden md:block sticky top-0 z-30 border-b border-card-border bg-background/80 backdrop-blur-md">
+        <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 font-bold tracking-tight text-foreground hover:opacity-90 transition"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm">
+              ❄️
+            </span>
+            <span className="font-display font-semibold text-xl tracking-wider uppercase text-foreground">
+              Winter Arc
+            </span>
+          </Link>
+          <nav className="flex items-center gap-1.5">
+            {NAV.map((item) => (
+              <DesktopNavItem key={item.href} {...item} />
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 pb-20 md:pb-12 max-w-2xl w-full mx-auto px-4 pt-2 md:pt-4">
         {children}
-      </div>
+      </main>
+
+      {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 inset-x-0 z-30 border-t border-card-border bg-background/95 backdrop-blur md:hidden">
         <div className="max-w-2xl mx-auto grid grid-cols-5">
           {NAV.map((item) => (
@@ -25,6 +50,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
     </div>
+  );
+}
+
+function DesktopNavItem({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: (props: { className?: string }) => React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const active =
+    pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+        active
+          ? "bg-card text-accent border border-card-border shadow-sm shadow-black/20"
+          : "text-muted hover:text-foreground hover:bg-card/50"
+      }`}
+    >
+      <Icon className={`h-4 w-4 ${active ? "text-accent" : "text-muted"}`} />
+      <span>{label}</span>
+    </Link>
   );
 }
 

@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AppShell } from "@/components/app-shell";
 import { BestChallengesWidget, type BestChallengeItem } from "@/components/best-challenges-widget";
+import { getLeagueState } from "@/lib/leagues";
+import { LeagueBadge, PersonaLabel } from "@/components/league-components";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +84,13 @@ export default async function PublicProfilePage({
     .sort((a, b) => b.totalPoints - a.totalPoints)
     .slice(0, 3);
 
+  const peakLeaguePoints = Math.max(
+    user.peakLeaguePoints || 0,
+    user.totalPoints || 0,
+    totalPoints
+  );
+  const leagueState = getLeagueState(peakLeaguePoints);
+
   return (
     <AppShell>
       <div className="py-6 space-y-4">
@@ -101,7 +110,18 @@ export default async function PublicProfilePage({
 
         {/* Identity */}
         <div className="rounded-2xl bg-card border border-card-border p-4 flex items-center gap-4">
-          <span className="h-14 w-14 rounded-full bg-accent/20 text-accent flex items-center justify-center text-xl font-bold overflow-hidden shrink-0">
+          <span
+            className={`h-14 w-14 rounded-full flex items-center justify-center text-xl font-bold overflow-hidden shrink-0 border-2 ${
+              leagueState.league.key === "legend"
+                ? "ring-2 ring-[#ff8a3d] ring-offset-2 ring-offset-card shadow-[0_0_12px_rgba(255,138,61,0.4)]"
+                : ""
+            }`}
+            style={{
+              borderColor: leagueState.league.color,
+              backgroundColor: `${leagueState.league.color}20`,
+              color: leagueState.league.textColor || leagueState.league.color,
+            }}
+          >
             {user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt="" className="h-full w-full object-cover" />
@@ -109,10 +129,14 @@ export default async function PublicProfilePage({
               displayName.charAt(0).toUpperCase()
             )}
           </span>
-          <div className="min-w-0">
-            <p className="text-lg font-bold truncate">{displayName}</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-lg font-bold truncate">{displayName}</p>
+              <LeagueBadge league={leagueState.league} division={leagueState.division} size="sm" />
+            </div>
+            <PersonaLabel league={leagueState.league} className="mt-0.5" />
             {user.mantra && (
-              <p className="text-xs text-muted mt-0.5 truncate">
+              <p className="text-xs text-muted mt-1 truncate">
                 <span className="text-accent font-semibold">“</span>
                 {user.mantra}
                 <span className="text-accent font-semibold">”</span>

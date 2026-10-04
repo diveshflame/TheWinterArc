@@ -129,6 +129,8 @@ exports.Prisma.UserScalarFieldEnum = {
   image: 'image',
   displayName: 'displayName',
   totalPoints: 'totalPoints',
+  peakLeaguePoints: 'peakLeaguePoints',
+  lastCelebratedLeague: 'lastCelebratedLeague',
   currentStreak: 'currentStreak',
   longestStreak: 'longestStreak',
   mantra: 'mantra',
@@ -185,6 +187,7 @@ exports.Prisma.ChallengeMemberScalarFieldEnum = {
   userId: 'userId',
   joinedAt: 'joinedAt',
   points: 'points',
+  peakLeaguePoints: 'peakLeaguePoints',
   currentStreak: 'currentStreak',
   longestStreak: 'longestStreak',
   isAlcoholDrinker: 'isAlcoholDrinker'
@@ -233,7 +236,9 @@ exports.Prisma.DaySummaryScalarFieldEnum = {
   totalCount: 'totalCount',
   pointsAwarded: 'pointsAwarded',
   dailyBonusAwarded: 'dailyBonusAwarded',
-  streakBonusAwarded: 'streakBonusAwarded'
+  streakBonusAwarded: 'streakBonusAwarded',
+  leagueBonusAwarded: 'leagueBonusAwarded',
+  leagueBonusPoints: 'leagueBonusPoints'
 };
 
 exports.Prisma.WeeklyScoreScalarFieldEnum = {

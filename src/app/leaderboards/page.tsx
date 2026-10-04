@@ -37,7 +37,16 @@ export default async function LeaderboardsPage({
 
   const members = await db.challengeMember.findMany({
     where: { challengeId },
-    include: { user: { select: { name: true, image: true, mantra: true } } },
+    include: {
+      user: {
+        select: {
+          name: true,
+          image: true,
+          mantra: true,
+          peakLeaguePoints: true,
+        },
+      },
+    },
   });
 
   const todayScores = await db.daySummary.findMany({
@@ -67,16 +76,24 @@ export default async function LeaderboardsPage({
     weekByUser.set(l.userId, (weekByUser.get(l.userId) ?? 0) + l.points)
   );
 
-  const rows = members.map((m) => ({
-    userId: m.userId,
-    name: m.user.name ?? "Unknown",
-    image: m.user.image,
-    mantra: m.user.mantra,
-    today: todayByUser.get(m.userId) ?? 0,
-    week: weekByUser.get(m.userId) ?? 0,
-    overall: m.points,
-    streak: m.currentStreak,
-  }));
+  const rows = members.map((m) => {
+    const peakPoints = Math.max(
+      m.peakLeaguePoints || 0,
+      m.points || 0,
+      m.user.peakLeaguePoints || 0
+    );
+    return {
+      userId: m.userId,
+      name: m.user.name ?? "Unknown",
+      image: m.user.image,
+      mantra: m.user.mantra,
+      today: todayByUser.get(m.userId) ?? 0,
+      week: weekByUser.get(m.userId) ?? 0,
+      overall: m.points,
+      peakLeaguePoints: peakPoints,
+      streak: m.currentStreak,
+    };
+  });
 
   const today = [...rows].sort((a, b) => b.today - a.today || b.week - a.week);
   const week = [...rows].sort((a, b) => b.week - a.week || b.overall - a.overall);

@@ -42,18 +42,27 @@ export default async function ProfilePage() {
     },
   });
 
-  const daysLogged = summaries.length;
-  const perfectDays = summaries.filter((s) => s.dailyBonusAwarded).length;
+  // Deduplicate summaries by unique date to get accurate total days logged
+  const uniqueDates = new Set(
+    summaries.map((s) => s.date.toISOString().slice(0, 10))
+  );
+  const daysLogged = uniqueDates.size;
+
+  const perfectDates = new Set(
+    summaries.filter((s) => s.dailyBonusAwarded).map((s) => s.date.toISOString().slice(0, 10))
+  );
+  const perfectDays = perfectDates.size;
+
   const avgCompletion =
     daysLogged === 0
       ? 0
       : Math.round(
-        summaries.reduce(
-          (acc, s) =>
-            acc + (s.totalCount ? (s.completedCount / s.totalCount) * 100 : 0),
-          0
-        ) / daysLogged
-      );
+          summaries.reduce(
+            (acc, s) =>
+              acc + (s.totalCount ? (s.completedCount / s.totalCount) * 100 : 0),
+            0
+          ) / (summaries.length || 1)
+        );
 
   const stats = {
     daysLogged,
@@ -94,9 +103,25 @@ export default async function ProfilePage() {
     dailyBonusAwarded: s.dailyBonusAwarded,
   }));
 
+  const winterArcMembership =
+    user.memberships.find(
+      (m) =>
+        m.challenge.name.toLowerCase().includes("winter arc") ||
+        (process.env.NEXT_PUBLIC_WINTER_ARC_CHALLENGE_ID &&
+          m.challenge.id === process.env.NEXT_PUBLIC_WINTER_ARC_CHALLENGE_ID)
+    ) ?? user.memberships[0];
+
+  const peakLeaguePoints = Math.max(
+    user.peakLeaguePoints || 0,
+    user.totalPoints || 0,
+    winterArcMembership?.peakLeaguePoints || 0,
+    winterArcMembership?.points || 0
+  );
+  const challengeName = winterArcMembership?.challenge.name || "Winter Arc 2026";
+
   return (
     <AppShell>
-      <div className="py-6">
+      <div className="pb-6">
         <ProfileClient
           user={{
             id: user.id,
@@ -105,11 +130,14 @@ export default async function ProfilePage() {
             email: user.email,
             image: user.image,
             totalPoints: user.totalPoints,
+            peakLeaguePoints,
+            lastCelebratedLeague: user.lastCelebratedLeague,
             currentStreak: user.currentStreak,
             longestStreak: user.longestStreak,
-            mantra: user.mantra ?? "HAKUNA MATATA",
+            mantra: user.mantra ?? "I always win",
             streakTokens: user.streakTokens ?? 1,
           }}
+          challengeName={challengeName}
           stats={stats}
           summaries={formattedSummaries}
           activeMemberships={activeMemberships}

@@ -573,3 +573,18 @@ export async function useStreakInsurance(): Promise<{ ok: boolean; error?: strin
   revalidatePath("/dashboard");
   return { ok: true };
 }
+
+export async function markLeagueCelebrated(leagueTitle: string): Promise<{ ok: boolean }> {
+  const session = await auth();
+  if (!session?.user) return { ok: false };
+
+  try {
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { lastCelebratedLeague: leagueTitle },
+    });
+  } catch (_e) {
+    // Ignore if not updated
+  }
+  return { ok: true };
+}

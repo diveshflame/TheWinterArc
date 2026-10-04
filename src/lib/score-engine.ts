@@ -13,6 +13,11 @@ import {
   DAILY_BONUS_POINTS,
   STREAK_BONUS_POINTS,
 } from "@/lib/scoring";
+import {
+  getLeagueState,
+  MIN_DAILY_POINTS_FOR_BONUS,
+  INCLUDE_BONUS_IN_LEADERBOARD,
+} from "@/lib/leagues";
 
 export async function runDayScoring(
   userId: string,
@@ -104,6 +109,46 @@ export async function runDayScoring(
     const streakBonus = idx % 7 === 0; // STREAK_BONUS_DAYS = 7
     if (streakBonus) awarded += STREAK_BONUS_POINTS;
 
+    // Check Daily League Bonus (requires >= 20 habit points logged that day)
+    const existingMember = await db.challengeMember.findUnique({
+      where: { challengeId_userId: { challengeId, userId } },
+    });
+    const currentPeak = existingMember?.peakLeaguePoints ?? 0;
+    const startOfDayLeague = getLeagueState(currentPeak).league;
+    const qualifiesForLeagueBonus = habitPoints >= MIN_DAILY_POINTS_FOR_BONUS;
+    const leagueBonus = qualifiesForLeagueBonus ? startOfDayLeague.dailyBonus : 0;
+
+    if (INCLUDE_BONUS_IN_LEADERBOARD && leagueBonus > 0) {
+      awarded += leagueBonus;
+    }
+
+    // Audit ledger entry in ActivityEvent for league_bonus
+    if (leagueBonus > 0) {
+      const existingAudit = await db.activityEvent.findFirst({
+        where: {
+          userId,
+          challengeId,
+          type: "league_bonus",
+          date: {
+            gte: startOfDay(date),
+            lte: endOfDay(date),
+          },
+        },
+      });
+      if (!existingAudit) {
+        await db.activityEvent.create({
+          data: {
+            userId,
+            challengeId,
+            date: startOfDay(date),
+            type: "league_bonus",
+            title: `Daily League Bonus (+${leagueBonus} pts - ${startOfDayLeague.name})`,
+            points: leagueBonus,
+          },
+        });
+      }
+    }
+
     await db.daySummary.upsert({
       where: {
         userId_challengeId_date: { userId, challengeId, date: startOfDay(date) },
@@ -114,6 +159,8 @@ export async function runDayScoring(
         pointsAwarded: awarded,
         dailyBonusAwarded: isSuccess,
         streakBonusAwarded: streakBonus,
+        leagueBonusAwarded: leagueBonus > 0,
+        leagueBonusPoints: leagueBonus,
       },
       create: {
         userId,
@@ -124,6 +171,8 @@ export async function runDayScoring(
         pointsAwarded: awarded,
         dailyBonusAwarded: isSuccess,
         streakBonusAwarded: streakBonus,
+        leagueBonusAwarded: leagueBonus > 0,
+        leagueBonusPoints: leagueBonus,
       },
     });
   }
@@ -153,6 +202,45 @@ export async function runDayScoring(
       }
     });
 
+    let awarded = habitPoints;
+    const existingMember = await db.challengeMember.findUnique({
+      where: { challengeId_userId: { challengeId, userId } },
+    });
+    const currentPeak = existingMember?.peakLeaguePoints ?? 0;
+    const startOfDayLeague = getLeagueState(currentPeak).league;
+    const qualifiesForLeagueBonus = habitPoints >= MIN_DAILY_POINTS_FOR_BONUS;
+    const leagueBonus = qualifiesForLeagueBonus ? startOfDayLeague.dailyBonus : 0;
+
+    if (INCLUDE_BONUS_IN_LEADERBOARD && leagueBonus > 0) {
+      awarded += leagueBonus;
+    }
+
+    if (leagueBonus > 0) {
+      const existingAudit = await db.activityEvent.findFirst({
+        where: {
+          userId,
+          challengeId,
+          type: "league_bonus",
+          date: {
+            gte: startOfDay(onDate),
+            lte: endOfDay(onDate),
+          },
+        },
+      });
+      if (!existingAudit) {
+        await db.activityEvent.create({
+          data: {
+            userId,
+            challengeId,
+            date: startOfDay(onDate),
+            type: "league_bonus",
+            title: `Daily League Bonus (+${leagueBonus} pts - ${startOfDayLeague.name})`,
+            points: leagueBonus,
+          },
+        });
+      }
+    }
+
     await db.daySummary.upsert({
       where: {
         userId_challengeId_date: { userId, challengeId, date: startOfDay(onDate) },
@@ -160,9 +248,11 @@ export async function runDayScoring(
       update: {
         completedCount: comp.achieved,
         totalCount: comp.total,
-        pointsAwarded: habitPoints,
+        pointsAwarded: awarded,
         dailyBonusAwarded: false,
         streakBonusAwarded: false,
+        leagueBonusAwarded: leagueBonus > 0,
+        leagueBonusPoints: leagueBonus,
       },
       create: {
         userId,
@@ -170,9 +260,11 @@ export async function runDayScoring(
         date: startOfDay(onDate),
         completedCount: comp.achieved,
         totalCount: comp.total,
-        pointsAwarded: habitPoints,
+        pointsAwarded: awarded,
         dailyBonusAwarded: false,
         streakBonusAwarded: false,
+        leagueBonusAwarded: leagueBonus > 0,
+        leagueBonusPoints: leagueBonus,
       },
     });
   }
@@ -269,24 +361,45 @@ async function syncMemberTotals(
   const totalPoints =
     summaries.reduce((s, d) => s + d.pointsAwarded, 0) + creditedWeeklyPoints;
 
+  // League progression points exclude daily league bonuses
+  const baseLeaguePoints =
+    summaries.reduce((s, d) => s + (d.pointsAwarded - (d.leagueBonusPoints || 0)), 0) +
+    creditedWeeklyPoints;
+
   const membership = await db.challengeMember.findUnique({
     where: { challengeId_userId: { challengeId, userId } },
   });
   if (!membership) return;
 
+  const peakLeaguePoints = Math.max(
+    membership.peakLeaguePoints || 0,
+    baseLeaguePoints,
+    0
+  );
+
   await db.challengeMember.update({
     where: { id: membership.id },
     data: {
       points: totalPoints,
+      peakLeaguePoints,
       currentStreak,
       longestStreak,
     },
   });
 
+  const currentUser = await db.user.findUnique({ where: { id: userId } });
+  const userPeak = Math.max(
+    currentUser?.peakLeaguePoints || 0,
+    peakLeaguePoints,
+    totalPoints,
+    0
+  );
+
   await db.user.update({
     where: { id: userId },
     data: {
       totalPoints,
+      peakLeaguePoints: userPeak,
       currentStreak,
       longestStreak,
     },
