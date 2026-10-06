@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { saveMultipleTaskLogs } from "@/app/actions";
 import {
   numberTaskPoints,
-  DAILY_BONUS_POINTS,
+  DAILY_BONUS_TIERS,
+  getDailyChecklistCompletionSummary,
+  getDailyCompletionBonus,
+  dailyTaskPoints,
   formatDateKey,
   type ChallengeTask,
   type TaskLog,
@@ -362,45 +365,32 @@ export function DailyLogClient({
   );
   const weeklyTasks = tasks.filter((t) => t.type === "WEEKLY");
 
-  // Completion calculation for DAILY HABIT tasks (excluding negative/penalty tasks and weekly tasks)
-  const positiveHabits = dailyChecklistTasks.filter((t) => t.points >= 0);
-  const totalHabits = positiveHabits.length;
-  const achievedHabits = positiveHabits.filter((t) => logState[t.id]?.completed).length;
-  const habitCompletionPercent = totalHabits > 0 ? Math.round((achievedHabits / totalHabits) * 100) : 0;
-
-  // Bonus tier note under completion bar
-  const nextBonusTier =
-    habitCompletionPercent < 50
-      ? { percent: 50, bonus: 5 }
-      : habitCompletionPercent < 75
-      ? { percent: 75, bonus: 15 }
-      : null;
-
-  // Points today calculation — ONLY DAILY tasks contribute to today's score!
-  // Weekly task points are credited on Sunday at the end of the week.
-  let todayTotalPoints = 0;
-  tasks.forEach((t) => {
-    if (t.type !== "DAILY") return;
-    const state = logState[t.id];
-    if (!state) return;
-    if (t.inputType === "NUMBER") {
-      todayTotalPoints += numberTaskPoints(state.value, t);
-    } else if (state.completed) {
-      todayTotalPoints += t.points;
-    }
+  // The same scoring helpers drive the optimistic log and persisted totals.
+  const liveLogs = tasks.map((task) => {
+    const state = logState[task.id] || { completed: false, value: 0 };
+    const value = task.inputType === "NUMBER"
+      ? movementValues[task.id] ?? state.value
+      : state.value;
+    return {
+      taskId: task.id,
+      completed: state.completed,
+      value,
+      bonusPoints: task.inputType === "NUMBER" ? dailyBonus(task, value) : 0,
+    };
   });
-  if (habitCompletionPercent >= 75) {
-    todayTotalPoints += DAILY_BONUS_POINTS;
-  }
-
-  // Points earned from daily checklist
-  let dailyChecklistPoints = 0;
-  dailyChecklistTasks.forEach((t) => {
-    const state = logState[t.id];
-    if (state?.completed) {
-      dailyChecklistPoints += t.points;
-    }
-  });
+  const completion = getDailyChecklistCompletionSummary(tasks, liveLogs);
+  const totalHabits = completion.total;
+  const achievedHabits = completion.achieved;
+  const habitCompletionPercent = completion.percent;
+  const nextBonusTier = DAILY_BONUS_TIERS.find((tier) => habitCompletionPercent < tier.percent);
+  const todayTotalPoints = tasks.reduce(
+    (points, task) => points + dailyTaskPoints(task, liveLogs.find((log) => log.taskId === task.id)),
+    getDailyCompletionBonus(completion)
+  );
+  const dailyChecklistPoints = dailyChecklistTasks.reduce(
+    (points, task) => points + dailyTaskPoints(task, liveLogs.find((log) => log.taskId === task.id)),
+    0
+  );
 
   return (
     <div className="space-y-4">

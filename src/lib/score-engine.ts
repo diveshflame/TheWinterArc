@@ -1,16 +1,16 @@
 import { db } from "@/lib/db";
 import {
-  isDailySuccessSummary,
   getDailyCompletionSummary,
+  getDailyChecklistCompletionSummary,
   computeWeeklyResultSummary,
-  earnedBlocks,
+  dailyTaskPoints,
+  getDailyCompletionBonus,
   formatDateKey,
   startOfWeek,
   endOfDay,
   startOfDay,
   daysBetween,
   DAILY_BONUS_THRESHOLD,
-  DAILY_BONUS_POINTS,
   STREAK_BONUS_POINTS,
 } from "@/lib/scoring";
 import {
@@ -82,30 +82,13 @@ export async function runDayScoring(
     const comp = getDailyCompletionSummary(tasks, dayLogs);
     
     // Sum points for completed daily habits
-    let habitPoints = 0;
-    dailyTasks.forEach((task) => {
-      const log = dayLogs.find((l) => l.taskId === task.id);
-      if (task.inputType === "NUMBER") {
-        const value = log?.value || 0;
-        if (value > 0) {
-          // Block points plus any bonus the user was awarded in the log UI
-          // (stored on the log entry like any other points).
-          habitPoints += earnedBlocks(value, task) * task.points + (log?.bonusPoints || 0);
-        }
-      } else if (task.isRuleBreaker) {
-        if (!log || !log.completed) {
-          habitPoints += task.points;
-        }
-      } else {
-        if (log && log.completed) {
-          habitPoints += task.points;
-        }
-      }
-    });
+    const habitPoints = dailyTasks.reduce(
+      (points, task) => points + dailyTaskPoints(task, dayLogs.find((log) => log.taskId === task.id)),
+      0
+    );
 
     const isSuccess = comp.total > 0 && comp.percent >= DAILY_BONUS_THRESHOLD * 100;
-    let awarded = habitPoints;
-    if (isSuccess) awarded += DAILY_BONUS_POINTS;
+    let awarded = habitPoints + getDailyCompletionBonus(getDailyChecklistCompletionSummary(tasks, dayLogs));
     const streakBonus = idx % 7 === 0; // STREAK_BONUS_DAYS = 7
     if (streakBonus) awarded += STREAK_BONUS_POINTS;
 
@@ -183,26 +166,12 @@ export async function runDayScoring(
     const dayLogs = logsByDate[onDateKey] || [];
     const comp = getDailyCompletionSummary(tasks, dayLogs);
 
-    let habitPoints = 0;
-    dailyTasks.forEach((task) => {
-      const log = dayLogs.find((l) => l.taskId === task.id);
-      if (task.inputType === "NUMBER") {
-        const value = log?.value || 0;
-        if (value > 0) {
-          habitPoints += earnedBlocks(value, task) * task.points + (log?.bonusPoints || 0);
-        }
-      } else if (task.isRuleBreaker) {
-        if (!log || !log.completed) {
-          habitPoints += task.points;
-        }
-      } else {
-        if (log && log.completed) {
-          habitPoints += task.points;
-        }
-      }
-    });
+    const habitPoints = dailyTasks.reduce(
+      (points, task) => points + dailyTaskPoints(task, dayLogs.find((log) => log.taskId === task.id)),
+      0
+    );
 
-    let awarded = habitPoints;
+    let awarded = habitPoints + getDailyCompletionBonus(getDailyChecklistCompletionSummary(tasks, dayLogs));
     const existingMember = await db.challengeMember.findUnique({
       where: { challengeId_userId: { challengeId, userId } },
     });

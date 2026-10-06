@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   getDailyCompletionSummary,
+  getDailyChecklistCompletionSummary,
+  dailyTaskPoints,
+  getDailyCompletionBonus,
   isDailySuccessSummary,
   computeWeeklyResultSummary,
   numberTaskPoints,
@@ -63,6 +66,23 @@ function log(taskId: string, completed = false, value = 0, bonusPoints = 0): Tas
 // ---------------------------------------------------------------------------
 
 describe("getDailyCompletionSummary", () => {
+  it("preserves overall completion and streak eligibility independently of checklist bonuses", () => {
+    const tasks = [
+      ...dailyTasks.slice(0, 4),
+      { ...dailyTasks[0], id: "movement", inputType: "NUMBER" },
+      { ...dailyTasks[0], id: "penalty", points: -10 },
+    ];
+    const logs = tasks.slice(0, 3).map((task) => log(task.id, true));
+    expect(getDailyChecklistCompletionSummary(tasks, logs).percent).toBe(75);
+    expect(getDailyCompletionBonus(getDailyChecklistCompletionSummary(tasks, logs))).toBe(15);
+    expect(getDailyCompletionSummary(tasks, logs).percent).toBe(50);
+    expect(isDailySuccessSummary(tasks, logs)).toBe(false);
+  });
+  it("preserves existing negative rule-breaker point behavior", () => {
+    const task = { ...dailyTasks[0], isRuleBreaker: true, points: -10 };
+    expect(dailyTaskPoints(task)).toBe(-10);
+    expect(dailyTaskPoints(task, log(task.id, true))).toBe(0);
+  });
   it("counts completed standard habits and unbroken rule breakers", () => {
     const logs = [
       log("t-protein", true),
@@ -116,14 +136,23 @@ describe("getDailyCompletionSummary", () => {
     expect(comp.achieved).toBe(9);
   });
 
-  it("counts a daily NUMBER input as achieved when its value is above zero", () => {
+  it("excludes movement from checklist completion regardless of its value", () => {
     const numberTasks: ChallengeTask[] = [
       { id: "t-walk", challengeId: "c1", name: "Walk", type: "DAILY", inputType: "NUMBER", isRuleBreaker: false, isAlcoholTask: false, points: 10, unit: "km", target: null, bonusThreshold: null, bonusPoints: null },
     ];
-    const zero = getDailyCompletionSummary(numberTasks, [log("t-walk", true, 0)]);
-    expect(zero).toEqual({ achieved: 0, total: 1, percent: 0 });
-    const some = getDailyCompletionSummary(numberTasks, [log("t-walk", false, 2)]);
-    expect(some).toEqual({ achieved: 1, total: 1, percent: 100 });
+    const zero = getDailyChecklistCompletionSummary(numberTasks, [log("t-walk", true, 0)]);
+    expect(zero).toEqual({ achieved: 0, total: 0, percent: 0 });
+    const some = getDailyChecklistCompletionSummary(numberTasks, [log("t-walk", false, 2)]);
+    expect(some).toEqual({ achieved: 0, total: 0, percent: 0 });
+  });
+  it.each([[0, 0], [25, 0], [50, 5], [74, 5], [75, 15], [100, 15]])(
+    "awards the highest bonus tier at %s percent",
+    (percent, bonus) => {
+      expect(getDailyCompletionBonus({ achieved: percent, total: 100, percent })).toBe(bonus);
+    }
+  );
+  it("never awards a completion bonus without checklist tasks", () => {
+    expect(getDailyCompletionBonus({ achieved: 0, total: 0, percent: 0 })).toBe(0);
   });
 });
 

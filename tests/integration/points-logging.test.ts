@@ -11,11 +11,14 @@ vi.mock("@/lib/auth", async () => ({
   auth: async () => ({ user: { id: "CURRENT_USER" } }),
 }));
 vi.mock("next/cache", async () => ({
-  revalidatePath: () => {},
+  revalidatePath: vi.fn(),
 }));
 
 import { db } from "@/lib/db";
-import { saveTaskLog } from "@/app/actions";
+import { revalidatePath } from "next/cache";
+import { getDashboardData } from "@/lib/queries";
+import { startOfDay, formatDateKey } from "@/lib/scoring";
+import { saveTaskLog, saveMultipleTaskLogs } from "@/app/actions";
 
 // A fixed date far enough back that "today" (server time) never overlaps with the
 // challenge's start week, isolating the exact logging behavior we're asserting on.
@@ -70,12 +73,12 @@ describe("saveTaskLog updates member points", () => {
     });
 
     // Log a single daily habit -> should immediately add its 5 points, plus the
-    // 4 points from the unbroken Rule R (rule breakers award when not broken).
+    // 4 points from unbroken Rule R, plus 5 for completing 2/3 checklist habits.
     const res = await saveTaskLog(challengeId, taskIds["Habit A"], true, 0);
     expect(res.ok).toBe(true);
 
     let m = await db.challengeMember.findUnique({ where: { id: member.id } });
-    expect(m!.points).toBe(9);
+    expect(m!.points).toBe(14); // 2/3 checklist habits: +5 completion bonus
 
     // Log a weekly number task (gym value 4 → 4 × 40 pts/unit = 160) -> creates
     // the week's 160-pt WeeklyScore. Weekly points only credit on Sunday, so the
@@ -83,7 +86,7 @@ describe("saveTaskLog updates member points", () => {
     const sundayCredit = new Date().getDay() === 0 ? 160 : 0;
     await saveTaskLog(challengeId, taskIds["Gym"], true, 4);
     m = await db.challengeMember.findUnique({ where: { id: member.id } });
-    expect(m!.points).toBe(9 + sundayCredit);
+    expect(m!.points).toBe(14 + sundayCredit);
 
     // Toggling the habit off should remove those 5 points.
     await saveTaskLog(challengeId, taskIds["Habit A"], false, 0);
@@ -148,5 +151,60 @@ describe("saveTaskLog updates member points", () => {
     await saveTaskLog(challengeId, taskIds["Run"], true, 24, 0);
     m = await db.challengeMember.findUnique({ where: { id: member.id } });
     expect(m!.points).toBe(124);
+  });
+});
+
+
+describe("daily checklist bonus consistency", () => {
+  it("persists tiers in leaderboard and dashboard totals, without stacking on retries", async () => {
+    await db.user.deleteMany({ where: { id: "CURRENT_USER" } });
+    await db.user.create({ data: { id: "CURRENT_USER", email: "checklist@test.dev" } });
+    const challenge = await db.challenge.create({
+      data: {
+        name: "Checklist tiers", description: "", inviteCode: "TIERS1",
+        startDate: MON, endDate: new Date(2027, 0, 1), adminId: "CURRENT_USER",
+        members: { create: { userId: "CURRENT_USER" } },
+        tasks: { create: [
+          ...[1, 2, 3, 4].map((n) => ({ name: `Habit ${n}`, type: "DAILY", inputType: "CHECKBOX", points: 2 })),
+          { name: "Movement", type: "DAILY", inputType: "NUMBER", points: 10 },
+          { name: "Penalty", type: "DAILY", inputType: "CHECKBOX", points: -10 },
+        ] },
+      },
+      include: { tasks: true },
+    });
+    const habits = challenge.tasks.filter((task) => task.name.startsWith("Habit"));
+    const today = startOfDay(new Date());
+    for (const [count, expected] of [[1, 2], [2, 9], [3, 21], [4, 23], [4, 23], [2, 9], [1, 2], [0, 0]]) {
+      vi.mocked(revalidatePath).mockClear();
+      const result = await saveMultipleTaskLogs(challenge.id, formatDateKey(today),
+        habits.map((task, index) => ({ taskId: task.id, completed: index < count, value: 0 }))
+      );
+      expect(result.ok).toBe(true);
+      const summary = await db.daySummary.findUniqueOrThrow({
+        where: { userId_challengeId_date: { userId: "CURRENT_USER", challengeId: challenge.id, date: today } },
+      });
+      // Today and This Week use DaySummary; Overall uses ChallengeMember.points.
+      expect(summary.pointsAwarded).toBe(expected);
+      expect(summary.totalCount).toBe(6);
+      expect(summary.completedCount).toBe(count);
+      expect(summary.dailyBonusAwarded).toBe(false); // Existing overall 75% streak threshold is unchanged.
+      const dashboard = await getDashboardData("CURRENT_USER", challenge.id);
+      expect(dashboard.totalPoints).toBe(expected);
+      expect(dashboard.completionToday?.percent).toBe(Math.round(count / 6 * 100));
+      const user = await db.user.findUniqueOrThrow({ where: { id: "CURRENT_USER" } });
+      expect(user.totalPoints).toBe(expected);
+      expect(revalidatePath).toHaveBeenCalledWith("/leaderboards");
+      expect(revalidatePath).toHaveBeenCalledWith("/profile");
+    }
+    const movement = challenge.tasks.find((task) => task.name === "Movement")!;
+    const penalty = challenge.tasks.find((task) => task.name === "Penalty")!;
+    await saveMultipleTaskLogs(challenge.id, formatDateKey(today), [
+      ...habits.slice(0, 2).map((task) => ({ taskId: task.id, completed: true, value: 0 })),
+      { taskId: movement.id, completed: true, value: 2 },
+      { taskId: penalty.id, completed: true, value: 0 },
+    ]);
+    const dashboard = await getDashboardData("CURRENT_USER", challenge.id);
+    expect(dashboard.completionToday).toEqual({ achieved: 4, total: 6, percent: 67 });
+    expect(dashboard.totalPoints).toBe(19); // 4 habits + 20 movement - 10 penalty + 5 bonus
   });
 });
