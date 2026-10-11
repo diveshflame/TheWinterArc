@@ -1,4 +1,4 @@
-import type { BackgroundType } from "@/lib/share/types";
+import type { BackgroundType, SquadBasis } from "@/lib/share/types";
 import type { ShareTemplateId } from "@/lib/share/templates";
 
 /**
@@ -8,13 +8,23 @@ export type ShareEvent =
   | { name: "share_opened"; template: ShareTemplateId; source: string }
   | { name: "template_selected"; template: ShareTemplateId }
   | { name: "background_selected"; background: BackgroundType }
+  | { name: "then_now_days_changed" }
+  | { name: "receipt_habits_changed" }
+  | { name: "podium_basis_changed"; basis: SquadBasis }
+  | { name: "invite_link_copied" }
   | {
       name: "share_completed";
       destination: string;
       template: ShareTemplateId;
       background: BackgroundType;
     }
-  | { name: "share_failed"; template: ShareTemplateId; reason: string };
+  | {
+      name: "share_failed";
+      destination: string;
+      template: ShareTemplateId;
+      background: BackgroundType;
+      reason: string;
+    };
 
 export type AnalyticsSink = (event: ShareEvent) => void;
 

@@ -44,6 +44,14 @@ export interface ExportOptions {
   pixelRatio?: number;
 }
 
+/**
+ * 1×1 transparent GIF. Used as html-to-image's `imagePlaceholder` so a single
+ * failed image (e.g. an avatar that has not been blob-ified yet) degrades to a
+ * blank patch instead of failing the whole export.
+ */
+const BLANK_PIXEL =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
 function dataUrlToBlob(dataUrl: string): Blob {
   const [meta, base64] = dataUrl.split(",");
   const mime = /:(.*?);/.exec(meta)?.[1] ?? "image/png";
@@ -70,7 +78,12 @@ export async function exportCardPng(node: HTMLElement, opts: ExportOptions = {})
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     pixelRatio: opts.pixelRatio ?? EXPORT_PIXEL_RATIO,
-    cacheBust: true,
+    // No cacheBust: the card's images are fresh blob:/data: URLs. Appending a
+    // query string to a blob: URL makes it unregistered and breaks the fetch,
+    // which used to reject the whole export.
+    imagePlaceholder: BLANK_PIXEL,
+    // A broken <img> should never abort the export.
+    onImageErrorHandler: () => undefined,
     backgroundColor: opts.transparent ? undefined : "#0b1020",
   });
   return dataUrlToBlob(dataUrl);

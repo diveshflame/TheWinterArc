@@ -2,66 +2,84 @@
 
 import type { ShareCardProps } from "@/lib/share/card-props";
 import { ShareCardFrame, panelStyle } from "@/components/share/share-card-frame";
-
-const BLOCK_HEIGHTS = [74, 56, 44];
+import { AvatarSilhouette } from "@/components/share/share-icons";
+import { LeagueIcon } from "@/components/league-icons";
+import { buildPodiumColumns, podiumYouLine, podiumBasisLabel } from "@/lib/share/podium";
 
 /**
- * Card 5 — Squad podium.
- * Bottom panel with a 1st/2nd/3rd podium (your entry highlighted). If you are
- * outside the top three, a "You · #N" line is shown beneath the podium.
+ * Card 6 — Squad podium.
+ * Bottom panel titled "Winter Arc" with "Top 3": 1st centre and tallest with a
+ * crown, 2nd left, 3rd right (blue when it is the sharer). Real profile photos
+ * with a generic silhouette fallback. The "Hide other members" toggle masks
+ * other members' photos and names while keeping points visible.
  */
-export function SquadPodiumCard({ data, background, panelAlpha, safeZones }: ShareCardProps) {
-  const { league, squadTop3, squadYouRank } = data;
-  // Display order left→right: 2nd, 1st, 3rd.
-  const order = [squadTop3[1], squadTop3[0], squadTop3[2]];
-  const heights = [BLOCK_HEIGHTS[1], BLOCK_HEIGHTS[0], BLOCK_HEIGHTS[2]];
+export function SquadPodiumCard({ data, background, toggles, panelAlpha, safeZones }: ShareCardProps) {
+  const columns = buildPodiumColumns(data.squadTop3 ?? [], {
+    hideOthers: toggles.hideOthers,
+  });
+  const youLine = podiumYouLine(data.squadYouRank, toggles.rank);
 
   return (
     <ShareCardFrame background={background} panelAlpha={panelAlpha} safeZones={safeZones}>
-      <div className="absolute inset-x-3 rounded-2xl p-4" style={{ ...panelStyle(), bottom: "14%" }}>
-        <p className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-white/70">The Boys</p>
-
-        <div className="flex items-end justify-center gap-3">
-          {order.map((entry, i) => {
-            if (!entry) return <div key={i} className="w-[64px]" />;
-            const ring = entry.isYou ? `0 0 0 2px ${league.color}` : "none";
-            return (
-              <div key={i} className="flex w-[64px] flex-col items-center">
-                <span className="mb-1 text-[12px] font-bold text-white">{entry.points.toLocaleString()}</span>
-                <div
-                  className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.18)",
-                    boxShadow: ring,
-                  }}
-                >
-                  {entry.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-[14px] font-bold text-white">{entry.initial}</span>
-                  )}
-                </div>
-                <p className="mt-1 w-full truncate text-center text-[9px] font-semibold text-white/85" title={entry.name}>
-                  {entry.name}
-                </p>
-                <div
-                  className="mt-1 w-full rounded-t-lg"
-                  style={{
-                    height: heights[i],
-                    background:
-                      i === 1
-                        ? "linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.16))"
-                        : "linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.08))",
-                  }}
-                />
-              </div>
-            );
-          })}
+      <div
+        className="absolute inset-x-3 rounded-2xl p-4"
+        style={{ ...panelStyle(), bottom: "14%" }}
+      >
+        <div className="mb-3 flex items-baseline justify-between">
+          <p className="text-[12px] font-semibold tracking-wide text-white/85">Winter Arc</p>
+          <p className="text-[11px] font-medium text-white/55">
+            {podiumBasisLabel(data.squadBasis ?? "overall")} · Top 3
+          </p>
         </div>
 
-        {squadYouRank && squadYouRank > 3 && (
-          <p className="mt-3 text-center text-[12px] font-semibold text-white/80">You · #{squadYouRank}</p>
+        <div className="flex items-end justify-center gap-3">
+          {columns.map((column, index) => (
+            <div key={`${column.rank}-${index}`} className="flex w-[78px] flex-col items-center">
+              {/* Crown slot keeps the three columns aligned */}
+              <div className="mb-0.5 h-4">
+                {column.crown && <LeagueIcon type="crown" size={15} className="text-[#e8b73a]" />}
+              </div>
+
+              <div
+                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full"
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.16)",
+                  boxShadow: column.avatarUrl || column.isYou ? `0 0 0 2px ${column.color}` : `0 0 0 2px ${column.color}55`,
+                }}
+              >
+                {column.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={column.avatarUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: "center" }}
+                  />
+                ) : (
+                  <AvatarSilhouette className="h-6 w-6 text-white/70" />
+                )}
+              </div>
+
+              <p className="mt-1 w-full truncate text-center text-[11px] font-semibold text-white/90">
+                {column.displayName}
+              </p>
+              <p className="text-[12px] font-bold tabular-nums text-white">
+                {column.entry.points.toLocaleString()}
+              </p>
+
+              <div
+                className="mt-1 w-full rounded-t-lg"
+                style={{
+                  height: column.height,
+                  background: `linear-gradient(180deg, ${column.color}66, ${column.color}22)`,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {youLine && (
+          <p className="mt-3 text-center text-[12px] font-semibold text-white/80">{youLine}</p>
         )}
       </div>
     </ShareCardFrame>

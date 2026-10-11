@@ -25,6 +25,8 @@ export interface ShareActivity {
 }
 
 export interface ShareHabit {
+  /** ChallengeTask id — used as the stable key for receipt selection/ordering. */
+  id: string;
   label: string;
   done: boolean;
   points: number;
@@ -43,12 +45,34 @@ export interface ShareChallenge {
 
 export interface ShareToday {
   points: number;
+  /**
+   * Whether any task was logged today. Availability gates use this (not the
+   * net total) so a penalty-heavy day that WAS logged never says "Log
+   * something first".
+   */
+  loggedToday: boolean;
   /** The three highest-scoring logged activities (may be fewer). */
   activities: ShareActivity[];
-  /** Up to the full checklist; ordered done-first, then by points. */
+  /**
+   * Every checklist habit for today (the "habitsToday" data the receipt and
+   * checklist cards consume): id, label, points and done flag, ordered by
+   * points descending with ties in the order the habits appear in the app.
+   */
   habits: ShareHabit[];
   habitsDone: number;
   habitsTotal: number;
+}
+
+/** One day of per-day history for the sharer (days with no logs are all zeros). */
+export interface ShareDayHistory {
+  dayNumber: number;
+  /** ISO date (YYYY-MM-DD) of that challenge day. */
+  date: string;
+  points: number;
+  pushups: number;
+  pullups: number;
+  runKm: number;
+  walkKm: number;
 }
 
 export interface ShareLeague {
@@ -67,9 +91,12 @@ export interface ShareRank {
 }
 
 export interface SharePodiumEntry {
-  /** Display name (first name + last initial or full name for squad). */
+  userId: string;
+  /** First name shown under the avatar (masked to "#N" when hiding others). */
+  firstName: string;
+  /** Full display name (first name + last initial or the profile name). */
   name: string;
-  /** Initial used as fallback. */
+  /** Initial used as layout fallback only — cards render a generic silhouette. */
   initial: string;
   /** User avatar (base64 or URL) if available. */
   avatarUrl?: string | null;
@@ -98,18 +125,22 @@ export interface ShareCardData {
   league: ShareLeague;
   rank: ShareRank | null;
   squadTop3: SharePodiumEntry[];
-  /** Rank of the sharer within the full roster for the selected basis (1-based). */
+  /** Rank of the sharer within the full roster by overall points (1-based). */
   squadYouRank: number | null;
+  /** Which leaderboard the podium ranks by (server default: overall). */
+  squadBasis?: SquadBasis;
+  /** Per-day history for days 1..current day (points + movement metrics). */
+  dayHistory: ShareDayHistory[];
+  /** Invite URL from NEXT_PUBLIC_INVITE_URL, when configured. */
+  inviteUrl?: string | null;
   promotion?: SharePromotion;
-  /** Private, same-origin Day-1 photo (object URL or base64). Never remote/third-party. */
-  day1PhotoUrl?: string | null;
-  /** True when a Day-1 photo exists server-side but has not been fetched yet. */
-  hasDay1Photo?: boolean;
 }
 
-/** The raw roster entry used to build the podium for any basis. */
+/** The raw roster entry used to build the podium (always ranked by overall). */
 export interface SquadMember {
+  userId: string;
   name: string;
+  firstName: string;
   avatarUrl?: string | null;
   isYou: boolean;
   overall: number;
@@ -131,5 +162,16 @@ export interface CardToggleState {
   name: boolean;
   points: boolean;
   league: boolean;
+  /** Podium "You · #N" line (defaults to off). */
   rank: boolean;
+  /** Podium privacy: mask other members' photos and names. */
+  hideOthers: boolean;
 }
+
+export const DEFAULT_TOGGLES: CardToggleState = {
+  name: true,
+  points: true,
+  league: true,
+  rank: false,
+  hideOthers: false,
+};

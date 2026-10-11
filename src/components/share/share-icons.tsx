@@ -141,3 +141,19 @@ export function SnowflakeGlyph({ className, ...props }: SVGProps<SVGSVGElement>)
     </svg>
   );
 }
+
+/** Generic person silhouette used as the avatar fallback (never a letter). */
+export function AvatarSilhouette({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      {...props}
+    >
+      <circle cx="12" cy="9" r="4" />
+      <path d="M4 21c0-4.2 3.6-6.8 8-6.8s8 2.6 8 6.8z" />
+    </svg>
+  );
+}

@@ -10,9 +10,6 @@ export interface ShareLauncherProps {
   squadMembers?: SquadMember[];
   avatarUrl?: string | null;
   source: string;
-  onSaveDay1Photo?: (dataUrl: string) => Promise<unknown>;
-  hasDay1Photo?: boolean;
-  onLoadDay1Photo?: () => Promise<string | null>;
   initialTemplateId?: ShareTemplateId;
   className?: string;
   children?: ReactNode;
@@ -27,9 +24,6 @@ export function ShareLauncher({
   squadMembers,
   avatarUrl,
   source,
-  onSaveDay1Photo,
-  hasDay1Photo,
-  onLoadDay1Photo,
   initialTemplateId,
   className,
   children,
@@ -47,9 +41,6 @@ export function ShareLauncher({
         squadMembers={squadMembers}
         avatarUrl={avatarUrl}
         source={source}
-        onSaveDay1Photo={onSaveDay1Photo}
-        hasDay1Photo={hasDay1Photo}
-        onLoadDay1Photo={onLoadDay1Photo}
         initialTemplateId={initialTemplateId}
       />
     </>

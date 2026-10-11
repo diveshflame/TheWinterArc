@@ -175,18 +175,6 @@ CREATE TABLE "activity_events" (
     CONSTRAINT "activity_events_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "day1_photos" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "challengeId" TEXT NOT NULL,
-    "imageData" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "day1_photos_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -216,9 +204,6 @@ CREATE UNIQUE INDEX "day_summaries_userId_challengeId_date_key" ON "day_summarie
 
 -- CreateIndex
 CREATE UNIQUE INDEX "weekly_scores_userId_challengeId_weekStart_key" ON "weekly_scores"("userId", "challengeId", "weekStart");
-
--- CreateIndex
-CREATE UNIQUE INDEX "day1_photos_userId_challengeId_key" ON "day1_photos"("userId", "challengeId");
 
 -- AddForeignKey
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -267,10 +252,4 @@ ALTER TABLE "activity_events" ADD CONSTRAINT "activity_events_challengeId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "activity_events" ADD CONSTRAINT "activity_events_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "day1_photos" ADD CONSTRAINT "day1_photos_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "day1_photos" ADD CONSTRAINT "day1_photos_challengeId_fkey" FOREIGN KEY ("challengeId") REFERENCES "challenges"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

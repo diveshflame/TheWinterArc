@@ -12,7 +12,6 @@ import { DailyLogClient } from "@/components/daily-log";
 import { ChallengeSwitcher } from "@/components/challenge-switcher";
 import { ShareLauncher } from "@/components/share/share-launcher";
 import { getShareBundle } from "@/lib/share/server";
-import { saveDay1Photo, getDay1Photo } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -62,9 +61,6 @@ export default async function LogPage({
             data={shareBundle.data}
             squadMembers={shareBundle.squadMembers}
             avatarUrl={shareBundle.avatarUrl}
-            hasDay1Photo={shareBundle.hasDay1Photo}
-            onSaveDay1Photo={saveDay1Photo.bind(null, membership.challenge.id)}
-            onLoadDay1Photo={getDay1Photo.bind(null, membership.challenge.id)}
             className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-[#1f2a44] bg-[#111a2e] py-3 text-sm font-semibold text-accent transition hover:border-accent/40"
           >
             Share Malpvara ?

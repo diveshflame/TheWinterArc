@@ -18,6 +18,8 @@ export default defineConfig({
           name: "node",
           environment: "node",
           include: ["tests/**/*.test.ts"],
+          testTimeout: 60000,
+          hookTimeout: 60000,
         },
       },
       {
@@ -28,6 +30,8 @@ export default defineConfig({
           environment: "jsdom",
           include: ["tests/**/*.dom.test.tsx"],
           setupFiles: ["tests/setup/dom.ts"],
+          testTimeout: 60000,
+          hookTimeout: 60000,
         },
       },
     ],

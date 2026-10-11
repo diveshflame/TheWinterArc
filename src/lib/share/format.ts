@@ -60,3 +60,8 @@ export function daysLeft(dayNumber: number, totalDays: number): number {
 export function pointsWord(points: number): string {
   return `${points} ${points === 1 ? "pt" : "pts"}`;
 }
+
+/** "+42" / "-8" / "0" — signed form for points shown next to "pts today". */
+export function signedPoints(points: number): string {
+  return points >= 0 ? `+${points}` : `${points}`;
+}

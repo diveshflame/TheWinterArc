@@ -11,6 +11,7 @@ import { deriveUser, formatValue, inferIcon } from "@/lib/share/format";
 import type {
   ShareActivity,
   ShareCardData,
+  ShareDayHistory,
   ShareHabit,
   SharePodiumEntry,
   SharePromotion,
@@ -27,7 +28,6 @@ type TaskLike = Pick<
 type LogLike = Pick<TaskLog, "taskId" | "completed" | "value" | "bonusPoints">;
 
 const MAX_ACTIVITIES = 3;
-const MAX_DONE_HABITS = 5;
 
 /** The three highest-scoring logged activities today. */
 export function topActivities(
@@ -62,24 +62,9 @@ export function buildHabits(tasks: TaskLike[], logs: LogLike[]): ShareHabit[] {
     .map((task) => {
       const log = logs.find((l) => l.taskId === task.id);
       const done = task.isRuleBreaker ? !log?.completed : Boolean(log?.completed);
-      return { label: task.name, done, points: task.points } satisfies ShareHabit;
+      return { id: task.id, label: task.name, done, points: task.points } satisfies ShareHabit;
     })
     .sort((a, b) => b.points - a.points);
-}
-
-/**
- * Rows for the habit checklist card: completed habits first (highest points
- * first, capped) then at most one missed habit when the toggle is on.
- */
-export function selectHabitRows(
-  habits: ShareHabit[],
-  includeMissed: boolean,
-  maxDone = MAX_DONE_HABITS
-): ShareHabit[] {
-  const done = habits.filter((h) => h.done).slice(0, maxDone);
-  if (!includeMissed) return done;
-  const missed = habits.find((h) => !h.done);
-  return missed ? [...done, missed] : done;
 }
 
 /** Total points earned today, matching the log screen's live total. */
@@ -89,7 +74,8 @@ export function computeTodayPoints(tasks: TaskLike[], logs: LogLike[]): number {
     logs as TaskLog[]
   );
   return tasks.reduce(
-    (points, task) => points + dailyTaskPoints(task as ChallengeTask, logs.find((l) => l.taskId === task.id) as any),
+    (points, task) =>
+      points + dailyTaskPoints(task as ChallengeTask, logs.find((l) => l.taskId === task.id)),
     getDailyCompletionBonus(completion)
   );
 }
@@ -103,9 +89,11 @@ export function buildSquad(
     (a, b) => b[basis] - a[basis] || a.name.localeCompare(b.name)
   );
   const top3: SharePodiumEntry[] = sorted.slice(0, 3).map((m) => ({
+    userId: m.userId,
+    firstName: m.firstName || m.name.trim().split(" ")[0] || m.name,
     name: m.name,
     initial: m.name.trim().charAt(0).toUpperCase() || "?",
-    avatarUrl: (m as any).avatarUrl ?? null,
+    avatarUrl: m.avatarUrl ?? null,
     points: m[basis],
     isYou: m.isYou,
   }));
@@ -128,9 +116,13 @@ export interface BuildShareCardDataInput {
   rank: { position: number; total: number } | null;
   squadTop3?: SharePodiumEntry[];
   squadYouRank?: number | null;
+  /** Leaderboard basis for the podium (defaults to overall). */
+  squadBasis?: SquadBasis;
+  /** Per-day history for days 1..current day (defaults to an empty list). */
+  dayHistory?: ShareDayHistory[];
+  /** Invite URL from NEXT_PUBLIC_INVITE_URL, when configured. */
+  inviteUrl?: string | null;
   promotion?: SharePromotion;
-  day1PhotoUrl?: string | null;
-  hasDay1Photo?: boolean;
   /** Optionally override the derived today total. */
   todayPoints?: number;
   /** Current date used for day-number math (defaults to now). */
@@ -154,6 +146,7 @@ export function buildShareCardData(input: BuildShareCardDataInput): ShareCardDat
     },
     today: {
       points: input.todayPoints ?? computeTodayPoints(input.tasks, input.todayLogs),
+      loggedToday: input.todayLogs.length > 0,
       activities: topActivities(input.tasks, input.todayLogs),
       habits,
       habitsDone: habits.filter((h) => h.done).length,
@@ -172,9 +165,10 @@ export function buildShareCardData(input: BuildShareCardDataInput): ShareCardDat
     rank: input.rank,
     squadTop3: input.squadTop3 ?? [],
     squadYouRank: input.squadYouRank ?? null,
+    squadBasis: input.squadBasis ?? "overall",
+    dayHistory: input.dayHistory ?? [],
+    inviteUrl: input.inviteUrl ?? null,
     promotion: input.promotion,
-    day1PhotoUrl: input.day1PhotoUrl ?? null,
-    hasDay1Photo: input.hasDay1Photo,
   };
 }
 

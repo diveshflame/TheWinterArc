@@ -4,7 +4,7 @@ import type { ShareCardProps } from "@/lib/share/card-props";
 import { ShareCardFrame, panelStyle } from "@/components/share/share-card-frame";
 import { CameraGlyph, ShareIcon, SnowflakeGlyph } from "@/components/share/share-icons";
 import { LeagueIcon } from "@/components/league-icons";
-import { formatValue } from "@/lib/share/format";
+import { formatValue, signedPoints } from "@/lib/share/format";
 
 /**
  * Card 1 — Photo + stats.
@@ -60,7 +60,7 @@ export function PhotoStatsCard({
 
         {toggles.points && (
           <p className="mt-0.5 font-display text-[34px] font-bold leading-none text-white">
-            +{today.points}
+            {signedPoints(today.points)}
             <span className="ml-1 text-[15px] font-semibold text-white/70">pts today</span>
           </p>
         )}

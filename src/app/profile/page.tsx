@@ -128,7 +128,6 @@ export default async function ProfilePage() {
         challengeId: winterArcMembership!.challenge.id,
         data: shareBundle.data,
         squadMembers: shareBundle.squadMembers,
-        hasDay1Photo: shareBundle.hasDay1Photo,
         avatarUrl: shareBundle.avatarUrl,
       }
     : null;

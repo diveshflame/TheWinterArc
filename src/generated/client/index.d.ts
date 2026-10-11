@@ -73,11 +73,6 @@ export type WeeklyScore = $Result.DefaultSelection<Prisma.$WeeklyScorePayload>
  * 
  */
 export type ActivityEvent = $Result.DefaultSelection<Prisma.$ActivityEventPayload>
-/**
- * Model Day1Photo
- * 
- */
-export type Day1Photo = $Result.DefaultSelection<Prisma.$Day1PhotoPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -316,16 +311,6 @@ export class PrismaClient<
     * ```
     */
   get activityEvent(): Prisma.ActivityEventDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.day1Photo`: Exposes CRUD operations for the **Day1Photo** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Day1Photos
-    * const day1Photos = await prisma.day1Photo.findMany()
-    * ```
-    */
-  get day1Photo(): Prisma.Day1PhotoDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -778,8 +763,7 @@ export namespace Prisma {
     TaskLog: 'TaskLog',
     DaySummary: 'DaySummary',
     WeeklyScore: 'WeeklyScore',
-    ActivityEvent: 'ActivityEvent',
-    Day1Photo: 'Day1Photo'
+    ActivityEvent: 'ActivityEvent'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -798,7 +782,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "challenge" | "challengeMember" | "challengeTask" | "taskTier" | "taskLog" | "daySummary" | "weeklyScore" | "activityEvent" | "day1Photo"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "challenge" | "challengeMember" | "challengeTask" | "taskTier" | "taskLog" | "daySummary" | "weeklyScore" | "activityEvent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1690,80 +1674,6 @@ export namespace Prisma {
           }
         }
       }
-      Day1Photo: {
-        payload: Prisma.$Day1PhotoPayload<ExtArgs>
-        fields: Prisma.Day1PhotoFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.Day1PhotoFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.Day1PhotoFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>
-          }
-          findFirst: {
-            args: Prisma.Day1PhotoFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.Day1PhotoFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>
-          }
-          findMany: {
-            args: Prisma.Day1PhotoFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>[]
-          }
-          create: {
-            args: Prisma.Day1PhotoCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>
-          }
-          createMany: {
-            args: Prisma.Day1PhotoCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.Day1PhotoCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>[]
-          }
-          delete: {
-            args: Prisma.Day1PhotoDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>
-          }
-          update: {
-            args: Prisma.Day1PhotoUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>
-          }
-          deleteMany: {
-            args: Prisma.Day1PhotoDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.Day1PhotoUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.Day1PhotoUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>[]
-          }
-          upsert: {
-            args: Prisma.Day1PhotoUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$Day1PhotoPayload>
-          }
-          aggregate: {
-            args: Prisma.Day1PhotoAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateDay1Photo>
-          }
-          groupBy: {
-            args: Prisma.Day1PhotoGroupByArgs<ExtArgs>
-            result: $Utils.Optional<Day1PhotoGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.Day1PhotoCountArgs<ExtArgs>
-            result: $Utils.Optional<Day1PhotoCountAggregateOutputType> | number
-          }
-        }
-      }
     }
   } & {
     other: {
@@ -1872,7 +1782,6 @@ export namespace Prisma {
     daySummary?: DaySummaryOmit
     weeklyScore?: WeeklyScoreOmit
     activityEvent?: ActivityEventOmit
-    day1Photo?: Day1PhotoOmit
   }
 
   /* Types for Logging */
@@ -1961,7 +1870,6 @@ export namespace Prisma {
     weeklyScores: number
     activity: number
     ownedChallenges: number
-    day1Photos: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1973,7 +1881,6 @@ export namespace Prisma {
     weeklyScores?: boolean | UserCountOutputTypeCountWeeklyScoresArgs
     activity?: boolean | UserCountOutputTypeCountActivityArgs
     ownedChallenges?: boolean | UserCountOutputTypeCountOwnedChallengesArgs
-    day1Photos?: boolean | UserCountOutputTypeCountDay1PhotosArgs
   }
 
   // Custom InputTypes
@@ -2043,13 +1950,6 @@ export namespace Prisma {
     where?: ChallengeWhereInput
   }
 
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountDay1PhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: Day1PhotoWhereInput
-  }
-
 
   /**
    * Count Type ChallengeCountOutputType
@@ -2062,7 +1962,6 @@ export namespace Prisma {
     daySummaries: number
     weeklyScores: number
     activity: number
-    day1Photos: number
   }
 
   export type ChallengeCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2072,7 +1971,6 @@ export namespace Prisma {
     daySummaries?: boolean | ChallengeCountOutputTypeCountDaySummariesArgs
     weeklyScores?: boolean | ChallengeCountOutputTypeCountWeeklyScoresArgs
     activity?: boolean | ChallengeCountOutputTypeCountActivityArgs
-    day1Photos?: boolean | ChallengeCountOutputTypeCountDay1PhotosArgs
   }
 
   // Custom InputTypes
@@ -2126,13 +2024,6 @@ export namespace Prisma {
    */
   export type ChallengeCountOutputTypeCountActivityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ActivityEventWhereInput
-  }
-
-  /**
-   * ChallengeCountOutputType without action
-   */
-  export type ChallengeCountOutputTypeCountDay1PhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: Day1PhotoWhereInput
   }
 
 
@@ -2474,7 +2365,6 @@ export namespace Prisma {
     weeklyScores?: boolean | User$weeklyScoresArgs<ExtArgs>
     activity?: boolean | User$activityArgs<ExtArgs>
     ownedChallenges?: boolean | User$ownedChallengesArgs<ExtArgs>
-    day1Photos?: boolean | User$day1PhotosArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2539,7 +2429,6 @@ export namespace Prisma {
     weeklyScores?: boolean | User$weeklyScoresArgs<ExtArgs>
     activity?: boolean | User$activityArgs<ExtArgs>
     ownedChallenges?: boolean | User$ownedChallengesArgs<ExtArgs>
-    day1Photos?: boolean | User$day1PhotosArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2556,7 +2445,6 @@ export namespace Prisma {
       weeklyScores: Prisma.$WeeklyScorePayload<ExtArgs>[]
       activity: Prisma.$ActivityEventPayload<ExtArgs>[]
       ownedChallenges: Prisma.$ChallengePayload<ExtArgs>[]
-      day1Photos: Prisma.$Day1PhotoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2975,7 +2863,6 @@ export namespace Prisma {
     weeklyScores<T extends User$weeklyScoresArgs<ExtArgs> = {}>(args?: Subset<T, User$weeklyScoresArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WeeklyScorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activity<T extends User$activityArgs<ExtArgs> = {}>(args?: Subset<T, User$activityArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ownedChallenges<T extends User$ownedChallengesArgs<ExtArgs> = {}>(args?: Subset<T, User$ownedChallengesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChallengePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    day1Photos<T extends User$day1PhotosArgs<ExtArgs> = {}>(args?: Subset<T, User$day1PhotosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3596,30 +3483,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChallengeScalarFieldEnum | ChallengeScalarFieldEnum[]
-  }
-
-  /**
-   * User.day1Photos
-   */
-  export type User$day1PhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    where?: Day1PhotoWhereInput
-    orderBy?: Day1PhotoOrderByWithRelationInput | Day1PhotoOrderByWithRelationInput[]
-    cursor?: Day1PhotoWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: Day1PhotoScalarFieldEnum | Day1PhotoScalarFieldEnum[]
   }
 
   /**
@@ -7099,7 +6962,6 @@ export namespace Prisma {
     daySummaries?: boolean | Challenge$daySummariesArgs<ExtArgs>
     weeklyScores?: boolean | Challenge$weeklyScoresArgs<ExtArgs>
     activity?: boolean | Challenge$activityArgs<ExtArgs>
-    day1Photos?: boolean | Challenge$day1PhotosArgs<ExtArgs>
     _count?: boolean | ChallengeCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["challenge"]>
 
@@ -7159,7 +7021,6 @@ export namespace Prisma {
     daySummaries?: boolean | Challenge$daySummariesArgs<ExtArgs>
     weeklyScores?: boolean | Challenge$weeklyScoresArgs<ExtArgs>
     activity?: boolean | Challenge$activityArgs<ExtArgs>
-    day1Photos?: boolean | Challenge$day1PhotosArgs<ExtArgs>
     _count?: boolean | ChallengeCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ChallengeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7179,7 +7040,6 @@ export namespace Prisma {
       daySummaries: Prisma.$DaySummaryPayload<ExtArgs>[]
       weeklyScores: Prisma.$WeeklyScorePayload<ExtArgs>[]
       activity: Prisma.$ActivityEventPayload<ExtArgs>[]
-      day1Photos: Prisma.$Day1PhotoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -7595,7 +7455,6 @@ export namespace Prisma {
     daySummaries<T extends Challenge$daySummariesArgs<ExtArgs> = {}>(args?: Subset<T, Challenge$daySummariesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DaySummaryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     weeklyScores<T extends Challenge$weeklyScoresArgs<ExtArgs> = {}>(args?: Subset<T, Challenge$weeklyScoresArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WeeklyScorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activity<T extends Challenge$activityArgs<ExtArgs> = {}>(args?: Subset<T, Challenge$activityArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    day1Photos<T extends Challenge$day1PhotosArgs<ExtArgs> = {}>(args?: Subset<T, Challenge$day1PhotosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8174,30 +8033,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ActivityEventScalarFieldEnum | ActivityEventScalarFieldEnum[]
-  }
-
-  /**
-   * Challenge.day1Photos
-   */
-  export type Challenge$day1PhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    where?: Day1PhotoWhereInput
-    orderBy?: Day1PhotoOrderByWithRelationInput | Day1PhotoOrderByWithRelationInput[]
-    cursor?: Day1PhotoWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: Day1PhotoScalarFieldEnum | Day1PhotoScalarFieldEnum[]
   }
 
   /**
@@ -16334,1085 +16169,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Day1Photo
-   */
-
-  export type AggregateDay1Photo = {
-    _count: Day1PhotoCountAggregateOutputType | null
-    _min: Day1PhotoMinAggregateOutputType | null
-    _max: Day1PhotoMaxAggregateOutputType | null
-  }
-
-  export type Day1PhotoMinAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    challengeId: string | null
-    imageData: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type Day1PhotoMaxAggregateOutputType = {
-    id: string | null
-    userId: string | null
-    challengeId: string | null
-    imageData: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type Day1PhotoCountAggregateOutputType = {
-    id: number
-    userId: number
-    challengeId: number
-    imageData: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type Day1PhotoMinAggregateInputType = {
-    id?: true
-    userId?: true
-    challengeId?: true
-    imageData?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type Day1PhotoMaxAggregateInputType = {
-    id?: true
-    userId?: true
-    challengeId?: true
-    imageData?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type Day1PhotoCountAggregateInputType = {
-    id?: true
-    userId?: true
-    challengeId?: true
-    imageData?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type Day1PhotoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Day1Photo to aggregate.
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Day1Photos to fetch.
-     */
-    orderBy?: Day1PhotoOrderByWithRelationInput | Day1PhotoOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: Day1PhotoWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Day1Photos from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Day1Photos.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Day1Photos
-    **/
-    _count?: true | Day1PhotoCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: Day1PhotoMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: Day1PhotoMaxAggregateInputType
-  }
-
-  export type GetDay1PhotoAggregateType<T extends Day1PhotoAggregateArgs> = {
-        [P in keyof T & keyof AggregateDay1Photo]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateDay1Photo[P]>
-      : GetScalarType<T[P], AggregateDay1Photo[P]>
-  }
-
-
-
-
-  export type Day1PhotoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: Day1PhotoWhereInput
-    orderBy?: Day1PhotoOrderByWithAggregationInput | Day1PhotoOrderByWithAggregationInput[]
-    by: Day1PhotoScalarFieldEnum[] | Day1PhotoScalarFieldEnum
-    having?: Day1PhotoScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: Day1PhotoCountAggregateInputType | true
-    _min?: Day1PhotoMinAggregateInputType
-    _max?: Day1PhotoMaxAggregateInputType
-  }
-
-  export type Day1PhotoGroupByOutputType = {
-    id: string
-    userId: string
-    challengeId: string
-    imageData: string
-    createdAt: Date
-    updatedAt: Date
-    _count: Day1PhotoCountAggregateOutputType | null
-    _min: Day1PhotoMinAggregateOutputType | null
-    _max: Day1PhotoMaxAggregateOutputType | null
-  }
-
-  type GetDay1PhotoGroupByPayload<T extends Day1PhotoGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<Day1PhotoGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof Day1PhotoGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], Day1PhotoGroupByOutputType[P]>
-            : GetScalarType<T[P], Day1PhotoGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type Day1PhotoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    challengeId?: boolean
-    imageData?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["day1Photo"]>
-
-  export type Day1PhotoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    challengeId?: boolean
-    imageData?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["day1Photo"]>
-
-  export type Day1PhotoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    userId?: boolean
-    challengeId?: boolean
-    imageData?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["day1Photo"]>
-
-  export type Day1PhotoSelectScalar = {
-    id?: boolean
-    userId?: boolean
-    challengeId?: boolean
-    imageData?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type Day1PhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "challengeId" | "imageData" | "createdAt" | "updatedAt", ExtArgs["result"]["day1Photo"]>
-  export type Day1PhotoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
-  }
-  export type Day1PhotoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
-  }
-  export type Day1PhotoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
-  }
-
-  export type $Day1PhotoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Day1Photo"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      challenge: Prisma.$ChallengePayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      userId: string
-      challengeId: string
-      imageData: string
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["day1Photo"]>
-    composites: {}
-  }
-
-  type Day1PhotoGetPayload<S extends boolean | null | undefined | Day1PhotoDefaultArgs> = $Result.GetResult<Prisma.$Day1PhotoPayload, S>
-
-  type Day1PhotoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<Day1PhotoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: Day1PhotoCountAggregateInputType | true
-    }
-
-  export interface Day1PhotoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Day1Photo'], meta: { name: 'Day1Photo' } }
-    /**
-     * Find zero or one Day1Photo that matches the filter.
-     * @param {Day1PhotoFindUniqueArgs} args - Arguments to find a Day1Photo
-     * @example
-     * // Get one Day1Photo
-     * const day1Photo = await prisma.day1Photo.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends Day1PhotoFindUniqueArgs>(args: SelectSubset<T, Day1PhotoFindUniqueArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Day1Photo that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {Day1PhotoFindUniqueOrThrowArgs} args - Arguments to find a Day1Photo
-     * @example
-     * // Get one Day1Photo
-     * const day1Photo = await prisma.day1Photo.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends Day1PhotoFindUniqueOrThrowArgs>(args: SelectSubset<T, Day1PhotoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Day1Photo that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoFindFirstArgs} args - Arguments to find a Day1Photo
-     * @example
-     * // Get one Day1Photo
-     * const day1Photo = await prisma.day1Photo.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends Day1PhotoFindFirstArgs>(args?: SelectSubset<T, Day1PhotoFindFirstArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Day1Photo that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoFindFirstOrThrowArgs} args - Arguments to find a Day1Photo
-     * @example
-     * // Get one Day1Photo
-     * const day1Photo = await prisma.day1Photo.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends Day1PhotoFindFirstOrThrowArgs>(args?: SelectSubset<T, Day1PhotoFindFirstOrThrowArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Day1Photos that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Day1Photos
-     * const day1Photos = await prisma.day1Photo.findMany()
-     * 
-     * // Get first 10 Day1Photos
-     * const day1Photos = await prisma.day1Photo.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const day1PhotoWithIdOnly = await prisma.day1Photo.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends Day1PhotoFindManyArgs>(args?: SelectSubset<T, Day1PhotoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Day1Photo.
-     * @param {Day1PhotoCreateArgs} args - Arguments to create a Day1Photo.
-     * @example
-     * // Create one Day1Photo
-     * const Day1Photo = await prisma.day1Photo.create({
-     *   data: {
-     *     // ... data to create a Day1Photo
-     *   }
-     * })
-     * 
-     */
-    create<T extends Day1PhotoCreateArgs>(args: SelectSubset<T, Day1PhotoCreateArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Day1Photos.
-     * @param {Day1PhotoCreateManyArgs} args - Arguments to create many Day1Photos.
-     * @example
-     * // Create many Day1Photos
-     * const day1Photo = await prisma.day1Photo.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends Day1PhotoCreateManyArgs>(args?: SelectSubset<T, Day1PhotoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many Day1Photos and returns the data saved in the database.
-     * @param {Day1PhotoCreateManyAndReturnArgs} args - Arguments to create many Day1Photos.
-     * @example
-     * // Create many Day1Photos
-     * const day1Photo = await prisma.day1Photo.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many Day1Photos and only return the `id`
-     * const day1PhotoWithIdOnly = await prisma.day1Photo.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends Day1PhotoCreateManyAndReturnArgs>(args?: SelectSubset<T, Day1PhotoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a Day1Photo.
-     * @param {Day1PhotoDeleteArgs} args - Arguments to delete one Day1Photo.
-     * @example
-     * // Delete one Day1Photo
-     * const Day1Photo = await prisma.day1Photo.delete({
-     *   where: {
-     *     // ... filter to delete one Day1Photo
-     *   }
-     * })
-     * 
-     */
-    delete<T extends Day1PhotoDeleteArgs>(args: SelectSubset<T, Day1PhotoDeleteArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Day1Photo.
-     * @param {Day1PhotoUpdateArgs} args - Arguments to update one Day1Photo.
-     * @example
-     * // Update one Day1Photo
-     * const day1Photo = await prisma.day1Photo.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends Day1PhotoUpdateArgs>(args: SelectSubset<T, Day1PhotoUpdateArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Day1Photos.
-     * @param {Day1PhotoDeleteManyArgs} args - Arguments to filter Day1Photos to delete.
-     * @example
-     * // Delete a few Day1Photos
-     * const { count } = await prisma.day1Photo.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends Day1PhotoDeleteManyArgs>(args?: SelectSubset<T, Day1PhotoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Day1Photos.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Day1Photos
-     * const day1Photo = await prisma.day1Photo.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends Day1PhotoUpdateManyArgs>(args: SelectSubset<T, Day1PhotoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Day1Photos and returns the data updated in the database.
-     * @param {Day1PhotoUpdateManyAndReturnArgs} args - Arguments to update many Day1Photos.
-     * @example
-     * // Update many Day1Photos
-     * const day1Photo = await prisma.day1Photo.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more Day1Photos and only return the `id`
-     * const day1PhotoWithIdOnly = await prisma.day1Photo.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends Day1PhotoUpdateManyAndReturnArgs>(args: SelectSubset<T, Day1PhotoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one Day1Photo.
-     * @param {Day1PhotoUpsertArgs} args - Arguments to update or create a Day1Photo.
-     * @example
-     * // Update or create a Day1Photo
-     * const day1Photo = await prisma.day1Photo.upsert({
-     *   create: {
-     *     // ... data to create a Day1Photo
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Day1Photo we want to update
-     *   }
-     * })
-     */
-    upsert<T extends Day1PhotoUpsertArgs>(args: SelectSubset<T, Day1PhotoUpsertArgs<ExtArgs>>): Prisma__Day1PhotoClient<$Result.GetResult<Prisma.$Day1PhotoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Day1Photos.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoCountArgs} args - Arguments to filter Day1Photos to count.
-     * @example
-     * // Count the number of Day1Photos
-     * const count = await prisma.day1Photo.count({
-     *   where: {
-     *     // ... the filter for the Day1Photos we want to count
-     *   }
-     * })
-    **/
-    count<T extends Day1PhotoCountArgs>(
-      args?: Subset<T, Day1PhotoCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], Day1PhotoCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Day1Photo.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends Day1PhotoAggregateArgs>(args: Subset<T, Day1PhotoAggregateArgs>): Prisma.PrismaPromise<GetDay1PhotoAggregateType<T>>
-
-    /**
-     * Group by Day1Photo.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {Day1PhotoGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends Day1PhotoGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: Day1PhotoGroupByArgs['orderBy'] }
-        : { orderBy?: Day1PhotoGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, Day1PhotoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDay1PhotoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Day1Photo model
-   */
-  readonly fields: Day1PhotoFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Day1Photo.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__Day1PhotoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    challenge<T extends ChallengeDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ChallengeDefaultArgs<ExtArgs>>): Prisma__ChallengeClient<$Result.GetResult<Prisma.$ChallengePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Day1Photo model
-   */
-  interface Day1PhotoFieldRefs {
-    readonly id: FieldRef<"Day1Photo", 'String'>
-    readonly userId: FieldRef<"Day1Photo", 'String'>
-    readonly challengeId: FieldRef<"Day1Photo", 'String'>
-    readonly imageData: FieldRef<"Day1Photo", 'String'>
-    readonly createdAt: FieldRef<"Day1Photo", 'DateTime'>
-    readonly updatedAt: FieldRef<"Day1Photo", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Day1Photo findUnique
-   */
-  export type Day1PhotoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * Filter, which Day1Photo to fetch.
-     */
-    where: Day1PhotoWhereUniqueInput
-  }
-
-  /**
-   * Day1Photo findUniqueOrThrow
-   */
-  export type Day1PhotoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * Filter, which Day1Photo to fetch.
-     */
-    where: Day1PhotoWhereUniqueInput
-  }
-
-  /**
-   * Day1Photo findFirst
-   */
-  export type Day1PhotoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * Filter, which Day1Photo to fetch.
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Day1Photos to fetch.
-     */
-    orderBy?: Day1PhotoOrderByWithRelationInput | Day1PhotoOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Day1Photos.
-     */
-    cursor?: Day1PhotoWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Day1Photos from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Day1Photos.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Day1Photos.
-     */
-    distinct?: Day1PhotoScalarFieldEnum | Day1PhotoScalarFieldEnum[]
-  }
-
-  /**
-   * Day1Photo findFirstOrThrow
-   */
-  export type Day1PhotoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * Filter, which Day1Photo to fetch.
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Day1Photos to fetch.
-     */
-    orderBy?: Day1PhotoOrderByWithRelationInput | Day1PhotoOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Day1Photos.
-     */
-    cursor?: Day1PhotoWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Day1Photos from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Day1Photos.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Day1Photos.
-     */
-    distinct?: Day1PhotoScalarFieldEnum | Day1PhotoScalarFieldEnum[]
-  }
-
-  /**
-   * Day1Photo findMany
-   */
-  export type Day1PhotoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * Filter, which Day1Photos to fetch.
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Day1Photos to fetch.
-     */
-    orderBy?: Day1PhotoOrderByWithRelationInput | Day1PhotoOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Day1Photos.
-     */
-    cursor?: Day1PhotoWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Day1Photos from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Day1Photos.
-     */
-    skip?: number
-    distinct?: Day1PhotoScalarFieldEnum | Day1PhotoScalarFieldEnum[]
-  }
-
-  /**
-   * Day1Photo create
-   */
-  export type Day1PhotoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Day1Photo.
-     */
-    data: XOR<Day1PhotoCreateInput, Day1PhotoUncheckedCreateInput>
-  }
-
-  /**
-   * Day1Photo createMany
-   */
-  export type Day1PhotoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Day1Photos.
-     */
-    data: Day1PhotoCreateManyInput | Day1PhotoCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Day1Photo createManyAndReturn
-   */
-  export type Day1PhotoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * The data used to create many Day1Photos.
-     */
-    data: Day1PhotoCreateManyInput | Day1PhotoCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Day1Photo update
-   */
-  export type Day1PhotoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Day1Photo.
-     */
-    data: XOR<Day1PhotoUpdateInput, Day1PhotoUncheckedUpdateInput>
-    /**
-     * Choose, which Day1Photo to update.
-     */
-    where: Day1PhotoWhereUniqueInput
-  }
-
-  /**
-   * Day1Photo updateMany
-   */
-  export type Day1PhotoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Day1Photos.
-     */
-    data: XOR<Day1PhotoUpdateManyMutationInput, Day1PhotoUncheckedUpdateManyInput>
-    /**
-     * Filter which Day1Photos to update
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * Limit how many Day1Photos to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Day1Photo updateManyAndReturn
-   */
-  export type Day1PhotoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * The data used to update Day1Photos.
-     */
-    data: XOR<Day1PhotoUpdateManyMutationInput, Day1PhotoUncheckedUpdateManyInput>
-    /**
-     * Filter which Day1Photos to update
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * Limit how many Day1Photos to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * Day1Photo upsert
-   */
-  export type Day1PhotoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Day1Photo to update in case it exists.
-     */
-    where: Day1PhotoWhereUniqueInput
-    /**
-     * In case the Day1Photo found by the `where` argument doesn't exist, create a new Day1Photo with this data.
-     */
-    create: XOR<Day1PhotoCreateInput, Day1PhotoUncheckedCreateInput>
-    /**
-     * In case the Day1Photo was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<Day1PhotoUpdateInput, Day1PhotoUncheckedUpdateInput>
-  }
-
-  /**
-   * Day1Photo delete
-   */
-  export type Day1PhotoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-    /**
-     * Filter which Day1Photo to delete.
-     */
-    where: Day1PhotoWhereUniqueInput
-  }
-
-  /**
-   * Day1Photo deleteMany
-   */
-  export type Day1PhotoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Day1Photos to delete
-     */
-    where?: Day1PhotoWhereInput
-    /**
-     * Limit how many Day1Photos to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Day1Photo without action
-   */
-  export type Day1PhotoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Day1Photo
-     */
-    select?: Day1PhotoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Day1Photo
-     */
-    omit?: Day1PhotoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: Day1PhotoInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Enums
    */
 
@@ -17602,18 +16358,6 @@ export namespace Prisma {
   export type ActivityEventScalarFieldEnum = (typeof ActivityEventScalarFieldEnum)[keyof typeof ActivityEventScalarFieldEnum]
 
 
-  export const Day1PhotoScalarFieldEnum: {
-    id: 'id',
-    userId: 'userId',
-    challengeId: 'challengeId',
-    imageData: 'imageData',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type Day1PhotoScalarFieldEnum = (typeof Day1PhotoScalarFieldEnum)[keyof typeof Day1PhotoScalarFieldEnum]
-
-
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -17735,7 +16479,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreListRelationFilter
     activity?: ActivityEventListRelationFilter
     ownedChallenges?: ChallengeListRelationFilter
-    day1Photos?: Day1PhotoListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -17761,7 +16504,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreOrderByRelationAggregateInput
     activity?: ActivityEventOrderByRelationAggregateInput
     ownedChallenges?: ChallengeOrderByRelationAggregateInput
-    day1Photos?: Day1PhotoOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -17790,7 +16532,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreListRelationFilter
     activity?: ActivityEventListRelationFilter
     ownedChallenges?: ChallengeListRelationFilter
-    day1Photos?: Day1PhotoListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -18044,7 +16785,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryListRelationFilter
     weeklyScores?: WeeklyScoreListRelationFilter
     activity?: ActivityEventListRelationFilter
-    day1Photos?: Day1PhotoListRelationFilter
   }
 
   export type ChallengeOrderByWithRelationInput = {
@@ -18067,7 +16807,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryOrderByRelationAggregateInput
     weeklyScores?: WeeklyScoreOrderByRelationAggregateInput
     activity?: ActivityEventOrderByRelationAggregateInput
-    day1Photos?: Day1PhotoOrderByRelationAggregateInput
   }
 
   export type ChallengeWhereUniqueInput = Prisma.AtLeast<{
@@ -18093,7 +16832,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryListRelationFilter
     weeklyScores?: WeeklyScoreListRelationFilter
     activity?: ActivityEventListRelationFilter
-    day1Photos?: Day1PhotoListRelationFilter
   }, "id" | "inviteCode">
 
   export type ChallengeOrderByWithAggregationInput = {
@@ -18681,70 +17419,6 @@ export namespace Prisma {
     points?: IntWithAggregatesFilter<"ActivityEvent"> | number
   }
 
-  export type Day1PhotoWhereInput = {
-    AND?: Day1PhotoWhereInput | Day1PhotoWhereInput[]
-    OR?: Day1PhotoWhereInput[]
-    NOT?: Day1PhotoWhereInput | Day1PhotoWhereInput[]
-    id?: StringFilter<"Day1Photo"> | string
-    userId?: StringFilter<"Day1Photo"> | string
-    challengeId?: StringFilter<"Day1Photo"> | string
-    imageData?: StringFilter<"Day1Photo"> | string
-    createdAt?: DateTimeFilter<"Day1Photo"> | Date | string
-    updatedAt?: DateTimeFilter<"Day1Photo"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
-  }
-
-  export type Day1PhotoOrderByWithRelationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    challengeId?: SortOrder
-    imageData?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    challenge?: ChallengeOrderByWithRelationInput
-  }
-
-  export type Day1PhotoWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    userId_challengeId?: Day1PhotoUserIdChallengeIdCompoundUniqueInput
-    AND?: Day1PhotoWhereInput | Day1PhotoWhereInput[]
-    OR?: Day1PhotoWhereInput[]
-    NOT?: Day1PhotoWhereInput | Day1PhotoWhereInput[]
-    userId?: StringFilter<"Day1Photo"> | string
-    challengeId?: StringFilter<"Day1Photo"> | string
-    imageData?: StringFilter<"Day1Photo"> | string
-    createdAt?: DateTimeFilter<"Day1Photo"> | Date | string
-    updatedAt?: DateTimeFilter<"Day1Photo"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
-  }, "id" | "userId_challengeId">
-
-  export type Day1PhotoOrderByWithAggregationInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    challengeId?: SortOrder
-    imageData?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: Day1PhotoCountOrderByAggregateInput
-    _max?: Day1PhotoMaxOrderByAggregateInput
-    _min?: Day1PhotoMinOrderByAggregateInput
-  }
-
-  export type Day1PhotoScalarWhereWithAggregatesInput = {
-    AND?: Day1PhotoScalarWhereWithAggregatesInput | Day1PhotoScalarWhereWithAggregatesInput[]
-    OR?: Day1PhotoScalarWhereWithAggregatesInput[]
-    NOT?: Day1PhotoScalarWhereWithAggregatesInput | Day1PhotoScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"Day1Photo"> | string
-    userId?: StringWithAggregatesFilter<"Day1Photo"> | string
-    challengeId?: StringWithAggregatesFilter<"Day1Photo"> | string
-    imageData?: StringWithAggregatesFilter<"Day1Photo"> | string
-    createdAt?: DateTimeWithAggregatesFilter<"Day1Photo"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Day1Photo"> | Date | string
-  }
-
   export type UserCreateInput = {
     id?: string
     name?: string | null
@@ -18768,7 +17442,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -18794,7 +17467,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -18820,7 +17492,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -18846,7 +17517,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -19113,7 +17783,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateInput = {
@@ -19135,7 +17804,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUpdateInput = {
@@ -19157,7 +17825,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateInput = {
@@ -19179,7 +17846,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeCreateManyInput = {
@@ -19781,67 +18447,6 @@ export namespace Prisma {
     points?: IntFieldUpdateOperationsInput | number
   }
 
-  export type Day1PhotoCreateInput = {
-    id?: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutDay1PhotosInput
-    challenge: ChallengeCreateNestedOneWithoutDay1PhotosInput
-  }
-
-  export type Day1PhotoUncheckedCreateInput = {
-    id?: string
-    userId: string
-    challengeId: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type Day1PhotoUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutDay1PhotosNestedInput
-    challenge?: ChallengeUpdateOneRequiredWithoutDay1PhotosNestedInput
-  }
-
-  export type Day1PhotoUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    challengeId?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type Day1PhotoCreateManyInput = {
-    id?: string
-    userId: string
-    challengeId: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type Day1PhotoUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type Day1PhotoUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    challengeId?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -19953,12 +18558,6 @@ export namespace Prisma {
     none?: ChallengeWhereInput
   }
 
-  export type Day1PhotoListRelationFilter = {
-    every?: Day1PhotoWhereInput
-    some?: Day1PhotoWhereInput
-    none?: Day1PhotoWhereInput
-  }
-
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -19993,10 +18592,6 @@ export namespace Prisma {
   }
 
   export type ChallengeOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type Day1PhotoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20776,38 +19371,6 @@ export namespace Prisma {
     points?: SortOrder
   }
 
-  export type Day1PhotoUserIdChallengeIdCompoundUniqueInput = {
-    userId: string
-    challengeId: string
-  }
-
-  export type Day1PhotoCountOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    challengeId?: SortOrder
-    imageData?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type Day1PhotoMaxOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    challengeId?: SortOrder
-    imageData?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type Day1PhotoMinOrderByAggregateInput = {
-    id?: SortOrder
-    userId?: SortOrder
-    challengeId?: SortOrder
-    imageData?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
   export type AccountCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -20864,13 +19427,6 @@ export namespace Prisma {
     connect?: ChallengeWhereUniqueInput | ChallengeWhereUniqueInput[]
   }
 
-  export type Day1PhotoCreateNestedManyWithoutUserInput = {
-    create?: XOR<Day1PhotoCreateWithoutUserInput, Day1PhotoUncheckedCreateWithoutUserInput> | Day1PhotoCreateWithoutUserInput[] | Day1PhotoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutUserInput | Day1PhotoCreateOrConnectWithoutUserInput[]
-    createMany?: Day1PhotoCreateManyUserInputEnvelope
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-  }
-
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -20925,13 +19481,6 @@ export namespace Prisma {
     connectOrCreate?: ChallengeCreateOrConnectWithoutAdminInput | ChallengeCreateOrConnectWithoutAdminInput[]
     createMany?: ChallengeCreateManyAdminInputEnvelope
     connect?: ChallengeWhereUniqueInput | ChallengeWhereUniqueInput[]
-  }
-
-  export type Day1PhotoUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<Day1PhotoCreateWithoutUserInput, Day1PhotoUncheckedCreateWithoutUserInput> | Day1PhotoCreateWithoutUserInput[] | Day1PhotoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutUserInput | Day1PhotoCreateOrConnectWithoutUserInput[]
-    createMany?: Day1PhotoCreateManyUserInputEnvelope
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -21070,20 +19619,6 @@ export namespace Prisma {
     deleteMany?: ChallengeScalarWhereInput | ChallengeScalarWhereInput[]
   }
 
-  export type Day1PhotoUpdateManyWithoutUserNestedInput = {
-    create?: XOR<Day1PhotoCreateWithoutUserInput, Day1PhotoUncheckedCreateWithoutUserInput> | Day1PhotoCreateWithoutUserInput[] | Day1PhotoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutUserInput | Day1PhotoCreateOrConnectWithoutUserInput[]
-    upsert?: Day1PhotoUpsertWithWhereUniqueWithoutUserInput | Day1PhotoUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: Day1PhotoCreateManyUserInputEnvelope
-    set?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    disconnect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    delete?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    update?: Day1PhotoUpdateWithWhereUniqueWithoutUserInput | Day1PhotoUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: Day1PhotoUpdateManyWithWhereWithoutUserInput | Day1PhotoUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: Day1PhotoScalarWhereInput | Day1PhotoScalarWhereInput[]
-  }
-
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -21196,20 +19731,6 @@ export namespace Prisma {
     deleteMany?: ChallengeScalarWhereInput | ChallengeScalarWhereInput[]
   }
 
-  export type Day1PhotoUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<Day1PhotoCreateWithoutUserInput, Day1PhotoUncheckedCreateWithoutUserInput> | Day1PhotoCreateWithoutUserInput[] | Day1PhotoUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutUserInput | Day1PhotoCreateOrConnectWithoutUserInput[]
-    upsert?: Day1PhotoUpsertWithWhereUniqueWithoutUserInput | Day1PhotoUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: Day1PhotoCreateManyUserInputEnvelope
-    set?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    disconnect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    delete?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    update?: Day1PhotoUpdateWithWhereUniqueWithoutUserInput | Day1PhotoUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: Day1PhotoUpdateManyWithWhereWithoutUserInput | Day1PhotoUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: Day1PhotoScalarWhereInput | Day1PhotoScalarWhereInput[]
-  }
-
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -21294,13 +19815,6 @@ export namespace Prisma {
     connect?: ActivityEventWhereUniqueInput | ActivityEventWhereUniqueInput[]
   }
 
-  export type Day1PhotoCreateNestedManyWithoutChallengeInput = {
-    create?: XOR<Day1PhotoCreateWithoutChallengeInput, Day1PhotoUncheckedCreateWithoutChallengeInput> | Day1PhotoCreateWithoutChallengeInput[] | Day1PhotoUncheckedCreateWithoutChallengeInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutChallengeInput | Day1PhotoCreateOrConnectWithoutChallengeInput[]
-    createMany?: Day1PhotoCreateManyChallengeInputEnvelope
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-  }
-
   export type ChallengeMemberUncheckedCreateNestedManyWithoutChallengeInput = {
     create?: XOR<ChallengeMemberCreateWithoutChallengeInput, ChallengeMemberUncheckedCreateWithoutChallengeInput> | ChallengeMemberCreateWithoutChallengeInput[] | ChallengeMemberUncheckedCreateWithoutChallengeInput[]
     connectOrCreate?: ChallengeMemberCreateOrConnectWithoutChallengeInput | ChallengeMemberCreateOrConnectWithoutChallengeInput[]
@@ -21341,13 +19855,6 @@ export namespace Prisma {
     connectOrCreate?: ActivityEventCreateOrConnectWithoutChallengeInput | ActivityEventCreateOrConnectWithoutChallengeInput[]
     createMany?: ActivityEventCreateManyChallengeInputEnvelope
     connect?: ActivityEventWhereUniqueInput | ActivityEventWhereUniqueInput[]
-  }
-
-  export type Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput = {
-    create?: XOR<Day1PhotoCreateWithoutChallengeInput, Day1PhotoUncheckedCreateWithoutChallengeInput> | Day1PhotoCreateWithoutChallengeInput[] | Day1PhotoUncheckedCreateWithoutChallengeInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutChallengeInput | Day1PhotoCreateOrConnectWithoutChallengeInput[]
-    createMany?: Day1PhotoCreateManyChallengeInputEnvelope
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -21446,20 +19953,6 @@ export namespace Prisma {
     deleteMany?: ActivityEventScalarWhereInput | ActivityEventScalarWhereInput[]
   }
 
-  export type Day1PhotoUpdateManyWithoutChallengeNestedInput = {
-    create?: XOR<Day1PhotoCreateWithoutChallengeInput, Day1PhotoUncheckedCreateWithoutChallengeInput> | Day1PhotoCreateWithoutChallengeInput[] | Day1PhotoUncheckedCreateWithoutChallengeInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutChallengeInput | Day1PhotoCreateOrConnectWithoutChallengeInput[]
-    upsert?: Day1PhotoUpsertWithWhereUniqueWithoutChallengeInput | Day1PhotoUpsertWithWhereUniqueWithoutChallengeInput[]
-    createMany?: Day1PhotoCreateManyChallengeInputEnvelope
-    set?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    disconnect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    delete?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    update?: Day1PhotoUpdateWithWhereUniqueWithoutChallengeInput | Day1PhotoUpdateWithWhereUniqueWithoutChallengeInput[]
-    updateMany?: Day1PhotoUpdateManyWithWhereWithoutChallengeInput | Day1PhotoUpdateManyWithWhereWithoutChallengeInput[]
-    deleteMany?: Day1PhotoScalarWhereInput | Day1PhotoScalarWhereInput[]
-  }
-
   export type ChallengeMemberUncheckedUpdateManyWithoutChallengeNestedInput = {
     create?: XOR<ChallengeMemberCreateWithoutChallengeInput, ChallengeMemberUncheckedCreateWithoutChallengeInput> | ChallengeMemberCreateWithoutChallengeInput[] | ChallengeMemberUncheckedCreateWithoutChallengeInput[]
     connectOrCreate?: ChallengeMemberCreateOrConnectWithoutChallengeInput | ChallengeMemberCreateOrConnectWithoutChallengeInput[]
@@ -21542,20 +20035,6 @@ export namespace Prisma {
     update?: ActivityEventUpdateWithWhereUniqueWithoutChallengeInput | ActivityEventUpdateWithWhereUniqueWithoutChallengeInput[]
     updateMany?: ActivityEventUpdateManyWithWhereWithoutChallengeInput | ActivityEventUpdateManyWithWhereWithoutChallengeInput[]
     deleteMany?: ActivityEventScalarWhereInput | ActivityEventScalarWhereInput[]
-  }
-
-  export type Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput = {
-    create?: XOR<Day1PhotoCreateWithoutChallengeInput, Day1PhotoUncheckedCreateWithoutChallengeInput> | Day1PhotoCreateWithoutChallengeInput[] | Day1PhotoUncheckedCreateWithoutChallengeInput[]
-    connectOrCreate?: Day1PhotoCreateOrConnectWithoutChallengeInput | Day1PhotoCreateOrConnectWithoutChallengeInput[]
-    upsert?: Day1PhotoUpsertWithWhereUniqueWithoutChallengeInput | Day1PhotoUpsertWithWhereUniqueWithoutChallengeInput[]
-    createMany?: Day1PhotoCreateManyChallengeInputEnvelope
-    set?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    disconnect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    delete?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    connect?: Day1PhotoWhereUniqueInput | Day1PhotoWhereUniqueInput[]
-    update?: Day1PhotoUpdateWithWhereUniqueWithoutChallengeInput | Day1PhotoUpdateWithWhereUniqueWithoutChallengeInput[]
-    updateMany?: Day1PhotoUpdateManyWithWhereWithoutChallengeInput | Day1PhotoUpdateManyWithWhereWithoutChallengeInput[]
-    deleteMany?: Day1PhotoScalarWhereInput | Day1PhotoScalarWhereInput[]
   }
 
   export type ChallengeCreateNestedOneWithoutMembersInput = {
@@ -21838,34 +20317,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutActivityInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutActivityInput, UserUpdateWithoutActivityInput>, UserUncheckedUpdateWithoutActivityInput>
-  }
-
-  export type UserCreateNestedOneWithoutDay1PhotosInput = {
-    create?: XOR<UserCreateWithoutDay1PhotosInput, UserUncheckedCreateWithoutDay1PhotosInput>
-    connectOrCreate?: UserCreateOrConnectWithoutDay1PhotosInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type ChallengeCreateNestedOneWithoutDay1PhotosInput = {
-    create?: XOR<ChallengeCreateWithoutDay1PhotosInput, ChallengeUncheckedCreateWithoutDay1PhotosInput>
-    connectOrCreate?: ChallengeCreateOrConnectWithoutDay1PhotosInput
-    connect?: ChallengeWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutDay1PhotosNestedInput = {
-    create?: XOR<UserCreateWithoutDay1PhotosInput, UserUncheckedCreateWithoutDay1PhotosInput>
-    connectOrCreate?: UserCreateOrConnectWithoutDay1PhotosInput
-    upsert?: UserUpsertWithoutDay1PhotosInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDay1PhotosInput, UserUpdateWithoutDay1PhotosInput>, UserUncheckedUpdateWithoutDay1PhotosInput>
-  }
-
-  export type ChallengeUpdateOneRequiredWithoutDay1PhotosNestedInput = {
-    create?: XOR<ChallengeCreateWithoutDay1PhotosInput, ChallengeUncheckedCreateWithoutDay1PhotosInput>
-    connectOrCreate?: ChallengeCreateOrConnectWithoutDay1PhotosInput
-    upsert?: ChallengeUpsertWithoutDay1PhotosInput
-    connect?: ChallengeWhereUniqueInput
-    update?: XOR<XOR<ChallengeUpdateToOneWithWhereWithoutDay1PhotosInput, ChallengeUpdateWithoutDay1PhotosInput>, ChallengeUncheckedUpdateWithoutDay1PhotosInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -22333,7 +20784,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutAdminInput = {
@@ -22354,7 +20804,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutAdminInput = {
@@ -22364,32 +20813,6 @@ export namespace Prisma {
 
   export type ChallengeCreateManyAdminInputEnvelope = {
     data: ChallengeCreateManyAdminInput | ChallengeCreateManyAdminInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type Day1PhotoCreateWithoutUserInput = {
-    id?: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    challenge: ChallengeCreateNestedOneWithoutDay1PhotosInput
-  }
-
-  export type Day1PhotoUncheckedCreateWithoutUserInput = {
-    id?: string
-    challengeId: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type Day1PhotoCreateOrConnectWithoutUserInput = {
-    where: Day1PhotoWhereUniqueInput
-    create: XOR<Day1PhotoCreateWithoutUserInput, Day1PhotoUncheckedCreateWithoutUserInput>
-  }
-
-  export type Day1PhotoCreateManyUserInputEnvelope = {
-    data: Day1PhotoCreateManyUserInput | Day1PhotoCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -22639,34 +21062,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Challenge"> | Date | string
   }
 
-  export type Day1PhotoUpsertWithWhereUniqueWithoutUserInput = {
-    where: Day1PhotoWhereUniqueInput
-    update: XOR<Day1PhotoUpdateWithoutUserInput, Day1PhotoUncheckedUpdateWithoutUserInput>
-    create: XOR<Day1PhotoCreateWithoutUserInput, Day1PhotoUncheckedCreateWithoutUserInput>
-  }
-
-  export type Day1PhotoUpdateWithWhereUniqueWithoutUserInput = {
-    where: Day1PhotoWhereUniqueInput
-    data: XOR<Day1PhotoUpdateWithoutUserInput, Day1PhotoUncheckedUpdateWithoutUserInput>
-  }
-
-  export type Day1PhotoUpdateManyWithWhereWithoutUserInput = {
-    where: Day1PhotoScalarWhereInput
-    data: XOR<Day1PhotoUpdateManyMutationInput, Day1PhotoUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type Day1PhotoScalarWhereInput = {
-    AND?: Day1PhotoScalarWhereInput | Day1PhotoScalarWhereInput[]
-    OR?: Day1PhotoScalarWhereInput[]
-    NOT?: Day1PhotoScalarWhereInput | Day1PhotoScalarWhereInput[]
-    id?: StringFilter<"Day1Photo"> | string
-    userId?: StringFilter<"Day1Photo"> | string
-    challengeId?: StringFilter<"Day1Photo"> | string
-    imageData?: StringFilter<"Day1Photo"> | string
-    createdAt?: DateTimeFilter<"Day1Photo"> | Date | string
-    updatedAt?: DateTimeFilter<"Day1Photo"> | Date | string
-  }
-
   export type UserCreateWithoutAccountsInput = {
     id?: string
     name?: string | null
@@ -22689,7 +21084,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -22714,7 +21108,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -22755,7 +21148,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -22780,7 +21172,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -22805,7 +21196,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -22830,7 +21220,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -22871,7 +21260,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -22896,7 +21284,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutOwnedChallengesInput = {
@@ -22921,7 +21308,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutUserInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOwnedChallengesInput = {
@@ -22946,7 +21332,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutUserInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOwnedChallengesInput = {
@@ -23152,32 +21537,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type Day1PhotoCreateWithoutChallengeInput = {
-    id?: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutDay1PhotosInput
-  }
-
-  export type Day1PhotoUncheckedCreateWithoutChallengeInput = {
-    id?: string
-    userId: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type Day1PhotoCreateOrConnectWithoutChallengeInput = {
-    where: Day1PhotoWhereUniqueInput
-    create: XOR<Day1PhotoCreateWithoutChallengeInput, Day1PhotoUncheckedCreateWithoutChallengeInput>
-  }
-
-  export type Day1PhotoCreateManyChallengeInputEnvelope = {
-    data: Day1PhotoCreateManyChallengeInput | Day1PhotoCreateManyChallengeInput[]
-    skipDuplicates?: boolean
-  }
-
   export type UserUpsertWithoutOwnedChallengesInput = {
     update: XOR<UserUpdateWithoutOwnedChallengesInput, UserUncheckedUpdateWithoutOwnedChallengesInput>
     create: XOR<UserCreateWithoutOwnedChallengesInput, UserUncheckedCreateWithoutOwnedChallengesInput>
@@ -23211,7 +21570,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutUserNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOwnedChallengesInput = {
@@ -23236,7 +21594,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutUserNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChallengeMemberUpsertWithWhereUniqueWithoutChallengeInput = {
@@ -23354,22 +21711,6 @@ export namespace Prisma {
     data: XOR<ActivityEventUpdateManyMutationInput, ActivityEventUncheckedUpdateManyWithoutChallengeInput>
   }
 
-  export type Day1PhotoUpsertWithWhereUniqueWithoutChallengeInput = {
-    where: Day1PhotoWhereUniqueInput
-    update: XOR<Day1PhotoUpdateWithoutChallengeInput, Day1PhotoUncheckedUpdateWithoutChallengeInput>
-    create: XOR<Day1PhotoCreateWithoutChallengeInput, Day1PhotoUncheckedCreateWithoutChallengeInput>
-  }
-
-  export type Day1PhotoUpdateWithWhereUniqueWithoutChallengeInput = {
-    where: Day1PhotoWhereUniqueInput
-    data: XOR<Day1PhotoUpdateWithoutChallengeInput, Day1PhotoUncheckedUpdateWithoutChallengeInput>
-  }
-
-  export type Day1PhotoUpdateManyWithWhereWithoutChallengeInput = {
-    where: Day1PhotoScalarWhereInput
-    data: XOR<Day1PhotoUpdateManyMutationInput, Day1PhotoUncheckedUpdateManyWithoutChallengeInput>
-  }
-
   export type ChallengeCreateWithoutMembersInput = {
     id?: string
     name: string
@@ -23388,7 +21729,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutMembersInput = {
@@ -23409,7 +21749,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutMembersInput = {
@@ -23439,7 +21778,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -23464,7 +21802,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -23501,7 +21838,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutMembersInput = {
@@ -23522,7 +21858,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type UserUpsertWithoutMembershipsInput = {
@@ -23558,7 +21893,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -23583,7 +21917,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChallengeCreateWithoutTasksInput = {
@@ -23604,7 +21937,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutTasksInput = {
@@ -23625,7 +21957,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutTasksInput = {
@@ -23714,7 +22045,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutTasksInput = {
@@ -23735,7 +22065,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type TaskTierUpsertWithWhereUniqueWithoutTaskInput = {
@@ -23882,7 +22211,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutTaskLogsInput = {
@@ -23903,7 +22231,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutTaskLogsInput = {
@@ -23933,7 +22260,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTaskLogsInput = {
@@ -23958,7 +22284,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTaskLogsInput = {
@@ -24034,7 +22359,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutTaskLogsInput = {
@@ -24055,7 +22379,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type UserUpsertWithoutTaskLogsInput = {
@@ -24091,7 +22414,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTaskLogsInput = {
@@ -24116,7 +22438,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChallengeTaskUpsertWithoutLogsInput = {
@@ -24182,7 +22503,6 @@ export namespace Prisma {
     taskLogs?: TaskLogCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutDaySummariesInput = {
@@ -24203,7 +22523,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutDaySummariesInput = {
@@ -24233,7 +22552,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDaySummariesInput = {
@@ -24258,7 +22576,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDaySummariesInput = {
@@ -24295,7 +22612,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutDaySummariesInput = {
@@ -24316,7 +22632,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type UserUpsertWithoutDaySummariesInput = {
@@ -24352,7 +22667,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDaySummariesInput = {
@@ -24377,7 +22691,6 @@ export namespace Prisma {
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChallengeCreateWithoutWeeklyScoresInput = {
@@ -24398,7 +22711,6 @@ export namespace Prisma {
     taskLogs?: TaskLogCreateNestedManyWithoutChallengeInput
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutWeeklyScoresInput = {
@@ -24419,7 +22731,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUncheckedCreateNestedManyWithoutChallengeInput
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutWeeklyScoresInput = {
@@ -24449,7 +22760,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutUserInput
     activity?: ActivityEventCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWeeklyScoresInput = {
@@ -24474,7 +22784,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutUserInput
     activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWeeklyScoresInput = {
@@ -24511,7 +22820,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUpdateManyWithoutChallengeNestedInput
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutWeeklyScoresInput = {
@@ -24532,7 +22840,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUncheckedUpdateManyWithoutChallengeNestedInput
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type UserUpsertWithoutWeeklyScoresInput = {
@@ -24568,7 +22875,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWeeklyScoresInput = {
@@ -24593,7 +22899,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutUserNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ChallengeCreateWithoutActivityInput = {
@@ -24614,7 +22919,6 @@ export namespace Prisma {
     taskLogs?: TaskLogCreateNestedManyWithoutChallengeInput
     daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeUncheckedCreateWithoutActivityInput = {
@@ -24635,7 +22939,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUncheckedCreateNestedManyWithoutChallengeInput
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutChallengeInput
   }
 
   export type ChallengeCreateOrConnectWithoutActivityInput = {
@@ -24665,7 +22968,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryCreateNestedManyWithoutUserInput
     weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActivityInput = {
@@ -24690,7 +22992,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutUserInput
     weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
     ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-    day1Photos?: Day1PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActivityInput = {
@@ -24727,7 +23028,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUpdateManyWithoutChallengeNestedInput
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutActivityInput = {
@@ -24748,7 +23048,6 @@ export namespace Prisma {
     taskLogs?: TaskLogUncheckedUpdateManyWithoutChallengeNestedInput
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type UserUpsertWithoutActivityInput = {
@@ -24784,7 +23083,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutUserNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivityInput = {
@@ -24809,223 +23107,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutUserNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
     ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserCreateWithoutDay1PhotosInput = {
-    id?: string
-    name?: string | null
-    email: string
-    emailVerified?: Date | string | null
-    image?: string | null
-    displayName?: string | null
-    totalPoints?: number
-    peakLeaguePoints?: number
-    lastCelebratedLeague?: string | null
-    currentStreak?: number
-    longestStreak?: number
-    mantra?: string | null
-    streakTokens?: number
-    createdAt?: Date | string
-    accounts?: AccountCreateNestedManyWithoutUserInput
-    sessions?: SessionCreateNestedManyWithoutUserInput
-    memberships?: ChallengeMemberCreateNestedManyWithoutUserInput
-    taskLogs?: TaskLogCreateNestedManyWithoutUserInput
-    daySummaries?: DaySummaryCreateNestedManyWithoutUserInput
-    weeklyScores?: WeeklyScoreCreateNestedManyWithoutUserInput
-    activity?: ActivityEventCreateNestedManyWithoutUserInput
-    ownedChallenges?: ChallengeCreateNestedManyWithoutAdminInput
-  }
-
-  export type UserUncheckedCreateWithoutDay1PhotosInput = {
-    id?: string
-    name?: string | null
-    email: string
-    emailVerified?: Date | string | null
-    image?: string | null
-    displayName?: string | null
-    totalPoints?: number
-    peakLeaguePoints?: number
-    lastCelebratedLeague?: string | null
-    currentStreak?: number
-    longestStreak?: number
-    mantra?: string | null
-    streakTokens?: number
-    createdAt?: Date | string
-    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
-    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
-    memberships?: ChallengeMemberUncheckedCreateNestedManyWithoutUserInput
-    taskLogs?: TaskLogUncheckedCreateNestedManyWithoutUserInput
-    daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutUserInput
-    weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutUserInput
-    activity?: ActivityEventUncheckedCreateNestedManyWithoutUserInput
-    ownedChallenges?: ChallengeUncheckedCreateNestedManyWithoutAdminInput
-  }
-
-  export type UserCreateOrConnectWithoutDay1PhotosInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutDay1PhotosInput, UserUncheckedCreateWithoutDay1PhotosInput>
-  }
-
-  export type ChallengeCreateWithoutDay1PhotosInput = {
-    id?: string
-    name: string
-    description?: string
-    startDate: Date | string
-    endDate: Date | string
-    isPublic?: boolean
-    inviteCode: string
-    maxMembers?: number | null
-    isActive?: boolean
-    ended?: boolean
-    createdAt?: Date | string
-    admin: UserCreateNestedOneWithoutOwnedChallengesInput
-    members?: ChallengeMemberCreateNestedManyWithoutChallengeInput
-    tasks?: ChallengeTaskCreateNestedManyWithoutChallengeInput
-    taskLogs?: TaskLogCreateNestedManyWithoutChallengeInput
-    daySummaries?: DaySummaryCreateNestedManyWithoutChallengeInput
-    weeklyScores?: WeeklyScoreCreateNestedManyWithoutChallengeInput
-    activity?: ActivityEventCreateNestedManyWithoutChallengeInput
-  }
-
-  export type ChallengeUncheckedCreateWithoutDay1PhotosInput = {
-    id?: string
-    name: string
-    description?: string
-    startDate: Date | string
-    endDate: Date | string
-    isPublic?: boolean
-    inviteCode: string
-    maxMembers?: number | null
-    isActive?: boolean
-    ended?: boolean
-    adminId: string
-    createdAt?: Date | string
-    members?: ChallengeMemberUncheckedCreateNestedManyWithoutChallengeInput
-    tasks?: ChallengeTaskUncheckedCreateNestedManyWithoutChallengeInput
-    taskLogs?: TaskLogUncheckedCreateNestedManyWithoutChallengeInput
-    daySummaries?: DaySummaryUncheckedCreateNestedManyWithoutChallengeInput
-    weeklyScores?: WeeklyScoreUncheckedCreateNestedManyWithoutChallengeInput
-    activity?: ActivityEventUncheckedCreateNestedManyWithoutChallengeInput
-  }
-
-  export type ChallengeCreateOrConnectWithoutDay1PhotosInput = {
-    where: ChallengeWhereUniqueInput
-    create: XOR<ChallengeCreateWithoutDay1PhotosInput, ChallengeUncheckedCreateWithoutDay1PhotosInput>
-  }
-
-  export type UserUpsertWithoutDay1PhotosInput = {
-    update: XOR<UserUpdateWithoutDay1PhotosInput, UserUncheckedUpdateWithoutDay1PhotosInput>
-    create: XOR<UserCreateWithoutDay1PhotosInput, UserUncheckedCreateWithoutDay1PhotosInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutDay1PhotosInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutDay1PhotosInput, UserUncheckedUpdateWithoutDay1PhotosInput>
-  }
-
-  export type UserUpdateWithoutDay1PhotosInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: StringFieldUpdateOperationsInput | string
-    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    displayName?: NullableStringFieldUpdateOperationsInput | string | null
-    totalPoints?: IntFieldUpdateOperationsInput | number
-    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
-    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    longestStreak?: IntFieldUpdateOperationsInput | number
-    mantra?: NullableStringFieldUpdateOperationsInput | string | null
-    streakTokens?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    accounts?: AccountUpdateManyWithoutUserNestedInput
-    sessions?: SessionUpdateManyWithoutUserNestedInput
-    memberships?: ChallengeMemberUpdateManyWithoutUserNestedInput
-    taskLogs?: TaskLogUpdateManyWithoutUserNestedInput
-    daySummaries?: DaySummaryUpdateManyWithoutUserNestedInput
-    weeklyScores?: WeeklyScoreUpdateManyWithoutUserNestedInput
-    activity?: ActivityEventUpdateManyWithoutUserNestedInput
-    ownedChallenges?: ChallengeUpdateManyWithoutAdminNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutDay1PhotosInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    email?: StringFieldUpdateOperationsInput | string
-    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    displayName?: NullableStringFieldUpdateOperationsInput | string | null
-    totalPoints?: IntFieldUpdateOperationsInput | number
-    peakLeaguePoints?: IntFieldUpdateOperationsInput | number
-    lastCelebratedLeague?: NullableStringFieldUpdateOperationsInput | string | null
-    currentStreak?: IntFieldUpdateOperationsInput | number
-    longestStreak?: IntFieldUpdateOperationsInput | number
-    mantra?: NullableStringFieldUpdateOperationsInput | string | null
-    streakTokens?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
-    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
-    memberships?: ChallengeMemberUncheckedUpdateManyWithoutUserNestedInput
-    taskLogs?: TaskLogUncheckedUpdateManyWithoutUserNestedInput
-    daySummaries?: DaySummaryUncheckedUpdateManyWithoutUserNestedInput
-    weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutUserNestedInput
-    activity?: ActivityEventUncheckedUpdateManyWithoutUserNestedInput
-    ownedChallenges?: ChallengeUncheckedUpdateManyWithoutAdminNestedInput
-  }
-
-  export type ChallengeUpsertWithoutDay1PhotosInput = {
-    update: XOR<ChallengeUpdateWithoutDay1PhotosInput, ChallengeUncheckedUpdateWithoutDay1PhotosInput>
-    create: XOR<ChallengeCreateWithoutDay1PhotosInput, ChallengeUncheckedCreateWithoutDay1PhotosInput>
-    where?: ChallengeWhereInput
-  }
-
-  export type ChallengeUpdateToOneWithWhereWithoutDay1PhotosInput = {
-    where?: ChallengeWhereInput
-    data: XOR<ChallengeUpdateWithoutDay1PhotosInput, ChallengeUncheckedUpdateWithoutDay1PhotosInput>
-  }
-
-  export type ChallengeUpdateWithoutDay1PhotosInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    inviteCode?: StringFieldUpdateOperationsInput | string
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    ended?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    admin?: UserUpdateOneRequiredWithoutOwnedChallengesNestedInput
-    members?: ChallengeMemberUpdateManyWithoutChallengeNestedInput
-    tasks?: ChallengeTaskUpdateManyWithoutChallengeNestedInput
-    taskLogs?: TaskLogUpdateManyWithoutChallengeNestedInput
-    daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
-    weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
-    activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-  }
-
-  export type ChallengeUncheckedUpdateWithoutDay1PhotosInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    startDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    endDate?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    inviteCode?: StringFieldUpdateOperationsInput | string
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    ended?: BoolFieldUpdateOperationsInput | boolean
-    adminId?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ChallengeMemberUncheckedUpdateManyWithoutChallengeNestedInput
-    tasks?: ChallengeTaskUncheckedUpdateManyWithoutChallengeNestedInput
-    taskLogs?: TaskLogUncheckedUpdateManyWithoutChallengeNestedInput
-    daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
-    weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
-    activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -25112,14 +23193,6 @@ export namespace Prisma {
     isActive?: boolean
     ended?: boolean
     createdAt?: Date | string
-  }
-
-  export type Day1PhotoCreateManyUserInput = {
-    id?: string
-    challengeId: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -25356,7 +23429,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateWithoutAdminInput = {
@@ -25377,7 +23449,6 @@ export namespace Prisma {
     daySummaries?: DaySummaryUncheckedUpdateManyWithoutChallengeNestedInput
     weeklyScores?: WeeklyScoreUncheckedUpdateManyWithoutChallengeNestedInput
     activity?: ActivityEventUncheckedUpdateManyWithoutChallengeNestedInput
-    day1Photos?: Day1PhotoUncheckedUpdateManyWithoutChallengeNestedInput
   }
 
   export type ChallengeUncheckedUpdateManyWithoutAdminInput = {
@@ -25392,30 +23463,6 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     ended?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type Day1PhotoUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    challenge?: ChallengeUpdateOneRequiredWithoutDay1PhotosNestedInput
-  }
-
-  export type Day1PhotoUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    challengeId?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type Day1PhotoUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    challengeId?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChallengeMemberCreateManyChallengeInput = {
@@ -25483,14 +23530,6 @@ export namespace Prisma {
     type: string
     title: string
     points?: number
-  }
-
-  export type Day1PhotoCreateManyChallengeInput = {
-    id?: string
-    userId: string
-    imageData: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type ChallengeMemberUpdateWithoutChallengeInput = {
@@ -25696,30 +23735,6 @@ export namespace Prisma {
     type?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     points?: IntFieldUpdateOperationsInput | number
-  }
-
-  export type Day1PhotoUpdateWithoutChallengeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutDay1PhotosNestedInput
-  }
-
-  export type Day1PhotoUncheckedUpdateWithoutChallengeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type Day1PhotoUncheckedUpdateManyWithoutChallengeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    imageData?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskTierCreateManyTaskInput = {
