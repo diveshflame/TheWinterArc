@@ -217,8 +217,8 @@ function ChallengesTasks({
                     {task.inputType === "NUMBER"
                       ? `${task.points} pts / ${unitsLabel(task)}`
                       : task.target
-                      ? `${task.points} pts · ${task.target} days/wk (Credited Sunday)`
-                      : `${task.points} pts (Credited Sunday)`}
+                      ? `${task.points} pts · ${task.target} days/wk (Credited this week)`
+                      : `${task.points} pts (Credited this week)`}
                   </span>
                 </div>
                 {task.inputType === "NUMBER" &&

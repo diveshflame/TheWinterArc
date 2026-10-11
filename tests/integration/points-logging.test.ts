@@ -78,17 +78,16 @@ describe("saveTaskLog updates member points", () => {
     expect(m!.points).toBe(9);
 
     // Log a weekly number task (gym value 4 → 4 × 40 pts/unit = 160) -> creates
-    // the week's 160-pt WeeklyScore. Weekly points only credit on Sunday, so the
-    // member total reflects that depending on the day the test runs.
-    const sundayCredit = new Date().getDay() === 0 ? 160 : 0;
+    // the week's 160-pt WeeklyScore. Weekly points are credited as soon as they
+    // are scored, so the member total includes them immediately.
     await saveTaskLog(challengeId, taskIds["Gym"], true, 4);
     m = await db.challengeMember.findUnique({ where: { id: member.id } });
-    expect(m!.points).toBe(9 + sundayCredit);
+    expect(m!.points).toBe(9 + 160);
 
     // Toggling the habit off should remove those 5 points.
     await saveTaskLog(challengeId, taskIds["Habit A"], false, 0);
     m = await db.challengeMember.findUnique({ where: { id: member.id } });
-    expect(m!.points).toBe(4 + sundayCredit);
+    expect(m!.points).toBe(4 + 160);
   });
 
   it("awards per-unit points for daily NUMBER tasks and deducts negative toggle points", async () => {

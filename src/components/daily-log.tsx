@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { saveMultipleTaskLogs } from "@/app/actions";
 import {
@@ -10,6 +11,13 @@ import {
   type ChallengeTask,
   type TaskLog,
 } from "@/lib/scoring";
+import {
+  movementConfigFor,
+  clampMovementValue,
+  sanitizeMovementInput,
+  parseMovementInput,
+  applyMovementDelta,
+} from "@/lib/movement-config";
 
 const MOVEMENT_DEBOUNCE_MS = 5000;
 const GROUP_DEBOUNCE_MS = 400;
@@ -46,22 +54,25 @@ export function DailyLogClient({
     return state;
   });
 
-  // Local immediate state for responsive movement counter updates
-  const [movementValues, setMovementValues] = useState<Record<string, number>>(() => {
-    const state: Record<string, number> = {};
-    tasks.forEach((task) => {
-      if (task.inputType === "NUMBER") {
-        const log = initialLogs.find((l) => l.taskId === task.id);
-        state[task.id] = log ? log.value : 0;
-      }
-    });
-    return state;
-  });
-
   // All sections collapsed initially as requested
   const [isDailyChecklistOpen, setIsDailyChecklistOpen] = useState(false);
   const [isMovementOpen, setIsMovementOpen] = useState(false);
   const [isWeeklyOpen, setIsWeeklyOpen] = useState(false);
+
+  // Movement bottom-sheet + save feedback
+  const [openMovementTaskId, setOpenMovementTaskId] = useState<string | null>(null);
+  const [movementSaving, setMovementSaving] = useState(false);
+  const [movementToast, setMovementToast] = useState<null | {
+    taskId: string;
+    name: string;
+    unit: string;
+    value: number;
+    prevValue: number;
+  }>(null);
+  const [movementError, setMovementError] = useState<null | {
+    taskId: string;
+    value: number;
+  }>(null);
 
   const [saved, setSaved] = useState(false);
   const [savePulseKey, setSavePulseKey] = useState(0);
@@ -74,6 +85,7 @@ export function DailyLogClient({
   const flushInFlight = useRef(false);
   const flushQueuedKind = useRef<"MOVEMENT" | "GROUP" | null>(null);
   const groupTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Per-task debounce timers for movement values (5s)
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
@@ -83,6 +95,7 @@ export function DailyLogClient({
     return () => {
       Object.values(timers).forEach((timer) => clearTimeout(timer));
       if (groupTimerRef.current) clearTimeout(groupTimerRef.current);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
 
@@ -252,17 +265,11 @@ export function DailyLogClient({
         clearDraft();
       } else {
         const restored: Record<string, PendingUpdate> = {};
-        const movementRestore: Record<string, number> = {};
         valid.forEach((d) => {
           restored[d.taskId] = { completed: d.completed, value: d.value, bonus: d.bonus };
-          const task = tasks.find((t) => t.id === d.taskId);
-          if (task?.type === "DAILY" && task.inputType === "NUMBER") {
-            movementRestore[d.taskId] = d.value;
-          }
         });
         pendingRef.current = { ...pendingRef.current, ...restored };
         setPendingCount(Object.keys(pendingRef.current).length);
-        setMovementValues((prev) => ({ ...prev, ...movementRestore }));
         setLogState((prev) => {
           const next = { ...prev };
           valid.forEach((d) => {
@@ -332,15 +339,73 @@ export function DailyLogClient({
     save(taskId, !current.completed, current.value);
   }
 
-  // Debounced handler for Movement numbers: update displayed reps immediately,
-  // wait 5s of inactivity before persisting to the DB.
-  function handleMovementChange(taskId: string, nextVal: number) {
-    const validVal = Math.max(0, Math.round(nextVal * 10) / 10);
-    setMovementValues((prev) => ({
-      ...prev,
-      [taskId]: validVal,
-    }));
-    markPending(taskId, validVal > 0, validVal);
+  // Movement is committed explicitly when the user taps Done in the sheet.
+  // Nothing is written while they type or tap chips; on Done we optimistically
+  // update the row, persist just that task, and offer a short undo. Failures
+  // roll the row back and surface a Retry action.
+  async function saveMovement(
+    taskId: string,
+    rawValue: number,
+    opts: { silent?: boolean } = {}
+  ): Promise<boolean> {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return false;
+
+    const cfg = movementConfigFor(task);
+    const value = clampMovementValue(rawValue, cfg);
+    const prev = logState[taskId] || { completed: false, value: 0 };
+    const completed = value > 0;
+    const bonus = dailyBonus(task, value);
+
+    setMovementError(null);
+    setLogState((s) => ({ ...s, [taskId]: { completed, value } }));
+
+    setIsSyncing(true);
+    setMovementSaving(true);
+    try {
+      const res = await saveMultipleTaskLogs(challengeId, todayKey, [
+        { taskId, completed, value, bonusPoints: bonus },
+      ]);
+      if (!res.ok) throw new Error(res.error || "Save failed");
+
+      setSaved(true);
+      setSavePulseKey((k) => k + 1);
+      if (!opts.silent) {
+        setMovementToast({
+          taskId,
+          name: task.name,
+          unit: cfg.unit,
+          value,
+          prevValue: prev.value,
+        });
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setMovementToast(null), 5000);
+      }
+      router.refresh();
+      return true;
+    } catch {
+      setLogState((s) => ({ ...s, [taskId]: prev }));
+      setMovementError({ taskId, value: rawValue });
+      return false;
+    } finally {
+      setIsSyncing(false);
+      setMovementSaving(false);
+    }
+  }
+
+  function undoMovement() {
+    if (!movementToast) return;
+    const { taskId, prevValue } = movementToast;
+    setMovementToast(null);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    void saveMovement(taskId, prevValue, { silent: true });
+  }
+
+  function retryMovement() {
+    if (!movementError) return;
+    const { taskId, value } = movementError;
+    setMovementError(null);
+    void saveMovement(taskId, value);
   }
 
   // Weekly numbers persist with the short group debounce
@@ -362,6 +427,21 @@ export function DailyLogClient({
   );
   const weeklyTasks = tasks.filter((t) => t.type === "WEEKLY");
 
+  const openMovementTask = openMovementTaskId
+    ? dailyMovementTasks.find((t) => t.id === openMovementTaskId) ?? null
+    : null;
+
+  // Close the sheet and return focus to the row that opened it.
+  function closeMovementSheet() {
+    const taskId = openMovementTaskId;
+    setOpenMovementTaskId(null);
+    if (taskId) {
+      requestAnimationFrame(() => {
+        document.getElementById(`movement-row-${taskId}`)?.focus();
+      });
+    }
+  }
+
   // Completion calculation for DAILY HABIT tasks (excluding negative/penalty tasks and weekly tasks)
   const positiveHabits = dailyChecklistTasks.filter((t) => t.points >= 0);
   const totalHabits = positiveHabits.length;
@@ -377,7 +457,7 @@ export function DailyLogClient({
       : null;
 
   // Points today calculation — ONLY DAILY tasks contribute to today's score!
-  // Weekly task points are credited on Sunday at the end of the week.
+  // Weekly task points count toward the week (credited as soon as they are scored).
   let todayTotalPoints = 0;
   tasks.forEach((t) => {
     if (t.type !== "DAILY") return;
@@ -603,7 +683,7 @@ export function DailyLogClient({
         </div>
       )}
 
-      {/* 5. Movement Section (Collapsible, Mobile-Optimized & 5s Debounced) */}
+      {/* 5. Movement Section (Collapsible compact list; tap a row to edit) */}
       {dailyMovementTasks.length > 0 && (
         <div className="space-y-2 pt-1">
           <button
@@ -624,124 +704,34 @@ export function DailyLogClient({
           </button>
 
           {isMovementOpen && (
-            <div className="space-y-2.5 sm:space-y-3">
+            <div className="rounded-2xl border border-[#1e263d] bg-[#121727] divide-y divide-[#1e263d] overflow-hidden shadow-sm">
               {dailyMovementTasks.map((task) => {
-                const liveValue = movementValues[task.id] ?? logState[task.id]?.value ?? 0;
-                const unitRaw = task.unit || "reps";
-                const isPenalty = task.points < 0;
-                const threshold = task.bonusThreshold;
-                const bonusPts = task.bonusPoints;
-                const hasBonus = threshold && threshold > 0 && bonusPts;
-                const progressPct = hasBonus
-                  ? Math.min(100, Math.round((liveValue / threshold) * 100))
-                  : 0;
-
-                const cardPoints = numberTaskPoints(liveValue, task);
-
+                const cfg = movementConfigFor(task);
+                const state = logState[task.id] || { completed: false, value: 0 };
+                const pts = numberTaskPoints(state.value, task);
                 return (
-                  <div
+                  <button
                     key={task.id}
-                    className={`rounded-2xl border p-3 sm:p-4 space-y-3 shadow-sm transition-colors ${
-                      isPenalty
-                        ? "border-[#6b2532] bg-[#16121f]"
-                        : "border-[#1e263d] bg-[#121727]"
-                    }`}
+                    id={`movement-row-${task.id}`}
+                    type="button"
+                    onClick={() => setOpenMovementTaskId(task.id)}
+                    className="w-full min-h-[56px] px-3.5 py-3 flex items-center gap-3 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.04] select-none"
                   >
-                    {/* Card Header: Task name on left, points badge on right */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm sm:text-base font-bold text-foreground">{task.name}</span>
-                        {isPenalty && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#3b181e] text-[#f87171] border border-[#59232a] shrink-0">
-                            -pts
-                          </span>
-                        )}
-                      </div>
-                      <div className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-[#452713] border border-[#78350f] text-[#fed7aa] text-[11px] sm:text-xs font-bold shadow-sm">
-                        {cardPoints} pts
-                      </div>
-                    </div>
-
-                    {/* Stepper row: [ - ] [ Value & Unit Box ] [ + ] */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        aria-label="Decrease reps"
-                        onClick={() => handleMovementChange(task.id, Math.max(0, liveValue - 1))}
-                        className="h-10 w-12 sm:h-11 sm:w-13 rounded-xl bg-white text-black hover:bg-zinc-200 active:scale-95 font-bold text-xl flex items-center justify-center transition-all shadow-sm shrink-0 select-none"
-                      >
-                        −
-                      </button>
-
-                      <div className="h-10 sm:h-11 flex-1 rounded-xl bg-[#0b0f19] border border-[#1e263d] flex items-center justify-center gap-1.5 px-3">
-                        <span className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                          {liveValue}
-                        </span>
-                        <span className="text-xs sm:text-sm font-normal text-muted">
-                          {unitRaw}
-                        </span>
-                      </div>
-
-                      <button
-                        type="button"
-                        aria-label="Increase reps"
-                        onClick={() => handleMovementChange(task.id, liveValue + 1)}
-                        className="h-10 w-12 sm:h-11 sm:w-13 rounded-xl bg-white text-black hover:bg-zinc-200 active:scale-95 font-bold text-xl flex items-center justify-center transition-all shadow-sm shrink-0 select-none"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    {/* Quick add buttons row + custom input */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                      {[1, 2, 5].map((n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => handleMovementChange(task.id, liveValue + n)}
-                          className={`flex-1 min-w-[42px] rounded-lg sm:rounded-xl border py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-foreground active:scale-95 transition-all ${
-                            isPenalty
-                              ? "bg-[#251924] border-[#4d1f2b] hover:bg-[#322030]"
-                              : "bg-[#1a2238] border-[#242e4d] hover:bg-[#202c48]"
-                          }`}
-                        >
-                          +{n}
-                        </button>
-                      ))}
-                      <CustomAmountInput
-                        placeholder="Amount"
-                        onSubmit={(n) => handleMovementChange(task.id, liveValue + n)}
-                      />
-                    </div>
-
-                    {/* Bonus progress or penalty note */}
-                    {isPenalty ? (
-                      <p className="text-[11px] sm:text-xs text-[#f87171]">
-                        {task.points} pts per {task.unitCount && task.unitCount > 1 ? `${task.unitCount} ` : ""}{unitRaw} logged
-                      </p>
-                    ) : hasBonus ? (
-                      <div className="space-y-1">
-                        <div className="h-1 sm:h-1.5 rounded-full bg-[#1b253b] overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-[#06b6d4] transition-all duration-300"
-                            style={{ width: `${progressPct}%` }}
-                          />
-                        </div>
-                        {liveValue < threshold ? (
-                          <div className="flex items-center gap-1 text-[11px] sm:text-xs text-muted">
-                            <span className="text-[#38bdf8] text-xs">↻</span>
-                            <span>
-                              Add <span className="text-[#38bdf8] font-bold">{threshold - liveValue} {unitRaw}</span> more for a +{bonusPts}pts bonus
-                            </span>
-                          </div>
-                        ) : (
-                          <p className="text-[11px] sm:text-xs text-emerald-400 font-semibold">
-                            ✓ +{bonusPts} bonus earned!
-                          </p>
-                        )}
-                      </div>
-                    ) : null}
-                  </div>
+                    <MovementIcon task={task} className="h-5 w-5 shrink-0 text-[#8a97b2]" />
+                    <span className="flex-1 min-w-0 truncate text-sm font-medium text-foreground">
+                      {task.name}
+                    </span>
+                    <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+                      {state.value}
+                      <span className="ml-1 text-xs font-normal text-muted">
+                        {cfg.unit}
+                      </span>
+                    </span>
+                    <span className="shrink-0 rounded-md border border-[#5c3a1e] bg-[#3a2314] px-2 py-0.5 text-[11px] font-bold text-[#ffb35c]">
+                      {pts} pts
+                    </span>
+                    <ChevronIcon className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
+                  </button>
                 );
               })}
             </div>
@@ -767,7 +757,7 @@ export function DailyLogClient({
                 }`}
               />
             </div>
-            <span className="text-[11px] text-muted">Credited Sunday</span>
+            <span className="text-[11px] text-muted">Credited this week</span>
           </button>
 
           {isWeeklyOpen && (
@@ -805,7 +795,7 @@ export function DailyLogClient({
                             )}
                           </div>
                           <p className={`text-xs ${isPenalty ? "text-[#f87171]" : "text-muted"}`}>
-                            {task.points} pts / {task.unitCount && task.unitCount > 1 ? `${task.unitCount} ` : ""}{unitRaw} · Credited Sunday
+                            {task.points} pts / {task.unitCount && task.unitCount > 1 ? `${task.unitCount} ` : ""}{unitRaw} · Credited this week
                           </p>
                         </div>
                         <div className="text-right shrink-0">
@@ -883,16 +873,16 @@ export function DailyLogClient({
                             <span className={isMet ? "text-emerald-400 font-medium" : ""}>
                               {doneCount}/{target} days logged this week
                             </span>
-                            {isMet ? " ✓" : ""} · Credited Sunday
+                            {isMet ? " ✓" : ""} · Credited this week
                           </>
                         ) : (
-                          "Logged today · Credited Sunday"
+                          "Logged today · Credited this week"
                         )}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
                       <span className="text-xs font-bold text-muted">
-                        +{task.points} Sun
+                        +{task.points} this week
                       </span>
                     </div>
                   </div>
@@ -902,6 +892,376 @@ export function DailyLogClient({
           )}
         </div>
       )}
+
+      {/* Movement editor sheet */}
+      {openMovementTask && (
+        <MovementSheet
+          task={openMovementTask}
+          value={logState[openMovementTask.id]?.value ?? 0}
+          saving={movementSaving}
+          onClose={closeMovementSheet}
+          onDone={async (value) => {
+            const ok = await saveMovement(openMovementTask.id, value);
+            if (ok) closeMovementSheet();
+            return ok;
+          }}
+        />
+      )}
+
+      {/* Movement save (undo) + failure (retry) toasts */}
+      {movementToast && (
+        <MovementToast
+          message={`${movementToast.name}: ${movementToast.value} ${movementToast.unit} saved`}
+          actionLabel="Undo"
+          onAction={undoMovement}
+          onDismiss={() => setMovementToast(null)}
+        />
+      )}
+      {movementError && (
+        <MovementToast
+          message="Couldn't save. Tap retry."
+          actionLabel="Retry"
+          onAction={retryMovement}
+          onDismiss={() => setMovementError(null)}
+          error
+        />
+      )}
+    </div>
+  );
+}
+
+function MovementIcon({
+  task,
+  className,
+}: {
+  task: ChallengeTask;
+  className?: string;
+}) {
+  const name = task.name.toLowerCase();
+  const common = {
+    className,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  if (name.includes("run")) {
+    return (
+      <svg {...common}>
+        <circle cx="17" cy="5" r="2" />
+        <path d="M15 22l-3-6-3 2-2 4" />
+        <path d="M8 12l3-2 3 1 2-3" />
+      </svg>
+    );
+  }
+  if (name.includes("walk")) {
+    return (
+      <svg {...common}>
+        <circle cx="13" cy="4" r="2" />
+        <path d="M12 6l-2 5 3 2 1 5" />
+        <path d="M10 11l-3 3" />
+        <path d="M13 13l3 1" />
+      </svg>
+    );
+  }
+  if (name.includes("push")) {
+    return (
+      <svg {...common}>
+        <path d="M3 17h18" />
+        <path d="M6 17v-4a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v4" />
+        <circle cx="12" cy="6" r="2" />
+      </svg>
+    );
+  }
+  if (name.includes("pull")) {
+    return (
+      <svg {...common}>
+        <path d="M4 5h16" />
+        <path d="M10 5v6l-2 3v5" />
+        <path d="M14 5v6l2 3v5" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M6 7v10M4 6v12M18 7v10M20 6v12" />
+      <path d="M6 12h12" />
+    </svg>
+  );
+}
+
+function MovementSheet({
+  task,
+  value,
+  saving,
+  onDone,
+  onClose,
+}: {
+  task: ChallengeTask;
+  value: number;
+  saving: boolean;
+  onDone: (value: number) => Promise<boolean>;
+  onClose: () => void;
+}) {
+  const cfg = movementConfigFor(task);
+  const [text, setText] = useState(() => (value > 0 ? String(value) : ""));
+  const [clampedNote, setClampedNote] = useState(false);
+  const [announce, setAnnounce] = useState("");
+  const [bottomOffset, setBottomOffset] = useState(0);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+
+  const parsed = parseMovementInput(text, cfg);
+  const pts = numberTaskPoints(parsed, task);
+
+  // Focus + select the field as soon as the sheet opens.
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  // Lock background scroll while the sheet is open.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
+  // Lift the sheet above the on-screen keyboard.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setBottomOffset(offset);
+    };
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  // Escape closes; Tab is trapped within the dialog.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === "Tab" && sheetRef.current) {
+        const focusables = Array.from(
+          sheetRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  // Politely announce the pending points, debounced so it does not chatter.
+  useEffect(() => {
+    const id = setTimeout(() => setAnnounce(`${pts} points`), 350);
+    return () => clearTimeout(id);
+  }, [pts]);
+
+  function setValue(next: number) {
+    const clamped = clampMovementValue(next, cfg);
+    setClampedNote(next >= cfg.maxPerDay);
+    setText(clamped > 0 ? String(clamped) : "");
+  }
+
+  function handleInput(raw: string) {
+    const sanitized = sanitizeMovementInput(raw, cfg);
+    const numeric = parseMovementInput(sanitized, cfg);
+    setClampedNote(sanitized !== "" && numeric >= cfg.maxPerDay);
+    setText(sanitized);
+  }
+
+  async function commit() {
+    if (saving) return;
+    await onDone(parsed);
+  }
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-50" role="presentation">
+      <div
+        className="absolute inset-0 bg-black/60"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="movement-sheet-title"
+        style={{ bottom: bottomOffset }}
+        className="absolute inset-x-0 mx-auto max-w-md rounded-t-[18px] border-t border-[#1f2a44] bg-[#16213a] p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl animate-sheet-up"
+      >
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[#2a3a5c]" />
+        <h2
+          id="movement-sheet-title"
+          className="flex items-center gap-2 text-sm font-semibold text-foreground"
+        >
+          <MovementIcon task={task} className="h-4 w-4 text-[#8a97b2]" />
+          {task.name}
+        </h2>
+
+        <div className="mt-4 flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={`Decrease ${task.name}`}
+            onClick={() => setValue(parsed - cfg.step)}
+            className="h-12 w-14 shrink-0 rounded-xl border border-[#2a3a5c] bg-[#1b2437] text-2xl font-bold text-foreground active:scale-95 transition-all"
+          >
+            −
+          </button>
+          <div className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-xl border border-[#1f2a44] bg-[#0b0f19] px-3 focus-within:border-[#38bdf8]">
+            <input
+              ref={inputRef}
+              id="movement-sheet-input"
+              aria-label={`${task.name} value in ${cfg.unit}`}
+              inputMode={cfg.inputMode}
+              type="text"
+              autoComplete="off"
+              enterKeyHint="done"
+              placeholder="0"
+              value={text}
+              onChange={(e) => handleInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void commit();
+                }
+              }}
+              className="w-full min-w-0 bg-transparent text-center text-2xl font-extrabold tracking-tight text-foreground outline-none placeholder:text-muted/50"
+            />
+            <span className="shrink-0 text-sm font-normal text-muted">
+              {cfg.unit}
+            </span>
+          </div>
+          <button
+            type="button"
+            aria-label={`Increase ${task.name}`}
+            onClick={() => setValue(parsed + cfg.step)}
+            className="h-12 w-14 shrink-0 rounded-xl bg-[#f1f5f9] text-2xl font-bold text-[#04202e] active:scale-95 transition-all"
+          >
+            +
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {cfg.chips.map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setValue(applyMovementDelta(parsed, n, cfg))}
+              className="flex-1 min-w-[48px] rounded-xl border border-[#2a3a5c] bg-[#1b2437] py-2.5 text-sm font-bold text-foreground active:scale-95 transition-all"
+            >
+              +{n}
+            </button>
+          ))}
+        </div>
+
+        {clampedNote && (
+          <p className="mt-2 text-xs text-[#fbbf24]" role="alert">
+            Max {cfg.maxPerDay} {cfg.unit} per day
+          </p>
+        )}
+
+        <div className="mt-3 flex items-center justify-between">
+          <span className="rounded-lg border border-[#5c3a1e] bg-[#3a2314] px-2.5 py-1 text-xs font-bold text-[#ffb35c]">
+            {pts} pts
+          </span>
+          <span className="sr-only" aria-live="polite">
+            {announce}
+          </span>
+        </div>
+
+        <div className="mt-4 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-[#2a3a5c] bg-[#1b2437] py-3 text-sm font-semibold text-[#8a97b2] active:scale-[0.98] transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void commit()}
+            className="flex-1 rounded-xl bg-[#38bdf8] py-3 text-sm font-bold text-[#04202e] active:scale-[0.98] transition-all disabled:opacity-60 disabled:active:scale-100"
+          >
+            {saving ? "Saving…" : `Done · ${pts} pts`}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function MovementToast({
+  message,
+  actionLabel,
+  onAction,
+  onDismiss,
+  error = false,
+}: {
+  message: string;
+  actionLabel: string;
+  onAction: () => void;
+  onDismiss: () => void;
+  error?: boolean;
+}) {
+  return (
+    <div className="fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4">
+      <div
+        role="status"
+        className={`flex w-full max-w-md items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 shadow-lg animate-toast-in ${
+          error ? "border-[#6b2532] bg-[#241418]" : "border-[#1f2a44] bg-[#16213a]"
+        }`}
+      >
+        <span className="min-w-0 truncate text-xs text-foreground">{message}</span>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onAction}
+            className="text-xs font-bold text-[#38bdf8]"
+          >
+            {actionLabel}
+          </button>
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={onDismiss}
+            className="text-muted hover:text-foreground"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

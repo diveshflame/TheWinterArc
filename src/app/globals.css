@@ -77,8 +77,25 @@ body {
   100% { transform: translate(var(--drift, 4px), -65px) scale(0.4); opacity: 0; }
 }
 
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-sheet-up {
+  animation: sheet-up 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes toast-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.animate-toast-in {
+  animation: toast-in 0.18s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .flame-outer, .flame-inner, .ember-p, .animate-check, .animate-autosave {
+  .flame-outer, .flame-inner, .ember-p, .animate-check, .animate-autosave,
+  .animate-sheet-up, .animate-toast-in {
     animation: none;
   }
 }

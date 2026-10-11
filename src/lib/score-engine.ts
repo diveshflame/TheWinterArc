@@ -331,7 +331,7 @@ export async function runDayScoring(
   await syncMemberTotals(userId, challengeId, run.length, longest);
 }
 
-async function syncMemberTotals(
+export async function syncMemberTotals(
   userId: string,
   challengeId: string,
   currentStreak: number,
@@ -344,19 +344,11 @@ async function syncMemberTotals(
     where: { userId, challengeId },
   });
 
-  const now = new Date();
-  const currentWeekStart = startOfWeek(now);
-
-  // Weekly points are credited at the end of the week (Sunday).
-  // Include weekly scores for past weeks OR current week if today is Sunday (day 0) or past week.
-  const creditedWeeklyPoints = weeklyScores.reduce((s, w) => {
-    const isPastWeek = w.weekStart.getTime() < currentWeekStart.getTime();
-    const isSunday = now.getDay() === 0;
-    if (isPastWeek || isSunday) {
-      return s + w.points;
-    }
-    return s;
-  }, 0);
+  // Weekly points are credited as soon as they are scored. A new WeeklyScore row
+  // is created per week (keyed by weekStart = Monday), so the current week's live
+  // points count immediately alongside all past weeks, and the weekly bucket
+  // naturally resets at the start of Monday.
+  const creditedWeeklyPoints = weeklyScores.reduce((s, w) => s + w.points, 0);
 
   const totalPoints =
     summaries.reduce((s, d) => s + d.pointsAwarded, 0) + creditedWeeklyPoints;

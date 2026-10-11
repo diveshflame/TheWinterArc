@@ -86,8 +86,9 @@ src/app/
   no-fast-food + meals-at-home (16 tasks total).
 - **Daily bonus** (+5) when completion ≥ 75%.
 - **Streak bonus** (+15) every 7 consecutive successful days.
-- **Weekly bonus** (every Sunday) for hitting weekly gym / push-up / walking
-  targets and maintaining no-sugar / no-fast-food / meals-at-home all week.
+- **Weekly bonus** (credited as soon as scored; the week's bucket resets each
+  Monday) for hitting weekly gym / push-up / walking targets and maintaining
+  no-sugar / no-fast-food / meals-at-home all week.
 
 ## Notes
 

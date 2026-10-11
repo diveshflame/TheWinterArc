@@ -72,6 +72,12 @@ export function LeaderboardClient({
           const league = leagueState.league;
           const isLegend = league.key === "legend";
 
+          // "THE MAN" title + golden border belongs to the #1 of the Today
+          // leaderboard only. "Lady Don" is a fixed title by player name.
+          const isTodayTop = tab === "today" && i === 0;
+          const isRaksha = row.name.startsWith("Raksha");
+          const subtitle = isRaksha ? "Lady Don" : isTodayTop ? "THE MAN" : null;
+
           return (
             <Fragment key={row.userId}>
               <div
@@ -84,16 +90,16 @@ export function LeaderboardClient({
                 {/* Rank Badge */}
                 <RankBadge rank={i + 1} />
 
-                {/* Avatar with League-colored border & Legend golden ring */}
+                {/* Avatar with League-colored border, Legend/Today-topper golden ring */}
                 <div className="relative shrink-0">
                   <span
                     className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden border-2 transition ${
-                      isLegend
+                      isLegend || isTodayTop
                         ? "ring-2 ring-[#ff8a3d] ring-offset-2 ring-offset-card shadow-[0_0_12px_rgba(255,138,61,0.4)]"
                         : ""
                     }`}
                     style={{
-                      borderColor: league.color,
+                      borderColor: isTodayTop ? "#ff8a3d" : league.color,
                       backgroundColor: `${league.color}20`,
                       color: league.textColor || league.color,
                     }}
@@ -115,14 +121,23 @@ export function LeaderboardClient({
                     {isMe && <span className="ml-1.5 text-xs text-accent font-medium">(you)</span>}
                   </span>
                   
-                  {/* Persona Line: League Icon + Persona in League Color */}
-                  <span
-                    className="flex items-center gap-1 text-xs font-medium truncate mt-0.5"
-                    style={{ color: league.textColor || league.color }}
-                  >
-                    <LeagueIcon type={league.icon} size={12} className="shrink-0" />
-                    <span className="truncate">{league.persona}</span>
-                  </span>
+                  {/* Subtitle: custom title (Today topper "THE MAN" / Raksha "Lady Don") or league persona */}
+                  {subtitle ? (
+                    <span
+                      className="flex items-center gap-1 text-xs font-semibold truncate mt-0.5"
+                      style={{ color: isTodayTop ? "#ff8a3d" : league.textColor || league.color }}
+                    >
+                      {subtitle}
+                    </span>
+                  ) : (
+                    <span
+                      className="flex items-center gap-1 text-xs font-medium truncate mt-0.5"
+                      style={{ color: league.textColor || league.color }}
+                    >
+                      <LeagueIcon type={league.icon} size={12} className="shrink-0" />
+                      <span className="truncate">{league.persona}</span>
+                    </span>
+                  )}
                 </span>
 
                 {/* Right side: Points (large) + League name below in league color */}

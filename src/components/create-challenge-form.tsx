@@ -408,7 +408,7 @@ export function CreateChallengeForm({ adminName }: { adminName: string }) {
                   ) : task.type === "DAILY" ? (
                     `Daily habit — members check it off daily for ${Number(task.points) || 0} pts/day.`
                   ) : (
-                    `Weekly challenge — log daily in Today's log. Evaluated & credited on Sunday if done ${task.target || "N"} days/week (${Number(task.points) || 0} pts).`
+                    `Weekly challenge — log daily in Today's log. Credited this week when done ${task.target || "N"} days/week (${Number(task.points) || 0} pts).`
                   )}
                   {Number(task.points) < 0 && (
                     <span className="text-danger font-medium"> Negative points are deducted.</span>
