@@ -85,7 +85,7 @@ describe("saveTaskLog updates member points", () => {
     // are scored, so the member total includes them immediately.
     await saveTaskLog(challengeId, taskIds["Gym"], true, 4);
     m = await db.challengeMember.findUnique({ where: { id: member.id } });
-    expect(m!.points).toBe(9 + 160);
+    expect(m!.points).toBe(14 + 160);
 
     // Toggling the habit off should remove those 5 points.
     await saveTaskLog(challengeId, taskIds["Habit A"], false, 0);

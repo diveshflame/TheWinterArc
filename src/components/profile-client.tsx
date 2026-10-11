@@ -8,8 +8,12 @@ import {
   updateUserProfile,
   useStreakInsurance,
   markLeagueCelebrated,
+  saveDay1Photo,
+  getDay1Photo,
 } from "@/app/actions";
 import { getLeagueState } from "@/lib/leagues";
+import { ShareLauncher } from "@/components/share/share-launcher";
+import type { ShareCardData, SquadMember } from "@/lib/share/types";
 import {
   LeagueEmblemCard,
   LeagueRoad,
@@ -69,6 +73,13 @@ export interface ProfileClientProps {
   };
   summaries: UserSummaryLog[];
   activeMemberships: ActiveMembershipData[];
+  share?: {
+    challengeId: string;
+    data: ShareCardData;
+    squadMembers: SquadMember[];
+    hasDay1Photo: boolean;
+    avatarUrl: string | null;
+  } | null;
 }
 
 export function ProfileClient({
@@ -77,6 +88,7 @@ export function ProfileClient({
   stats,
   summaries,
   activeMemberships,
+  share = null,
 }: ProfileClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -644,11 +656,39 @@ export function ProfileClient({
         </button>
       </section>
 
+      {/* 11b. Share to Story */}
+      {share && (
+        <section className="pt-1">
+          <ShareLauncher
+            source="profile"
+            data={share.data}
+            squadMembers={share.squadMembers}
+            avatarUrl={share.avatarUrl}
+            hasDay1Photo={share.hasDay1Photo}
+            onSaveDay1Photo={async (dataUrl) => {
+              const res = await saveDay1Photo(share.challengeId, dataUrl);
+              if (!res.ok) throw new Error(res.error ?? "Save failed");
+            }}
+            onLoadDay1Photo={async () => await getDay1Photo(share.challengeId)}
+            className="w-full bg-[#111a2e] border border-[#1f2a44] hover:border-accent/40 p-4 rounded-[14px] flex items-center justify-between text-left transition cursor-pointer shadow-sm group"
+          >
+            <div>
+              <h3 className="font-display font-bold text-sm text-[#e8ecf7] group-hover:text-accent transition">
+                Share to Story
+              </h3>
+              <p className="text-xs text-[#8a97b2] mt-0.5 font-mono">
+                Photo cards · 8 templates
+              </p>
+            </div>
+            <span className="text-accent text-sm font-semibold">Share →</span>
+          </ShareLauncher>
+        </section>
+      )}
+
       {/* 12. Sign Out Button */}
       <section className="pt-3">
         <SignOutButton />
       </section>
-
       {/* Streak Insurance Modal */}
       {showInsuranceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">

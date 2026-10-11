@@ -261,6 +261,15 @@ exports.Prisma.ActivityEventScalarFieldEnum = {
   points: 'points'
 };
 
+exports.Prisma.Day1PhotoScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  challengeId: 'challengeId',
+  imageData: 'imageData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -289,7 +298,8 @@ exports.Prisma.ModelName = {
   TaskLog: 'TaskLog',
   DaySummary: 'DaySummary',
   WeeklyScore: 'WeeklyScore',
-  ActivityEvent: 'ActivityEvent'
+  ActivityEvent: 'ActivityEvent',
+  Day1Photo: 'Day1Photo'
 };
 
 /**

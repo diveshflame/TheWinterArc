@@ -10,6 +10,9 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { DailyLogClient } from "@/components/daily-log";
 import { ChallengeSwitcher } from "@/components/challenge-switcher";
+import { ShareLauncher } from "@/components/share/share-launcher";
+import { getShareBundle } from "@/lib/share/server";
+import { saveDay1Photo, getDay1Photo } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +45,8 @@ export default async function LogPage({
     year: "numeric",
   });
 
+  const shareBundle = await getShareBundle(userId, membership.challenge.id);
+
   return (
     <AppShell>
       <div className="py-6 space-y-4">
@@ -50,6 +55,20 @@ export default async function LogPage({
             challenges={userChallenges}
             activeChallengeId={membership.challenge.id}
           />
+        )}
+        {shareBundle && (
+          <ShareLauncher
+            source="log"
+            data={shareBundle.data}
+            squadMembers={shareBundle.squadMembers}
+            avatarUrl={shareBundle.avatarUrl}
+            hasDay1Photo={shareBundle.hasDay1Photo}
+            onSaveDay1Photo={saveDay1Photo.bind(null, membership.challenge.id)}
+            onLoadDay1Photo={getDay1Photo.bind(null, membership.challenge.id)}
+            className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-[#1f2a44] bg-[#111a2e] py-3 text-sm font-semibold text-accent transition hover:border-accent/40"
+          >
+            Share Malpvara ?
+          </ShareLauncher>
         )}
         <DailyLogClient
           challengeId={membership.challenge.id}

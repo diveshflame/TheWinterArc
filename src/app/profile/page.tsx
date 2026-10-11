@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { startOfDay } from "@/lib/scoring";
 import { AppShell } from "@/components/app-shell";
 import { ProfileClient } from "@/components/profile-client";
+import { getShareBundle } from "@/lib/share/server";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,19 @@ export default async function ProfilePage() {
   );
   const challengeName = winterArcMembership?.challenge.name || "Winter Arc 2026";
 
+  const shareBundle = winterArcMembership
+    ? await getShareBundle(userId, winterArcMembership.challenge.id)
+    : null;
+  const share = shareBundle
+    ? {
+        challengeId: winterArcMembership!.challenge.id,
+        data: shareBundle.data,
+        squadMembers: shareBundle.squadMembers,
+        hasDay1Photo: shareBundle.hasDay1Photo,
+        avatarUrl: shareBundle.avatarUrl,
+      }
+    : null;
+
   return (
     <AppShell>
       <div className="pb-6">
@@ -141,6 +155,7 @@ export default async function ProfilePage() {
           stats={stats}
           summaries={formattedSummaries}
           activeMemberships={activeMemberships}
+          share={share}
         />
       </div>
     </AppShell>

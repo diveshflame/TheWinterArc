@@ -448,9 +448,7 @@ export function DailyLogClient({
   // The same scoring helpers drive the optimistic log and persisted totals.
   const liveLogs = tasks.map((task) => {
     const state = logState[task.id] || { completed: false, value: 0 };
-    const value = task.inputType === "NUMBER"
-      ? movementValues[task.id] ?? state.value
-      : state.value;
+    const value = state.value;
     return {
       taskId: task.id,
       completed: state.completed,

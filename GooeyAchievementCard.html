@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Achievement Card Sharing — Gooey Glassmorphism</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-lime: #00ff87;
+      --indigo-deep: #0d1117;
+      --glass-weak: rgba(255, 255, 255, 0.08);
+      --glass-strong: rgba(15, 23, 42, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.18);
+    }
+
+    body {
+      font-family: "Outfit", "Poppins", ui-rounded, system-ui, -apple-system, BlinkMacSystemFont,
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: radial-gradient(1200px 800px at 50% 0%, #0f172a 0%, #05070f 100%);
+      color: #e8ecf7;
+    }
+
+    .goo-filter {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .liquid-shape {
+      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+      will-change: border-radius, transform, filter;
+      transform-origin: center;
+      animation: liquid-morph 6.5s ease-in-out infinite alternate;
+      filter: url(#goo) saturate(120%);
+    }
+
+    .liquid-shape--alt {
+      border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
+      animation-duration: 7.5s;
+      animation-delay: -0.8s;
+    }
+
+    .liquid-shape--tiny {
+      border-radius: 65% 35% 45% 55% / 55% 45% 55% 45%;
+      animation-duration: 5.8s;
+      animation-delay: -1.2s;
+    }
+
+    .liquid-shape--pill {
+      border-radius: 9999px;
+      animation: liquid-pulse 3.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes liquid-morph {
+      0% {
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      50% {
+        border-radius: 35% 65% 50% 50% / 40% 60% 40% 60%;
+        transform: translate3d(1%, -0.5%, 0) scale(1.015);
+      }
+
+      100% {
+        border-radius: 45% 55% 40% 60% / 65% 35% 65% 35%;
+        transform: translate3d(-1%, 0.5%, 0) scale(0.985);
+      }
+    }
+
+    @keyframes liquid-pulse {
+      0% {
+        transform: scale(0.995);
+        opacity: 0.98;
+      }
+
+      100% {
+        transform: scale(1.01);
+        opacity: 1;
+      }
+    }
+
+    @keyframes liquid-ripple {
+      0% {
+        transform: translate(-50%, -50%) scale(0.96);
+        opacity: 0.28;
+      }
+
+      70% {
+        opacity: 0.08;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(1.15);
+        opacity: 0;
+      }
+    }
+
+    @keyframes droplet-morph {
+      0% {
+        border-radius: 60% 40% 40% 60% / 55% 45% 55% 45%;
+        transform: scale(0.995);
+      }
+
+      100% {
+        border-radius: 45% 55% 55% 45% / 50% 60% 40% 50%;
+        transform: scale(1.01);
+      }
+    }
+
+    @keyframes glow-pulse {
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.28),
+          0 10px 80px -20px rgba(79, 172, 254, 0.9);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(0, 242, 254, 0),
+          inset 0 1px 0 rgba(255, 255, 255, 0.32),
+          0 14px 120px -20px rgba(0, 255, 135, 0.9);
+      }
+    }
+
+    .glass-surface {
+      background: radial-gradient(
+          140% 120% at 50% 0%,
+          rgba(255, 255, 255, 0.16) 0%,
+          rgba(255, 255, 255, 0.06) 60%,
+          rgba(15, 23, 42, 0.48) 100%
+        ),
+        var(--glass-strong);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 40px 120px -40px rgba(79, 172, 254, 0.55);
+    }
+
+    .glass-surface--subtle {
+      background: radial-gradient(
+          160% 140% at 50% 20%,
+          rgba(255, 255, 255, 0.12) 0%,
+          rgba(15, 23, 42, 0.42) 100%
+        ),
+        rgba(15, 23, 42, 0.38);
+      backdrop-filter: blur(14px) saturate(170%);
+      -webkit-backdrop-filter: blur(14px) saturate(170%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 24px 80px -40px rgba(79, 172, 254, 0.45);
+    }
+
+    .liquid-ripple::before,
+    .liquid-ripple::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at 50% 40%,
+        rgba(0, 242, 254, 0.22) 0%,
+        rgba(79, 172, 254, 0.08) 60%,
+        rgba(79, 172, 254, 0) 100%
+      );
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.96);
+      opacity: 0.28;
+      animation: liquid-ripple 4.8s ease-out infinite;
+      filter: blur(6px) url(#goo);
+    }
+
+    .liquid-ripple::after {
+      animation-delay: -1.6s;
+      width: 260px;
+      height: 260px;
+      opacity: 0.22;
+    }
+
+    .glow-text {
+      text-shadow: 0 0 20px rgba(0, 242, 254, 0.45),
+        0 0 80px rgba(79, 172, 254, 0.35), 0 4px 40px rgba(15, 23, 42, 0.45);
+    }
+
+    .soft-shadow {
+      text-shadow: 0 4px 40px rgba(15, 23, 42, 0.55),
+        0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .drop-soft {
+      filter: drop-shadow(0 18px 60px rgba(79, 172, 254, 0.4));
+    }
+
+    .fluid-pill {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .fluid-pill::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(
+          120% 120% at 50% 0%,
+          rgba(255, 255, 255, 0.28) 0%,
+          rgba(255, 255, 255, 0.08) 70%,
+          rgba(79, 172, 254, 0.16) 100%
+        ),
+        linear-gradient(135deg, rgba(0, 242, 254, 0.22) 0%, rgba(79, 172, 254, 0.12) 100%);
+      pointer-events: none;
+      z-index: -1;
+      filter: url(#goo);
+      opacity: 0.98;
+    }
+
+    .droplet-btn {
+      animation: droplet-morph 3.4s ease-in-out infinite alternate;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38),
+        0 30px 120px -40px rgba(0, 255, 135, 0.9),
+        0 0 0 0 rgba(0, 242, 254, 0.25);
+      transition: transform 220ms ease, filter 220ms ease, box-shadow 220ms ease;
+    }
+
+    .droplet-btn:hover {
+      transform: translateY(-1px) scale(1.01);
+      filter: brightness(1.02);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        0 36px 140px -40px rgba(0, 255, 135, 1),
+        0 0 0 4px rgba(0, 242, 254, 0.15);
+    }
+
+    .droplet-btn:active {
+      transform: translateY(0) scale(0.995);
+    }
+
+    .bg-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: opacity 320ms ease, transform 320ms ease;
+      will-change: opacity, transform;
+    }
+
+    .bg-image.fade-out {
+      opacity: 0;
+      transform: scale(1.01);
+    }
+
+    .bg-image.fade-in {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .scrim {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+          120% 80% at 50% 0%,
+          rgba(15, 23, 42, 0.08) 0%,
+          rgba(15, 23, 42, 0.18) 70%,
+          rgba(5, 7, 15, 0.28) 100%
+        ),
+        linear-gradient(
+          to top,
+          rgba(5, 7, 15, 0.32) 0%,
+          rgba(5, 7, 15, 0.08) 60%,
+          rgba(5, 7, 15, 0) 100%
+        );
+      pointer-events: none;
+    }
+
+    .preset-btn {
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 10px 60px -30px rgba(79, 172, 254, 0.9);
+    }
+
+    .preset-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .preset-btn.active {
+      border-color: rgba(0, 242, 254, 0.65);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+        0 0 0 2px rgba(0, 242, 254, 0.25),
+        0 14px 80px -30px rgba(0, 242, 254, 0.95);
+    }
+
+    .tab-pill {
+      transition: color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .tab-pill.active {
+      color: #e8ecf7;
+      transform: scale(1.01);
+    }
+
+    .tab-indicator {
+      transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+        width 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      will-change: transform, width;
+    }
+
+    .floating-droplet {
+      filter: blur(0.2px) url(#goo);
+      opacity: 0.92;
+    }
+  </style>
+</head>
+
+<body class="flex min-h-screen flex-col items-center justify-center px-3 py-6 sm:px-4">
+  <!-- Gooey SVG Filter -->
+  <svg class="goo-filter" aria-hidden="true">
+    <defs>
+      <filter id="goo">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+      </filter>
+    </defs>
+  </svg>
+
+  <main class="flex w-full max-w-sm flex-col gap-5 sm:max-w-[380px]">
+    <!-- Top Navigation / Header -->
+    <header class="relative flex flex-col gap-3">
+      <div class="glass-surface--subtle relative mx-auto flex w-full max-w-[320px] items-center justify-between rounded-full px-2 py-1.5">
+        <div class="tab-indicator absolute left-1 top-1 h-9 rounded-full bg-gradient-to-r from-[#00f2fe]/20 via-[#4facfe]/20 to-[#00ff87]/20 border border-white/20 shadow-inner shadow-white/10"
+          id="tabIndicator"></div>
+        <button class="tab-pill active relative z-10 flex flex-1 items-center justify-center rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-[12px]"
+          data-tab="preview">
+          Preview
+        </button>
+        <button class="tab-pill relative z-10 flex flex-1 items-center justify-center rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-[12px]"
+          data-tab="custombg">
+          Custom BG
+        </button>
+        <button class="tab-pill relative z-10 flex flex-1 items-center justify-center rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70 sm:text-[12px]"
+          data-tab="stickers">
+          Stickers
+        </button>
+      </div>
+
+      <!-- Floating Goo Droplets -->
+      <div aria-hidden="true" class="pointer-events-none absolute -top-8 left-4 hidden sm:block">
+        <div class="liquid-shape liquid-shape--tiny floating-droplet absolute h-10 w-10 bg-gradient-to-br from-[#00f2fe]/70 via-[#4facfe]/60 to-[#00ff87]/50 opacity-90"></div>
+      </div>
+      <div aria-hidden="true" class="pointer-events-none absolute -top-6 right-6 hidden sm:block">
+        <div class="liquid-shape liquid-shape--alt floating-droplet absolute h-14 w-14 bg-gradient-to-br from-[#4facfe]/70 via-[#00f2fe]/60 to-[#00ff87]/50 opacity-80"></div>
+      </div>
+    </header>
+
+    <!-- Central Card Container (9:16) -->
+    <section class="relative mx-auto flex w-full max-w-[360px] flex-col">
+      <div class="relative aspect-[9/16] w-full overflow-hidden rounded-[36px] shadow-[0_60px_160px_-60px_rgba(79,172,254,0.85)]">
+        <!-- Background Image Layer -->
+        <img id="bgImage" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          alt="Card background" class="bg-image fade-in" crossorigin="anonymous" />
+        <img id="bgImageNext" alt="Card background next" class="bg-image pointer-events-none absolute inset-0 opacity-0"
+          crossorigin="anonymous" />
+
+        <!-- Scrim for Readability -->
+        <div class="scrim"></div>
+
+        <!-- Liquid Ripple Radar -->
+        <div class="liquid-ripple pointer-events-none absolute left-1/2 top-[18%] z-10 -translate-x-1/2"></div>
+
+        <!-- Organic Blobs Background Accent -->
+        <div aria-hidden="true" class="pointer-events-none absolute -top-20 left-1/2 z-0 -translate-x-1/2">
+          <div class="liquid-shape absolute h-[320px] w-[320px] bg-gradient-to-br from-[#00f2fe]/25 via-[#4facfe]/18 to-[#00ff87]/12 blur-[10px]"></div>
+        </div>
+        <div aria-hidden="true" class="pointer-events-none absolute -bottom-24 -left-10 z-0">
+          <div class="liquid-shape liquid-shape--alt absolute h-64 w-64 bg-gradient-to-tr from-[#4facfe]/20 via-[#00f2fe]/14 to-transparent blur-[8px]"></div>
+        </div>
+        <div aria-hidden="true" class="pointer-events-none absolute -bottom-16 -right-8 z-0">
+          <div class="liquid-shape liquid-shape--tiny absolute h-48 w-48 bg-gradient-to-tl from-[#00ff87]/20 via-[#4facfe]/12 to-transparent blur-[8px]"></div>
+        </div>
+
+        <!-- Top Content -->
+        <div class="relative z-20 flex flex-col items-center px-5 pt-8 sm:pt-10">
+          <!-- Achievement Icon Badge -->
+          <div class="relative flex items-center justify-center drop-soft">
+            <div class="absolute -inset-3 rounded-full bg-gradient-to-br from-[#00f2fe]/30 via-[#4facfe]/20 to-[#00ff87]/20 blur-[14px]"></div>
+            <div class="liquid-shape liquid-shape--pill relative flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28"
+              style="animation: glow-pulse 3.6s ease-in-out infinite, liquid-morph 6.5s ease-in-out infinite alternate">
+              <div class="glass-surface liquid-shape--pill relative flex h-full w-full items-center justify-center">
+                <div class="absolute inset-0 rounded-full bg-gradient-to-br from-white/40 via-white/10 to-transparent"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="url(#badgeGlow)"
+                  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                  class="relative z-10 h-10 w-10 text-white sm:h-12 sm:w-12">
+                  <defs>
+                    <linearGradient id="badgeGlow" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#00F2FE" />
+                      <stop offset="1" stop-color="#4FACFE" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M12 19V5" />
+                  <path d="M5 12l7-7 7 7" />
+                </svg>
+              </div>
+            </div>
+            <!-- Glowing accent droplets around badge -->
+            <div aria-hidden="true" class="pointer-events-none absolute -right-2 top-2">
+              <div class="liquid-shape liquid-shape--tiny h-5 w-5 bg-gradient-to-br from-[#00ff87]/90 to-[#00f2fe]/70 blur-[1px]"></div>
+            </div>
+            <div aria-hidden="true" class="pointer-events-none absolute -bottom-1 -left-3">
+              <div class="liquid-shape liquid-shape--alt h-4 w-4 bg-gradient-to-br from-[#4facfe]/95 to-[#00f2fe]/70 blur-[0.5px]"></div>
+            </div>
+          </div>
+
+          <!-- Typography -->
+          <div class="mt-5 flex flex-col items-center text-center sm:mt-6">
+            <p class="glow-text text-[10px] font-bold uppercase tracking-[0.35em] text-[#00f2fe] sm:text-xs">
+              PROMOTED
+            </p>
+            <h1 class="soft-shadow mt-2 font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              Amateur II
+            </h1>
+            <p class="mt-1 text-sm font-medium text-white/70 drop-shadow-md sm:text-base">
+              Professional BVC
+            </p>
+
+            <!-- Floating Perk Badge -->
+            <div class="fluid-pill liquid-shape--pill mt-4 inline-flex items-center justify-center px-4 py-1.5 sm:mt-5 sm:px-5 sm:py-2">
+              <span class="relative z-10 text-xs font-semibold text-white/95 drop-shadow-md sm:text-sm">
+                +1 pt/day unlocked
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer / User Section -->
+        <div class="absolute inset-x-0 bottom-0 z-20 px-5 pb-6 sm:pb-8">
+          <div class="glass-surface--subtle relative flex items-center justify-between rounded-[20px] px-4 py-3 sm:px-5 sm:py-3.5">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <div class="absolute -inset-1 rounded-full bg-gradient-to-br from-[#00f2fe]/40 via-[#4facfe]/30 to-transparent blur-[6px]"></div>
+                <div class="liquid-shape liquid-shape--pill relative flex h-10 w-10 items-center justify-center overflow-hidden border border-white/30 bg-white/10 sm:h-11 sm:w-11">
+                  <span class="text-sm font-bold text-white sm:text-base">DS</span>
+                </div>
+              </div>
+              <span class="text-sm font-semibold text-white/95 drop-shadow-md sm:text-base">
+                Divesh S
+              </span>
+            </div>
+            <span class="font-display text-lg font-bold text-white drop-shadow-md sm:text-xl">
+              901 pts
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Action Controls -->
+    <section class="flex flex-col gap-4">
+      <!-- Primary Action Button -->
+      <button class="droplet-btn liquid-shape--pill group relative mx-auto flex w-full max-w-[320px] items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-[#00f2fe] via-[#4facfe] to-[#00ff87] px-6 py-3.5 text-base font-bold text-[#0d1117] shadow-lg sm:py-4 sm:text-lg">
+        <span class="relative z-10 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            class="h-5 w-5 transition-transform group-hover:scale-110 sm:h-6 sm:w-6">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          Share to Story
+        </span>
+        <span aria-hidden="true" class="pointer-events-none absolute -top-10 left-1/2 h-20 w-40 -translate-x-1/2 bg-white/40 blur-[20px] opacity-60"></span>
+      </button>
+
+      <!-- Background Customization Toolbar -->
+      <div class="flex flex-col gap-3">
+        <div class="mx-auto flex w-full max-w-[360px] flex-wrap items-center justify-center gap-2 px-1 sm:gap-2.5">
+          <!-- Presets -->
+          <button class="preset-btn active liquid-shape--pill flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/25 bg-cover bg-center shadow-sm sm:h-11 sm:w-11"
+            data-bg="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1080&auto=format&fit=crop"
+            style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=480&auto=format&fit=crop')"
+            aria-label="Mountain landscape preset"></button>
+          <button class="preset-btn liquid-shape--pill flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/25 bg-cover bg-center shadow-sm sm:h-11 sm:w-11"
+            data-bg="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1080&auto=format&fit=crop"
+            style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=480&auto=format&fit=crop')"
+            aria-label="Dark nebula preset"></button>
+          <button class="preset-btn liquid-shape--pill flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/25 bg-cover bg-center shadow-sm sm:h-11 sm:w-11"
+            data-bg="https://images.unsplash.com/photo-1523294587484-bae6cc870010?q=80&w=1080&auto=format&fit=crop"
+            style="background-image: url('https://images.unsplash.com/photo-1523294587484-bae6cc870010?q=80&w=480&auto=format&fit=crop')"
+            aria-label="Pastel gradient preset"></button>
+          <button class="preset-btn liquid-shape--pill flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/25 bg-cover bg-center shadow-sm sm:h-11 sm:w-11"
+            data-bg="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1080&auto=format&fit=crop"
+            style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=480&auto=format&fit=crop')"
+            aria-label="Urban night preset"></button>
+          <button class="preset-btn liquid-shape--pill flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/25 bg-cover bg-center shadow-sm sm:h-11 sm:w-11"
+            data-bg="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1080&auto=format&fit=crop"
+            style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=480&auto=format&fit=crop')"
+            aria-label="Coastline preset"></button>
+
+          <!-- Upload Button -->
+          <label class="preset-btn liquid-shape--pill group relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/30 bg-gradient-to-br from-white/15 via-white/10 to-white/5 shadow-sm transition sm:h-11 sm:w-11"
+            aria-label="Upload custom background image">
+            <input type="file" id="fileInput" accept="image/*" class="sr-only" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+              class="h-5 w-5 text-white/90 transition-transform group-hover:scale-110">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </label>
+        </div>
+        <p class="text-center text-[11px] font-medium text-white/55 drop-shadow-md sm:text-xs">
+          Tap a preset or upload any custom image — it stays fully visible behind the glass
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const bgImage = document.getElementById("bgImage");
+    const bgImageNext = document.getElementById("bgImageNext");
+    const presetButtons = document.querySelectorAll(".preset-btn[data-bg]");
+    const fileInput = document.getElementById("fileInput");
+    const tabButtons = document.querySelectorAll(".tab-pill");
+    const tabIndicator = document.getElementById("tabIndicator");
+
+    let isSwapping = false;
+
+    function setActivePreset(button) {
+      presetButtons.forEach((btn) => btn.classList.remove("active"));
+      if (button) button.classList.add("active");
+    }
+
+    function swapBackground(src) {
+      if (isSwapping || !src || bgImageNext.src === src) return;
+      isSwapping = true;
+      bgImageNext.src = src;
+      bgImageNext.onload = () => {
+        bgImage.classList.remove("fade-in");
+        bgImage.classList.add("fade-out");
+        bgImageNext.classList.remove("opacity-0");
+        bgImageNext.classList.add("fade-in");
+        setTimeout(() => {
+          bgImage.src = src;
+          bgImage.classList.remove("fade-out");
+          bgImage.classList.add("fade-in");
+          bgImageNext.classList.add("opacity-0");
+          bgImageNext.classList.remove("fade-in");
+          isSwapping = false;
+        }, 160);
+      };
+      bgImageNext.onerror = () => {
+        isSwapping = false;
+      };
+    }
+
+    presetButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const src = btn.dataset.bg;
+        if (src) {
+          swapBackground(src);
+          setActivePreset(btn);
+        }
+      });
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        swapBackground(dataUrl);
+        setActivePreset(null);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    });
+
+    function updateTabIndicator() {
+      const active = document.querySelector(".tab-pill.active");
+      if (!active || !tabIndicator) return;
+      const rect = active.getBoundingClientRect();
+      const parentRect = active.parentElement.getBoundingClientRect();
+      tabIndicator.style.width = `${rect.width}px`;
+      tabIndicator.style.transform = `translateX(${rect.left - parentRect.left}px)`;
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        updateTabIndicator();
+      });
+    });
+
+    window.addEventListener("resize", updateTabIndicator);
+    setTimeout(updateTabIndicator, 0);
+    requestAnimationFrame(updateTabIndicator);
+  </script>
+</body>
+
+</html>
