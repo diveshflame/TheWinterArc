@@ -41,6 +41,11 @@ export async function saveTaskLog(
 
   revalidatePath("/dashboard");
   revalidatePath("/log");
+  revalidatePath("/leaderboards");
+  revalidatePath("/profile");
+  revalidatePath(`/u/${userId}`);
+  revalidatePath("/challenges");
+  revalidatePath(`/challenges/${challengeId}`);
 
   return { ok: true };
 }
@@ -84,6 +89,11 @@ export async function saveMultipleTaskLogs(
 
   revalidatePath("/dashboard");
   revalidatePath("/log");
+  revalidatePath("/leaderboards");
+  revalidatePath("/profile");
+  revalidatePath(`/u/${userId}`);
+  revalidatePath("/challenges");
+  revalidatePath(`/challenges/${challengeId}`);
 
   return { ok: true };
 }

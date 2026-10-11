@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { saveMultipleTaskLogs } from "@/app/actions";
 import {
   numberTaskPoints,
-  DAILY_BONUS_POINTS,
+  DAILY_BONUS_TIERS,
+  getDailyChecklistCompletionSummary,
+  getDailyCompletionBonus,
+  dailyTaskPoints,
   formatDateKey,
   type ChallengeTask,
   type TaskLog,
@@ -442,45 +445,32 @@ export function DailyLogClient({
     }
   }
 
-  // Completion calculation for DAILY HABIT tasks (excluding negative/penalty tasks and weekly tasks)
-  const positiveHabits = dailyChecklistTasks.filter((t) => t.points >= 0);
-  const totalHabits = positiveHabits.length;
-  const achievedHabits = positiveHabits.filter((t) => logState[t.id]?.completed).length;
-  const habitCompletionPercent = totalHabits > 0 ? Math.round((achievedHabits / totalHabits) * 100) : 0;
-
-  // Bonus tier note under completion bar
-  const nextBonusTier =
-    habitCompletionPercent < 50
-      ? { percent: 50, bonus: 5 }
-      : habitCompletionPercent < 75
-      ? { percent: 75, bonus: 15 }
-      : null;
-
-  // Points today calculation — ONLY DAILY tasks contribute to today's score!
-  // Weekly task points count toward the week (credited as soon as they are scored).
-  let todayTotalPoints = 0;
-  tasks.forEach((t) => {
-    if (t.type !== "DAILY") return;
-    const state = logState[t.id];
-    if (!state) return;
-    if (t.inputType === "NUMBER") {
-      todayTotalPoints += numberTaskPoints(state.value, t);
-    } else if (state.completed) {
-      todayTotalPoints += t.points;
-    }
+  // The same scoring helpers drive the optimistic log and persisted totals.
+  const liveLogs = tasks.map((task) => {
+    const state = logState[task.id] || { completed: false, value: 0 };
+    const value = task.inputType === "NUMBER"
+      ? movementValues[task.id] ?? state.value
+      : state.value;
+    return {
+      taskId: task.id,
+      completed: state.completed,
+      value,
+      bonusPoints: task.inputType === "NUMBER" ? dailyBonus(task, value) : 0,
+    };
   });
-  if (habitCompletionPercent >= 75) {
-    todayTotalPoints += DAILY_BONUS_POINTS;
-  }
-
-  // Points earned from daily checklist
-  let dailyChecklistPoints = 0;
-  dailyChecklistTasks.forEach((t) => {
-    const state = logState[t.id];
-    if (state?.completed) {
-      dailyChecklistPoints += t.points;
-    }
-  });
+  const completion = getDailyChecklistCompletionSummary(tasks, liveLogs);
+  const totalHabits = completion.total;
+  const achievedHabits = completion.achieved;
+  const habitCompletionPercent = completion.percent;
+  const nextBonusTier = DAILY_BONUS_TIERS.find((tier) => habitCompletionPercent < tier.percent);
+  const todayTotalPoints = tasks.reduce(
+    (points, task) => points + dailyTaskPoints(task, liveLogs.find((log) => log.taskId === task.id)),
+    getDailyCompletionBonus(completion)
+  );
+  const dailyChecklistPoints = dailyChecklistTasks.reduce(
+    (points, task) => points + dailyTaskPoints(task, liveLogs.find((log) => log.taskId === task.id)),
+    0
+  );
 
   return (
     <div className="space-y-4">
@@ -589,9 +579,8 @@ export function DailyLogClient({
                 Daily checklist
               </h2>
               <ChevronIcon
-                className={`h-4 w-4 text-muted transition-transform duration-200 ${
-                  isDailyChecklistOpen ? "rotate-180" : ""
-                }`}
+                className={`h-4 w-4 text-muted transition-transform duration-200 ${isDailyChecklistOpen ? "rotate-180" : ""
+                  }`}
               />
             </div>
             <div className="px-2.5 py-0.5 rounded-lg bg-[#452713] border border-[#78350f] text-[#fed7aa] text-xs font-bold shadow-sm">
@@ -617,11 +606,10 @@ export function DailyLogClient({
                         toggle(task.id);
                       }
                     }}
-                    className={`min-h-[52px] sm:min-h-[58px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 cursor-pointer select-none transition-all hover:bg-white/[0.03] active:scale-[0.98] shadow-sm ${
-                      isPenalty
+                    className={`min-h-[52px] sm:min-h-[58px] px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 cursor-pointer select-none transition-all hover:bg-white/[0.03] active:scale-[0.98] shadow-sm ${isPenalty
                         ? "border-[#6b2532] bg-[#16121f]"
                         : "border-[#1e263d] bg-[#121727]"
-                    }`}
+                      }`}
                   >
                     {/* Left: Checkbox */}
                     <div className="shrink-0 flex items-center justify-center">
@@ -637,9 +625,8 @@ export function DailyLogClient({
                         )
                       ) : (
                         <div
-                          className={`h-4.5 w-4.5 sm:h-5 sm:w-5 rounded-md border-2 transition-colors ${
-                            isPenalty ? "border-[#542d38]" : "border-[#3e4a68]"
-                          }`}
+                          className={`h-4.5 w-4.5 sm:h-5 sm:w-5 rounded-md border-2 transition-colors ${isPenalty ? "border-[#542d38]" : "border-[#3e4a68]"
+                            }`}
                         />
                       )}
                     </div>
@@ -647,13 +634,12 @@ export function DailyLogClient({
                     {/* Middle: Name */}
                     <div className="flex-1 min-w-0">
                       <span
-                        className={`text-xs sm:text-sm font-medium leading-tight line-clamp-2 ${
-                          current.completed
+                        className={`text-xs sm:text-sm font-medium leading-tight line-clamp-2 ${current.completed
                             ? isPenalty
                               ? "line-through text-[#f87171]/80 font-normal"
                               : "line-through text-[#626c85] font-normal"
                             : "text-foreground"
-                        }`}
+                          }`}
                       >
                         {task.name}
                       </span>
@@ -667,9 +653,8 @@ export function DailyLogClient({
                         </span>
                       ) : (
                         <span
-                          className={`text-xs sm:text-sm font-bold ${
-                            current.completed ? "text-amber-500/60" : "text-amber-500"
-                          }`}
+                          className={`text-xs sm:text-sm font-bold ${current.completed ? "text-amber-500/60" : "text-amber-500"
+                            }`}
                         >
                           +{task.points}
                         </span>
@@ -696,9 +681,8 @@ export function DailyLogClient({
                 Movement
               </h2>
               <ChevronIcon
-                className={`h-4 w-4 text-muted transition-transform duration-200 ${
-                  isMovementOpen ? "rotate-180" : ""
-                }`}
+                className={`h-4 w-4 text-muted transition-transform duration-200 ${isMovementOpen ? "rotate-180" : ""
+                  }`}
               />
             </div>
           </button>
@@ -752,9 +736,8 @@ export function DailyLogClient({
                 Weekly challenges
               </h2>
               <ChevronIcon
-                className={`h-4 w-4 text-muted transition-transform duration-200 ${
-                  isWeeklyOpen ? "rotate-180" : ""
-                }`}
+                className={`h-4 w-4 text-muted transition-transform duration-200 ${isWeeklyOpen ? "rotate-180" : ""
+                  }`}
               />
             </div>
             <span className="text-[11px] text-muted">Credited this week</span>
@@ -780,9 +763,8 @@ export function DailyLogClient({
                   return (
                     <div
                       key={task.id}
-                      className={`p-3 sm:p-4 space-y-3 ${
-                        isPenalty ? "bg-[#16121f]" : ""
-                      }`}
+                      className={`p-3 sm:p-4 space-y-3 ${isPenalty ? "bg-[#16121f]" : ""
+                        }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div>
@@ -811,11 +793,10 @@ export function DailyLogClient({
                             key={n}
                             type="button"
                             onClick={() => saveWeeklyValue(task.id, current.value + n)}
-                            className={`rounded-xl border px-3.5 py-2 text-xs font-semibold text-foreground active:scale-95 transition-all ${
-                              isPenalty
+                            className={`rounded-xl border px-3.5 py-2 text-xs font-semibold text-foreground active:scale-95 transition-all ${isPenalty
                                 ? "bg-[#251924] border-[#4d1f2b] hover:bg-[#322030]"
                                 : "bg-[#1a2238] border-[#242e4d] hover:bg-[#202c48]"
-                            }`}
+                              }`}
                           >
                             +{n}
                           </button>
@@ -855,11 +836,10 @@ export function DailyLogClient({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-sm ${
-                            current.completed
+                          className={`text-sm ${current.completed
                               ? "text-foreground font-medium"
                               : "text-muted font-normal"
-                          }`}
+                            }`}
                         >
                           {task.name}
                         </span>
@@ -1239,9 +1219,8 @@ function MovementToast({
     <div className="fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4">
       <div
         role="status"
-        className={`flex w-full max-w-md items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 shadow-lg animate-toast-in ${
-          error ? "border-[#6b2532] bg-[#241418]" : "border-[#1f2a44] bg-[#16213a]"
-        }`}
+        className={`flex w-full max-w-md items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 shadow-lg animate-toast-in ${error ? "border-[#6b2532] bg-[#241418]" : "border-[#1f2a44] bg-[#16213a]"
+          }`}
       >
         <span className="min-w-0 truncate text-xs text-foreground">{message}</span>
         <div className="flex shrink-0 items-center gap-2">

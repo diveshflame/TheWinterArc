@@ -89,18 +89,53 @@ export const DAILY_BONUS_POINTS = 15;
 export const STREAK_BONUS_POINTS = 15;
 export const STREAK_BONUS_DAYS = 7;
 
+export const DAILY_BONUS_TIERS = [
+  { percent: 50, bonus: 5 },
+  { percent: 75, bonus: DAILY_BONUS_POINTS },
+] as const;
+
+export function getDailyCompletionBonus(completion: DailyCompletion): number {
+  if (completion.total === 0) return 0;
+  return DAILY_BONUS_TIERS.reduce(
+    (points, tier) => completion.percent >= tier.percent ? tier.bonus : points,
+    0
+  );
+}
+
+export function dailyTaskPoints(task: ChallengeTask, log?: Pick<TaskLog, "completed" | "value" | "bonusPoints">): number {
+  if (task.type !== "DAILY") return 0;
+  if (task.inputType === "NUMBER") {
+    return log && log.value > 0
+      ? earnedBlocks(log.value, task) * task.points + log.bonusPoints
+      : 0;
+  }
+  const earnsPoints = task.isRuleBreaker
+    ? !log?.completed
+    : log?.completed;
+  return earnsPoints ? task.points : 0;
+}
+
 export interface DailyCompletion {
   achieved: number;
   total: number;
   percent: number;
 }
 
-/**
- * Calculates completion status for a given day.
- */
+/** Checklist bonuses exclude movement, weekly tasks, and penalties. */
+export function getDailyChecklistCompletionSummary(
+  tasks: ChallengeTask[],
+  logs: Pick<TaskLog, "taskId" | "completed" | "value">[]
+): DailyCompletion {
+  return getDailyCompletionSummary(
+    tasks.filter((task) => task.inputType !== "NUMBER" && task.points >= 0),
+    logs
+  );
+}
+
+/** Overall daily completion retains the existing streak and dashboard rules. */
 export function getDailyCompletionSummary(
   tasks: ChallengeTask[],
-  logs: TaskLog[]
+  logs: Pick<TaskLog, "taskId" | "completed" | "value">[]
 ): DailyCompletion {
   const dailyTasks = tasks.filter((t) => t.type === "DAILY");
   if (dailyTasks.length === 0) {
@@ -111,10 +146,7 @@ export function getDailyCompletionSummary(
   dailyTasks.forEach((task) => {
     const log = logs.find((l) => l.taskId === task.id);
     if (task.inputType === "NUMBER") {
-      // Number inputs count as done when the value is greater than zero.
-      if (log && (log.value || 0) > 0) {
-        achieved += 1;
-      }
+      if (log && (log.value || 0) > 0) achieved += 1;
     } else if (task.isRuleBreaker) {
       // For rule breakers, not breaking it means success.
       // If there is no log, or log completed is false, we count it as successful.
