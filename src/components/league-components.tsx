@@ -6,6 +6,7 @@ import {
   type LeagueConfig,
   LEAGUES,
   getLeagueState,
+  resolvePersona,
 } from "@/lib/leagues";
 import { LeagueIcon } from "@/components/league-icons";
 
@@ -55,9 +56,11 @@ export function LeagueBadge({
 // ---------------------------------------------------------------------------
 export function PersonaLabel({
   league,
+  userId,
   className = "",
 }: {
   league: LeagueConfig;
+  userId?: string | null;
   className?: string;
 }) {
   return (
@@ -66,7 +69,7 @@ export function PersonaLabel({
       style={{ color: league.textColor || league.color }}
     >
       <LeagueIcon type={league.icon} size={13} className="shrink-0" />
-      <span className="truncate">{league.persona}</span>
+      <span className="truncate">{resolvePersona(league, userId)}</span>
     </span>
   );
 }
@@ -76,9 +79,11 @@ export function PersonaLabel({
 // ---------------------------------------------------------------------------
 export function LeagueEmblemCard({
   state,
+  userId,
   onElementRef,
 }: {
   state: LeagueState;
+  userId?: string | null;
   onElementRef?: (el: HTMLElement | null) => void;
 }) {
   const { league, division, title, pointsToNext, nextStep, progressPerDivision } = state;
@@ -130,7 +135,7 @@ export function LeagueEmblemCard({
 
       {/* Persona and Daily Bonus Line */}
       <p className="text-xs text-[#8a97b2] font-medium mt-1">
-        <span>{league.persona}</span>
+        <span>{resolvePersona(league, userId)}</span>
         <span className="mx-1.5">·</span>
         <span
           className="font-semibold"
@@ -312,21 +317,9 @@ export function LeagueRoad({
                           Starting league
                         </span>
                       ) : (
-                        <>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#162038] text-[#8a97b2] border border-[#233150]">
-                            +{league.dailyBonus} pt{league.dailyBonus === 1 ? "" : "s"}/day
-                          </span>
-                          <span
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-md border"
-                            style={{
-                              backgroundColor: `${league.color}15`,
-                              borderColor: `${league.color}35`,
-                              color: league.textColor || league.color,
-                            }}
-                          >
-                            {league.persona}
-                          </span>
-                        </>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[#162038] text-[#8a97b2] border border-[#233150]">
+                          +{league.dailyBonus} pt{league.dailyBonus === 1 ? "" : "s"}/day
+                        </span>
                       )}
                     </div>
                   </div>
@@ -408,10 +401,12 @@ export function RankStrip({
 // ---------------------------------------------------------------------------
 export function RankUpModal({
   leagueState,
+  userId,
   isOpen,
   onClose,
 }: {
   leagueState: LeagueState;
+  userId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -469,7 +464,7 @@ export function RankUpModal({
             className="text-sm font-semibold mt-1"
             style={{ color: league.textColor || league.color }}
           >
-            {league.persona}
+            {resolvePersona(league, userId)}
           </p>
         </div>
 

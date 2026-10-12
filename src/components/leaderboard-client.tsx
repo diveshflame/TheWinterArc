@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import Link from "next/link";
-import { getLeagueState } from "@/lib/leagues";
+import { getLeagueState, resolvePersona } from "@/lib/leagues";
 import { LeagueIcon } from "@/components/league-icons";
 
 export interface LeaderboardRow {
@@ -135,7 +135,7 @@ export function LeaderboardClient({
                       style={{ color: league.textColor || league.color }}
                     >
                       <LeagueIcon type={league.icon} size={12} className="shrink-0" />
-                      <span className="truncate">{league.persona}</span>
+                      <span className="truncate">{resolvePersona(league, row.userId)}</span>
                     </span>
                   )}
                 </span>

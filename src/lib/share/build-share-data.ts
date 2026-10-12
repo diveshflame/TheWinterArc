@@ -6,7 +6,7 @@ import {
   type ChallengeTask,
   type TaskLog,
 } from "@/lib/scoring";
-import { getLeagueState } from "@/lib/leagues";
+import { getLeagueState, resolvePersona } from "@/lib/leagues";
 import { deriveUser, formatValue, inferIcon } from "@/lib/share/format";
 import type {
   ShareActivity,
@@ -108,6 +108,7 @@ export function choosePromotionVariant(backgroundType: BackgroundType): "full" |
 
 export interface BuildShareCardDataInput {
   userName: string | null;
+  userId?: string | null;
   challenge: { name: string; startDate: Date; endDate: Date };
   tasks: TaskLike[];
   todayLogs: LogLike[];
@@ -156,7 +157,7 @@ export function buildShareCardData(input: BuildShareCardDataInput): ShareCardDat
     league: {
       name: leagueState.league.name,
       division: leagueState.division,
-      persona: leagueState.league.persona,
+      persona: resolvePersona(leagueState.league, input.userId),
       color: leagueState.league.color,
       icon: leagueState.league.icon,
       totalPoints: leagueState.currentPoints,

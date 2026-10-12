@@ -407,7 +407,7 @@ export function ProfileClient({
 
       {/* 3. Emblem Card */}
       <div ref={(el) => { emblemCardRef.current = el; }}>
-        <LeagueEmblemCard state={leagueState} />
+        <LeagueEmblemCard state={leagueState} userId={user.id} />
       </div>
 
       {/* 4. Quote Card */}
@@ -498,6 +498,7 @@ export function ProfileClient({
       {/* 8. Rank-Up Celebration Modal */}
       <RankUpModal
         leagueState={leagueState}
+        userId={user.id}
         isOpen={showRankUpModal}
         onClose={handleDismissRankUp}
       />

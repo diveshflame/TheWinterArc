@@ -10,6 +10,8 @@ export interface LeagueConfig {
   minPoints: number;
   dailyBonus: number;
   persona: string;
+  /** Optional pool of personas; a user is assigned one deterministically from their id. */
+  personas?: string[];
   color: string;
   textColor: string;
   icon: LeagueIconType;
@@ -45,6 +47,14 @@ export const LEAGUES: LeagueConfig[] = [
     minPoints: 1200,
     dailyBonus: 2,
     persona: "Getting Stronger",
+    personas: [
+      "Mooji kas daye",
+      "Getting stronger",
+      "Just Beginning",
+      "Yan ninna amme",
+      "Here to win",
+      "You Loose",
+    ],
     color: "#cbd5e1",
     textColor: "#cbd5e1",
     icon: "shield",
@@ -90,6 +100,27 @@ export const MIN_DAILY_POINTS_FOR_BONUS = 20;
 export const INCLUDE_BONUS_IN_LEADERBOARD = true;
 export const WINTER_ARC_CHALLENGE_ID =
   process.env.NEXT_PUBLIC_WINTER_ARC_CHALLENGE_ID || "";
+
+/** djb2 hash — stable across sessions/servers for the same user id. */
+function hashUserId(userId: string): number {
+  let hash = 5381;
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) + hash + userId.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+/**
+ * Resolve the persona for a league + user.
+ * Leagues with a `personas` pool (e.g. Silver) assign one deterministically
+ * from the user id; everything else falls back to the league's fixed persona.
+ */
+export function resolvePersona(league: LeagueConfig, userId?: string | null): string {
+  if (league.personas && league.personas.length > 0 && userId) {
+    return league.personas[hashUserId(userId) % league.personas.length];
+  }
+  return league.persona;
+}
 
 export interface LeagueState {
   league: LeagueConfig;

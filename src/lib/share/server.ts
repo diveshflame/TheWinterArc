@@ -170,6 +170,7 @@ export async function getShareBundle(
 
   const data = buildShareCardData({
     userName: membership.user.displayName ?? membership.user.name,
+    userId,
     challenge: {
       name: challenge.name,
       startDate: challenge.startDate,

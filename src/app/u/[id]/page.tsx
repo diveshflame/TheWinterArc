@@ -134,7 +134,7 @@ export default async function PublicProfilePage({
               <p className="text-lg font-bold truncate">{displayName}</p>
               <LeagueBadge league={leagueState.league} division={leagueState.division} size="sm" />
             </div>
-            <PersonaLabel league={leagueState.league} className="mt-0.5" />
+            <PersonaLabel league={leagueState.league} userId={user.id} className="mt-0.5" />
             {user.mantra && (
               <p className="text-xs text-muted mt-1 truncate">
                 <span className="text-accent font-semibold">“</span>
