@@ -53,7 +53,7 @@ export const LEAGUES: LeagueConfig[] = [
       "Just Beginning",
       "Yan ninna amme",
       "Here to win",
-      "You Loose",
+      "You are loosers",
     ],
     color: "#cbd5e1",
     textColor: "#cbd5e1",
