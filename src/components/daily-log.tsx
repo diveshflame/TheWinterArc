@@ -25,6 +25,10 @@ import {
 const MOVEMENT_DEBOUNCE_MS = 5000;
 const GROUP_DEBOUNCE_MS = 400;
 
+// Mutual exclusion: only one of these movement tasks may be logged per day.
+// If one has a value today, the other is locked until it is cleared.
+const EXCLUSIVE_MOVEMENT_TASK_NAMES = ["Total steps", "Walking"];
+
 type PendingUpdate = { completed: boolean; value: number; bonus: number };
 
 export function DailyLogClient({
@@ -75,6 +79,7 @@ export function DailyLogClient({
   const [movementError, setMovementError] = useState<null | {
     taskId: string;
     value: number;
+    message?: string;
   }>(null);
 
   const [saved, setSaved] = useState(false);
@@ -342,6 +347,35 @@ export function DailyLogClient({
     save(taskId, !current.completed, current.value);
   }
 
+  // --- Steps ↔ Walking mutual exclusion (per day) ---
+  function isExclusiveMovementTask(task: ChallengeTask): boolean {
+    const name = task.name.trim().toLowerCase();
+    return EXCLUSIVE_MOVEMENT_TASK_NAMES.some((n) => n.toLowerCase() === name);
+  }
+
+  function exclusivePartnerOf(taskId: string): ChallengeTask | null {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || !isExclusiveMovementTask(task)) return null;
+    return (
+      tasks.find(
+        (t) => t.id !== task.id && isExclusiveMovementTask(t)
+      ) ?? null
+    );
+  }
+
+  function isLoggedToday(taskId: string): boolean {
+    const s = logState[taskId];
+    return !!s && (s.value > 0 || s.completed);
+  }
+
+  // Locked when the partner is logged and this task is not yet logged.
+  // A (legacy) both-logged day stays editable so the user can clear one.
+  function isMovementLocked(taskId: string): boolean {
+    const partner = exclusivePartnerOf(taskId);
+    if (!partner) return false;
+    return isLoggedToday(partner.id) && !isLoggedToday(taskId);
+  }
+
   // Movement is committed explicitly when the user taps Done in the sheet.
   // Nothing is written while they type or tap chips; on Done we optimistically
   // update the row, persist just that task, and offer a short undo. Failures
@@ -356,6 +390,18 @@ export function DailyLogClient({
 
     const cfg = movementConfigFor(task);
     const value = clampMovementValue(rawValue, cfg);
+
+    // Mutual exclusion: refuse to save while the partner task is logged today.
+    const partner = exclusivePartnerOf(taskId);
+    if (value > 0 && partner && isLoggedToday(partner.id) && !isLoggedToday(taskId)) {
+      setMovementError({
+        taskId,
+        value: rawValue,
+        message: `${task.name} and ${partner.name} can't both be logged — clear ${partner.name} first.`,
+      });
+      return false;
+    }
+
     const prev = logState[taskId] || { completed: false, value: 0 };
     const completed = value > 0;
     const bonus = dailyBonus(task, value);
@@ -691,18 +737,32 @@ export function DailyLogClient({
                 const cfg = movementConfigFor(task);
                 const state = logState[task.id] || { completed: false, value: 0 };
                 const pts = numberTaskPoints(state.value, task);
+                const exclusivePartner = exclusivePartnerOf(task.id);
+                const locked = isMovementLocked(task.id);
                 return (
                   <button
                     key={task.id}
                     id={`movement-row-${task.id}`}
                     type="button"
-                    onClick={() => setOpenMovementTaskId(task.id)}
-                    className="w-full min-h-[56px] px-3.5 py-3 flex items-center gap-3 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.04] select-none"
+                    disabled={locked}
+                    onClick={() => {
+                      if (!locked) setOpenMovementTaskId(task.id);
+                    }}
+                    className={`w-full min-h-[56px] px-3.5 py-3 flex items-center gap-3 text-left transition-colors select-none ${locked ? "opacity-50 cursor-not-allowed" : "hover:bg-white/[0.02] active:bg-white/[0.04]"
+                      }`}
                   >
                     <MovementIcon task={task} className="h-5 w-5 shrink-0 text-[#8a97b2]" />
                     <span className="flex-1 min-w-0 truncate text-sm font-medium text-foreground">
                       {task.name}
                     </span>
+                    {locked && exclusivePartner ? (
+                      <span
+                        className="shrink-0 rounded-md border border-[#4d3a1e] bg-[#2a2314] px-2 py-0.5 text-[11px] font-semibold text-[#d4b483]"
+                        title={`Only one of ${exclusivePartner.name} / ${task.name} can be logged per day`}
+                      >
+                        {exclusivePartner.name} logged
+                      </span>
+                    ) : null}
                     <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
                       {state.value}
                       <span className="ml-1 text-xs font-normal text-muted">
@@ -897,9 +957,13 @@ export function DailyLogClient({
       )}
       {movementError && (
         <MovementToast
-          message="Couldn't save. Tap retry."
-          actionLabel="Retry"
-          onAction={retryMovement}
+          message={movementError.message ?? "Couldn't save. Tap retry."}
+          actionLabel={movementError.message ? "Dismiss" : "Retry"}
+          onAction={
+            movementError.message
+              ? () => setMovementError(null)
+              : retryMovement
+          }
           onDismiss={() => setMovementError(null)}
           error
         />

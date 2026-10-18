@@ -63,7 +63,7 @@ export function movementConfigFor(task: ChallengeTask): MovementConfig {
     step: 1,
     decimals: 0,
     chips: [5, 10, 20, 50],
-    maxPerDay: 500,
+    maxPerDay: 50000,
     allowDecimal: false,
   };
 }
