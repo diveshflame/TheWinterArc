@@ -9,6 +9,7 @@ import {
 } from "@/lib/queries";
 import { AppShell } from "@/components/app-shell";
 import { DailyLogClient } from "@/components/daily-log";
+import { BackfillBanner } from "@/components/backfill-log";
 import { ChallengeSwitcher } from "@/components/challenge-switcher";
 import { ShareLauncher } from "@/components/share/share-launcher";
 import { getShareBundle } from "@/lib/share/server";
@@ -35,8 +36,11 @@ export default async function LogPage({
   ]);
   if (!membership) redirect("/challenges/new");
 
-  const todayLogs = await getTodayLogs(userId, membership.challenge.id);
-  const weekLogs = await getWeekLogs(userId, membership.challenge.id);
+  const challengeId = membership.challenge.id;
+  const [todayLogs, weekLogs] = await Promise.all([
+    getTodayLogs(userId, challengeId),
+    getWeekLogs(userId, challengeId),
+  ]);
 
   const todayFormatted = new Date().toLocaleDateString("en-US", {
     month: "numeric",
@@ -44,7 +48,7 @@ export default async function LogPage({
     year: "numeric",
   });
 
-  const shareBundle = await getShareBundle(userId, membership.challenge.id);
+  const shareBundle = await getShareBundle(userId, challengeId);
 
   return (
     <AppShell>
@@ -52,7 +56,7 @@ export default async function LogPage({
         {userChallenges.length > 0 && (
           <ChallengeSwitcher
             challenges={userChallenges}
-            activeChallengeId={membership.challenge.id}
+            activeChallengeId={challengeId}
           />
         )}
         {shareBundle && (
@@ -67,13 +71,14 @@ export default async function LogPage({
           </ShareLauncher>
         )}
         <DailyLogClient
-          challengeId={membership.challenge.id}
+          challengeId={challengeId}
           challengeName={membership.challenge.name}
           tasks={membership.challenge.tasks}
           initialLogs={todayLogs}
           weekLogs={weekLogs}
           currentStreak={membership.currentStreak ?? 0}
           todayFormatted={todayFormatted}
+          banner={<BackfillBanner challengeId={challengeId} />}
         />
       </div>
     </AppShell>

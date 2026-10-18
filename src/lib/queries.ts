@@ -5,7 +5,17 @@ import {
   startOfDay,
   getDailyCompletionSummary,
   computeWeeklyResultSummary,
+  formatDateKey,
 } from "@/lib/scoring";
+import {
+  addDaysToKey,
+  dateKeyToUtcDate,
+  evaluateBackfillEligibility,
+  keyNumericDate,
+  keyWeekdayLong,
+  keyWeekdayShort,
+  type BackfillIneligibleReason,
+} from "@/lib/backfill";
 
 export interface UserChallengeSummary {
   id: string;
@@ -130,6 +140,62 @@ export async function getWeekLogs(userId: string, challengeId: string) {
     },
     orderBy: { date: "asc" },
   });
+}
+
+export interface BackfillEligibility {
+  eligible: boolean;
+  reason?: BackfillIneligibleReason;
+  /** YYYY-MM-DD key of the (only) backfillable day: clientToday − 1. */
+  yesterdayKey: string;
+  /** The client-claimed "today" the check ran against. */
+  clientTodayKey: string;
+  /** Display helpers derived from the key, timezone-independent. */
+  yesterdayWeekday: string; // "Sunday"
+  yesterdayShort: string;   // "Sun 10/18"
+  yesterdayNumeric: string; // "10/18/2026"
+}
+
+/**
+ * Server-side eligibility for the "Log yesterday" (backfill) flow, evaluated
+ * against the user's local calendar day (rule 1 + rule 2): only the day before
+ * `clientTodayKey` is backfillable, it must have zero logs, and the user must
+ * have been in the challenge that day. `clientTodayKey` is validated for
+ * staleness by the caller (actions.checkBackfillEligibility).
+ */
+export async function getBackfillEligibility(
+  userId: string,
+  challengeId: string,
+  clientTodayKey: string
+): Promise<BackfillEligibility> {
+  const yKey = addDaysToKey(clientTodayKey, -1);
+  const base: Omit<BackfillEligibility, "eligible" | "reason"> = {
+    yesterdayKey: yKey,
+    clientTodayKey,
+    yesterdayWeekday: keyWeekdayLong(yKey),
+    yesterdayShort: keyWeekdayShort(yKey),
+    yesterdayNumeric: keyNumericDate(yKey),
+  };
+
+  const membership = await db.challengeMember.findUnique({
+    where: { challengeId_userId: { challengeId, userId } },
+    include: { challenge: { select: { startDate: true } } },
+  });
+  if (!membership) {
+    return { ...base, eligible: false, reason: "not_in_challenge_yet" };
+  }
+
+  const existingLogCount = await db.taskLog.count({
+    where: { userId, challengeId, date: dateKeyToUtcDate(yKey) },
+  });
+
+  const verdict = evaluateBackfillEligibility({
+    targetKey: yKey,
+    existingLogCount,
+    memberJoinedKey: formatDateKey(membership.joinedAt),
+    challengeStartKey: formatDateKey(membership.challenge.startDate),
+  });
+
+  return { ...base, ...verdict };
 }
 
 export interface DashboardData {

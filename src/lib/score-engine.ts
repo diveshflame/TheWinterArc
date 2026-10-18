@@ -12,12 +12,42 @@ import {
   daysBetween,
   DAILY_BONUS_THRESHOLD,
   STREAK_BONUS_POINTS,
+  type ChallengeTask,
+  type TaskLog,
 } from "@/lib/scoring";
+import {
+  BACKFILL_AWARDS_DAILY_BONUS,
+  BACKFILL_AWARDS_LEAGUE_BONUS,
+  BACKFILL_AWARDS_STREAK_BONUS,
+} from "@/lib/backfill-config";
 import {
   getLeagueState,
   MIN_DAILY_POINTS_FOR_BONUS,
   INCLUDE_BONUS_IN_LEADERBOARD,
 } from "@/lib/leagues";
+
+/** A day is a backfill day when every one of its logs was saved via backfill. */
+function isBackfillDay(dayLogs: Pick<TaskLog, "isBackfill">[]): boolean {
+  return dayLogs.length > 0 && dayLogs.every((l) => !!l.isBackfill);
+}
+
+/**
+ * Habit (daily task) points for a day. Backfill days award the discounted
+ * totals stored on each log (awardedPoints); on-time days recompute as usual.
+ */
+function dayHabitPoints(
+  dailyTasks: ChallengeTask[],
+  dayLogs: TaskLog[]
+): number {
+  const backfill = isBackfillDay(dayLogs);
+  return dailyTasks.reduce((points, task) => {
+    const log = dayLogs.find((l) => l.taskId === task.id);
+    if (backfill && log && log.awardedPoints != null) {
+      return points + log.awardedPoints;
+    }
+    return points + dailyTaskPoints(task, log);
+  }, 0);
+}
 
 export async function runDayScoring(
   userId: string,
@@ -72,24 +102,31 @@ export async function runDayScoring(
   // Calculate longest streak overall
   const longest = longestConsecutiveChain([...successKeys]);
 
-  // Update DaySummary records for dates in the current streak run
-  for (let i = 0; i < run.length; i++) {
-    const idx = i + 1; // position in current streak
-    const date = run[i];
+  // Shared DaySummary writer, aware of backfill days (a backfilled day keeps
+  // its completion status for the streak chain but is awarded no streak,
+  // daily-completion, or league bonus).
+  async function upsertDaySummary(
+    date: Date,
+    streakPosition: number | null // 1-based position in the current run; null = not in run
+  ): Promise<void> {
     const key = formatDateKey(date);
     const dayLogs = logsByDate[key] || [];
-
+    const backfill = isBackfillDay(dayLogs);
     const comp = getDailyCompletionSummary(tasks, dayLogs);
-    
-    // Sum points for completed daily habits
-    const habitPoints = dailyTasks.reduce(
-      (points, task) => points + dailyTaskPoints(task, dayLogs.find((log) => log.taskId === task.id)),
-      0
-    );
-
+    const habitPoints = dayHabitPoints(dailyTasks, dayLogs);
     const isSuccess = comp.total > 0 && comp.percent >= DAILY_BONUS_THRESHOLD * 100;
-    let awarded = habitPoints + getDailyCompletionBonus(getDailyChecklistCompletionSummary(tasks, dayLogs));
-    const streakBonus = idx % 7 === 0; // STREAK_BONUS_DAYS = 7
+
+    const dailyBonusApplies = backfill ? BACKFILL_AWARDS_DAILY_BONUS : true;
+    let awarded =
+      habitPoints +
+      (dailyBonusApplies
+        ? getDailyCompletionBonus(getDailyChecklistCompletionSummary(tasks, dayLogs))
+        : 0);
+
+    const streakBonus =
+      streakPosition !== null &&
+      streakPosition % 7 === 0 && // STREAK_BONUS_DAYS = 7
+      (backfill ? BACKFILL_AWARDS_STREAK_BONUS : true);
     if (streakBonus) awarded += STREAK_BONUS_POINTS;
 
     // Check Daily League Bonus (requires >= 20 habit points logged that day)
@@ -98,7 +135,10 @@ export async function runDayScoring(
     });
     const currentPeak = existingMember?.peakLeaguePoints ?? 0;
     const startOfDayLeague = getLeagueState(currentPeak).league;
-    const qualifiesForLeagueBonus = habitPoints >= MIN_DAILY_POINTS_FOR_BONUS;
+    const qualifiesForLeagueBonus =
+      !backfill || BACKFILL_AWARDS_LEAGUE_BONUS
+        ? habitPoints >= MIN_DAILY_POINTS_FOR_BONUS
+        : false;
     const leagueBonus = qualifiesForLeagueBonus ? startOfDayLeague.dailyBonus : 0;
 
     if (INCLUDE_BONUS_IN_LEADERBOARD && leagueBonus > 0) {
@@ -140,7 +180,7 @@ export async function runDayScoring(
         completedCount: comp.achieved,
         totalCount: comp.total,
         pointsAwarded: awarded,
-        dailyBonusAwarded: isSuccess,
+        dailyBonusAwarded: isSuccess && dailyBonusApplies,
         streakBonusAwarded: streakBonus,
         leagueBonusAwarded: leagueBonus > 0,
         leagueBonusPoints: leagueBonus,
@@ -152,7 +192,7 @@ export async function runDayScoring(
         completedCount: comp.achieved,
         totalCount: comp.total,
         pointsAwarded: awarded,
-        dailyBonusAwarded: isSuccess,
+        dailyBonusAwarded: isSuccess && dailyBonusApplies,
         streakBonusAwarded: streakBonus,
         leagueBonusAwarded: leagueBonus > 0,
         leagueBonusPoints: leagueBonus,
@@ -160,82 +200,15 @@ export async function runDayScoring(
     });
   }
 
+  // Update DaySummary records for dates in the current streak run
+  for (let i = 0; i < run.length; i++) {
+    await upsertDaySummary(run[i], i + 1); // position in current streak
+  }
+
   // If onDate itself is not a success day, ensure it has a DaySummary record
   const onDateKey = formatDateKey(onDate);
   if (!successKeys.has(onDateKey)) {
-    const dayLogs = logsByDate[onDateKey] || [];
-    const comp = getDailyCompletionSummary(tasks, dayLogs);
-
-    const habitPoints = dailyTasks.reduce(
-      (points, task) => points + dailyTaskPoints(task, dayLogs.find((log) => log.taskId === task.id)),
-      0
-    );
-
-    let awarded = habitPoints + getDailyCompletionBonus(getDailyChecklistCompletionSummary(tasks, dayLogs));
-    const existingMember = await db.challengeMember.findUnique({
-      where: { challengeId_userId: { challengeId, userId } },
-    });
-    const currentPeak = existingMember?.peakLeaguePoints ?? 0;
-    const startOfDayLeague = getLeagueState(currentPeak).league;
-    const qualifiesForLeagueBonus = habitPoints >= MIN_DAILY_POINTS_FOR_BONUS;
-    const leagueBonus = qualifiesForLeagueBonus ? startOfDayLeague.dailyBonus : 0;
-
-    if (INCLUDE_BONUS_IN_LEADERBOARD && leagueBonus > 0) {
-      awarded += leagueBonus;
-    }
-
-    if (leagueBonus > 0) {
-      const existingAudit = await db.activityEvent.findFirst({
-        where: {
-          userId,
-          challengeId,
-          type: "league_bonus",
-          date: {
-            gte: startOfDay(onDate),
-            lte: endOfDay(onDate),
-          },
-        },
-      });
-      if (!existingAudit) {
-        await db.activityEvent.create({
-          data: {
-            userId,
-            challengeId,
-            date: startOfDay(onDate),
-            type: "league_bonus",
-            title: `Daily League Bonus (+${leagueBonus} pts - ${startOfDayLeague.name})`,
-            points: leagueBonus,
-          },
-        });
-      }
-    }
-
-    await db.daySummary.upsert({
-      where: {
-        userId_challengeId_date: { userId, challengeId, date: startOfDay(onDate) },
-      },
-      update: {
-        completedCount: comp.achieved,
-        totalCount: comp.total,
-        pointsAwarded: awarded,
-        dailyBonusAwarded: false,
-        streakBonusAwarded: false,
-        leagueBonusAwarded: leagueBonus > 0,
-        leagueBonusPoints: leagueBonus,
-      },
-      create: {
-        userId,
-        challengeId,
-        date: startOfDay(onDate),
-        completedCount: comp.achieved,
-        totalCount: comp.total,
-        pointsAwarded: awarded,
-        dailyBonusAwarded: false,
-        streakBonusAwarded: false,
-        leagueBonusAwarded: leagueBonus > 0,
-        leagueBonusPoints: leagueBonus,
-      },
-    });
+    await upsertDaySummary(onDate, null);
   }
 
   // 3. Update Weekly Score for the week containing onDate

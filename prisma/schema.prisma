@@ -179,6 +179,13 @@ model TaskLog {
   value       Float         @default(0)
   bonusPoints Int           @default(0) // bonus pts the user earned this entry (set in the log UI)
 
+  // Backfill ("Log yesterday") support. `date` stays the backfilled day;
+  // `loggedAt` records when the entry was actually saved.
+  isBackfill     Boolean   @default(false)
+  originalPoints Int?      // points the entry would have been worth on time
+  awardedPoints  Int?      // points actually awarded (discounted for backfill)
+  loggedAt       DateTime? // actual save time (differs from `date` for backfill)
+
   challenge   Challenge     @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   task        ChallengeTask @relation(fields: [taskId], references: [id], onDelete: Cascade)

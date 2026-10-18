@@ -125,11 +125,15 @@ CREATE TABLE "task_logs" (
     "userId" TEXT NOT NULL,
     "taskId" TEXT NOT NULL,
     "date" DATE NOT NULL,
-    "completed" BOOLEAN NOT NULL DEFAULT false,
-    "value" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "bonusPoints" INTEGER NOT NULL DEFAULT 0,
-
-    CONSTRAINT "task_logs_pkey" PRIMARY KEY ("id")
+      "completed" BOOLEAN NOT NULL DEFAULT false,
+      "value" DOUBLE PRECISION NOT NULL DEFAULT 0,
+      "bonusPoints" INTEGER NOT NULL DEFAULT 0,
+      "isBackfill" BOOLEAN NOT NULL DEFAULT false,
+      "originalPoints" INTEGER,
+      "awardedPoints" INTEGER,
+      "loggedAt" TIMESTAMP(3),
+  
+      CONSTRAINT "task_logs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

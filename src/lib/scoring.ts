@@ -1,5 +1,7 @@
 // Dynamic scoring & domain logic.
 
+import { BACKFILL_COUNTS_TOWARD_WEEKLY } from "@/lib/backfill-config";
+
 export interface ChallengeTask {
   id: string;
   challengeId: string;
@@ -72,6 +74,12 @@ export interface TaskLog {
   completed: boolean;
   value: number;
   bonusPoints: number;
+  // Backfill ("Log yesterday") fields. `date` remains the backfilled day;
+  // `loggedAt` is when the entry was actually saved.
+  isBackfill?: boolean;
+  originalPoints?: number | null;
+  awardedPoints?: number | null;
+  loggedAt?: Date | null;
 }
 
 export interface ChallengeMember {
@@ -202,12 +210,17 @@ export function computeWeeklyResultSummary(
   completedDailyCount: number, // number of successful days in the week
   totalDailyDays: number // e.g. 7
 ): WeeklyResult {
+  // Backfilled days count toward weekly targets when the config flag allows
+  // it (rule 6). When disabled, their logs are excluded from weekly math.
+  const weeklyLogs = BACKFILL_COUNTS_TOWARD_WEEKLY
+    ? logs
+    : logs.filter((l) => !l.isBackfill);
   const weeklyTasks = tasks.filter((t) => t.type === "WEEKLY");
   const taskResults: WeeklyTaskResult[] = [];
   let totalPoints = 0;
 
   weeklyTasks.forEach((task) => {
-    const taskLogs = logs.filter((l) => l.taskId === task.id);
+    const taskLogs = weeklyLogs.filter((l) => l.taskId === task.id);
     let achieved = false;
     let points = 0;
     let currentValue = 0;
@@ -216,12 +229,28 @@ export function computeWeeklyResultSummary(
       // Number inputs award per-unit points (total value × points per unit).
       // Any bonus the user earned from hitting the threshold was awarded in the
       // log UI and stored on the logs, so it is summed like any other points.
+      // Backfill entries already carry their discounted total in awardedPoints,
+      // so they are summed directly (on-time entries are aggregated so partial
+      // units still combine across days).
       currentValue = Math.round(taskLogs.reduce((s, l) => s + (l.value || 0), 0) * 10) / 10;
       achieved = currentValue > 0;
       if (achieved) {
-        points =
-          earnedBlocks(currentValue, task) * task.points +
-          taskLogs.reduce((s, l) => s + (l.bonusPoints || 0), 0);
+        const backfillPoints = taskLogs.reduce(
+          (s, l) => s + (l.isBackfill && l.awardedPoints != null ? l.awardedPoints : 0),
+          0
+        );
+        const onTimeValue =
+          Math.round(
+            taskLogs.reduce(
+              (s, l) => s + (l.isBackfill && l.awardedPoints != null ? 0 : l.value || 0),
+              0
+            ) * 10
+          ) / 10;
+        const onTimeBonus = taskLogs.reduce(
+          (s, l) => s + (l.isBackfill && l.awardedPoints != null ? 0 : l.bonusPoints || 0),
+          0
+        );
+        points = earnedBlocks(onTimeValue, task) * task.points + onTimeBonus + backfillPoints;
       }
     } else if (task.isAlcoholTask) {
       // Alcohol rules:

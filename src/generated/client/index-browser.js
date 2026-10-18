@@ -224,7 +224,11 @@ exports.Prisma.TaskLogScalarFieldEnum = {
   date: 'date',
   completed: 'completed',
   value: 'value',
-  bonusPoints: 'bonusPoints'
+  bonusPoints: 'bonusPoints',
+  isBackfill: 'isBackfill',
+  originalPoints: 'originalPoints',
+  awardedPoints: 'awardedPoints',
+  loggedAt: 'loggedAt'
 };
 
 exports.Prisma.DaySummaryScalarFieldEnum = {

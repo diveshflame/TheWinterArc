@@ -3,13 +3,41 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { startOfDay } from "@/lib/scoring";
+import { startOfDay, formatDateKey } from "@/lib/scoring";
 import { runDayScoring } from "@/lib/score-engine";
 import { randomInviteCode } from "@/lib/utils";
+import {
+  backfillAwardedPoints,
+  dateKeyToUtcDate,
+  evaluateBackfillEligibility,
+  isDateKey,
+  isWithinDays,
+  addDaysToKey,
+  keyNumericDate,
+  keyWeekdayLong,
+  keyWeekdayShort,
+  onTimeTaskPoints,
+  thresholdBonusFor,
+  todayKey as canonicalTodayKey,
+} from "@/lib/backfill";
+import {
+  getBackfillEligibility,
+  type BackfillEligibility,
+} from "@/lib/queries";
 
 // ---------------------------------------------------------------------------
 // Dynamic Tasks Logging
 // ---------------------------------------------------------------------------
+
+function revalidateLogPaths(userId: string, challengeId: string) {
+  revalidatePath("/dashboard");
+  revalidatePath("/log");
+  revalidatePath("/leaderboards");
+  revalidatePath("/profile");
+  revalidatePath(`/u/${userId}`);
+  revalidatePath("/challenges");
+  revalidatePath(`/challenges/${challengeId}`);
+}
 
 export async function saveTaskLog(
   challengeId: string,
@@ -53,14 +81,37 @@ export async function saveTaskLog(
 export async function saveMultipleTaskLogs(
   challengeId: string,
   dateStr: string,
-  updates: { taskId: string; completed: boolean; value: number; bonusPoints?: number }[]
+  updates: { taskId: string; completed: boolean; value: number; bonusPoints?: number }[],
+  clientToday?: string
 ): Promise<{ ok: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user) return { ok: false, error: "Not signed in" };
 
   const userId = session.user.id;
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const targetDate = new Date(Date.UTC(y, m - 1, d));
+
+  // Regular logging only writes the user's current day. Backfilling a previous
+  // day must go through saveBackfillLogs, which enforces the one-day rule and
+  // the 30% penalty server-side. The client's claimed "today" is accepted only
+  // within one day of the server clock (timezones span at most UTC−12..+14),
+  // so stale requests that raced midnight are rejected.
+  const serverToday = canonicalTodayKey();
+  if (!isDateKey(dateStr)) {
+    return { ok: false, error: "Invalid date" };
+  }
+  if (clientToday !== undefined) {
+    if (!isDateKey(clientToday) || !isWithinDays(clientToday, serverToday)) {
+      return { ok: false, error: "Your log date is out of date. Refresh and try again." };
+    }
+    if (dateStr !== clientToday) {
+      return {
+        ok: false,
+        error: "Only today's log can be saved here. Use \"Log yesterday\" to backfill.",
+      };
+    }
+  } else if (!isWithinDays(dateStr, serverToday)) {
+    return { ok: false, error: "Invalid log date" };
+  }
+  const targetDate = dateKeyToUtcDate(dateStr);
 
   const membership = await db.challengeMember.findUnique({
     where: { challengeId_userId: { challengeId, userId } },
@@ -87,15 +138,194 @@ export async function saveMultipleTaskLogs(
 
   await runDayScoring(userId, challengeId, targetDate);
 
-  revalidatePath("/dashboard");
-  revalidatePath("/log");
-  revalidatePath("/leaderboards");
-  revalidatePath("/profile");
-  revalidatePath(`/u/${userId}`);
-  revalidatePath("/challenges");
-  revalidatePath(`/challenges/${challengeId}`);
+  revalidateLogPaths(userId, challengeId);
 
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Backfill ("Log yesterday")
+// ---------------------------------------------------------------------------
+
+export type BackfillSaveErrorCode =
+  | "STALE_DATE"
+  | "NOT_ELIGIBLE"
+  | "INVALID"
+  | "FORBIDDEN";
+
+/**
+ * Checks whether yesterday (relative to the user's LOCAL calendar day, as
+ * claimed by the client and staleness-checked against the server clock) can
+ * be backfilled: zero logs for that day, and membership on that day (rule 2).
+ */
+export async function checkBackfillEligibility(
+  challengeId: string,
+  clientToday: string
+): Promise<BackfillEligibility> {
+  const session = await auth();
+  const today = isDateKey(clientToday) ? clientToday : canonicalTodayKey();
+  const yKey = addDaysToKey(today, -1);
+  const denied: BackfillEligibility = {
+    eligible: false,
+    reason: "not_in_challenge_yet",
+    yesterdayKey: yKey,
+    clientTodayKey: today,
+    yesterdayWeekday: keyWeekdayLong(yKey),
+    yesterdayShort: keyWeekdayShort(yKey),
+    yesterdayNumeric: keyNumericDate(yKey),
+  };
+  if (!session?.user || !isDateKey(clientToday)) return denied;
+  if (!isWithinDays(clientToday, canonicalTodayKey())) return denied;
+
+  return getBackfillEligibility(session.user.id, challengeId, clientToday);
+}
+
+/**
+ * Saves yesterday's log at the 30% backfill penalty. Enforced server-side:
+ * - only the immediately previous calendar day (rule 1), never older; the
+ *   client-claimed date must be exactly one day before its claimed "today"
+ *   and within one day of the server clock (stale requests rejected);
+ * - eligible only with zero logs for that day and membership on that day
+ *   (rule 2) — one save per day, then the day is locked;
+ * - positive points are floored at 70% per task (rule 3), penalties at full
+ *   value (rule 4);
+ * - logs record originalPoints, awardedPoints, isBackfill, loggedAt (rule 5);
+ * - streak / daily-completion / league bonuses are withheld per config flags
+ *   (rule 6) while the day still counts toward weekly targets.
+ */
+export async function saveBackfillLogs(
+  challengeId: string,
+  dateStr: string,
+  clientToday: string,
+  updates: { taskId: string; completed: boolean; value: number }[]
+): Promise<{ ok: boolean; error?: string; code?: BackfillSaveErrorCode; awarded?: number }> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, error: "Not signed in", code: "FORBIDDEN" };
+
+  const userId = session.user.id;
+
+  // Rule 1 + stale-request rejection: the target must be exactly the day
+  // before the client's claimed today, and that claim must be fresh relative
+  // to the server clock (a request that raced midnight fails here).
+  if (
+    !isDateKey(dateStr) ||
+    !isDateKey(clientToday) ||
+    dateStr !== addDaysToKey(clientToday, -1) ||
+    !isWithinDays(clientToday, canonicalTodayKey())
+  ) {
+    return {
+      ok: false,
+      error: "That day can no longer be backfilled. Only yesterday is eligible.",
+      code: "STALE_DATE",
+    };
+  }
+
+  const membership = await db.challengeMember.findUnique({
+    where: { challengeId_userId: { challengeId, userId } },
+    include: { challenge: { select: { startDate: true, tasks: true } } },
+  });
+  if (!membership) {
+    return { ok: false, error: "Not a member of this challenge", code: "FORBIDDEN" };
+  }
+
+  const challengeTasks = membership.challenge.tasks;
+  const tasksById = new Map(challengeTasks.map((t) => [t.id, t] as const));
+
+  // Idempotency / rule 2: reject when the day already has any logs.
+  const existingLogCount = await db.taskLog.count({
+    where: { userId, challengeId, date: dateKeyToUtcDate(dateStr) },
+  });
+  const verdict = evaluateBackfillEligibility({
+    targetKey: dateStr,
+    existingLogCount,
+    memberJoinedKey: formatDateKey(membership.joinedAt),
+    challengeStartKey: formatDateKey(membership.challenge.startDate),
+  });
+  if (!verdict.eligible) {
+    return {
+      ok: false,
+      error:
+        verdict.reason === "already_logged"
+          ? "Yesterday has already been logged — each day can only be backfilled once."
+          : "You weren't in the challenge that day.",
+      code: "NOT_ELIGIBLE",
+    };
+  }
+
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return { ok: false, error: "Nothing to save", code: "INVALID" };
+  }
+
+  const targetDate = dateKeyToUtcDate(dateStr);
+  const loggedAt = new Date();
+  let totalAwarded = 0;
+
+  try {
+    await db.$transaction(async (tx) => {
+      // Re-check inside the transaction so concurrent double-saves cannot
+      // both pass (one backfill save per day).
+      const count = await tx.taskLog.count({
+        where: { userId, challengeId, date: targetDate },
+      });
+      if (count > 0) {
+        throw new Error("ALREADY_LOGGED");
+      }
+
+      for (const update of updates) {
+        const task = tasksById.get(update.taskId);
+        if (!task) throw new Error("UNKNOWN_TASK");
+
+        const value = Number.isFinite(update.value) ? Math.max(0, update.value) : 0;
+        const completed = !!update.completed;
+
+        // Compute points server-side from the task config (rules 3 & 4) —
+        // never trust client-sent point totals. On-time first, then ×0.7.
+        const original = onTimeTaskPoints(task, { completed, value });
+        const awarded = backfillAwardedPoints(task, { completed, value });
+        const bonusPoints =
+          task.inputType === "NUMBER" ? thresholdBonusFor(value, task) : 0;
+        totalAwarded += awarded;
+
+        await tx.taskLog.create({
+          data: {
+            userId,
+            challengeId,
+            taskId: task.id,
+            date: targetDate,
+            completed,
+            value,
+            bonusPoints,
+            isBackfill: true,
+            originalPoints: original,
+            awardedPoints: awarded,
+            loggedAt,
+          },
+        });
+      }
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "";
+    if (message === "ALREADY_LOGGED") {
+      return {
+        ok: false,
+        error: "Yesterday has already been logged — each day can only be backfilled once.",
+        code: "NOT_ELIGIBLE",
+      };
+    }
+    if (message === "UNKNOWN_TASK") {
+      return { ok: false, error: "Unknown task for this challenge", code: "INVALID" };
+    }
+    return { ok: false, error: "Could not save yesterday's log", code: "INVALID" };
+  }
+
+  // Score the backfilled day (discounted, no bonuses), then re-score the
+  // user's current day so streak/totals reflect the new log.
+  await runDayScoring(userId, challengeId, targetDate);
+  await runDayScoring(userId, challengeId, dateKeyToUtcDate(clientToday));
+
+  revalidateLogPaths(userId, challengeId);
+
+  return { ok: true, awarded: totalAwarded };
 }
 
 // ---------------------------------------------------------------------------

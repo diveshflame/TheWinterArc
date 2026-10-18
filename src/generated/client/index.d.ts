@@ -11586,11 +11586,15 @@ export namespace Prisma {
   export type TaskLogAvgAggregateOutputType = {
     value: number | null
     bonusPoints: number | null
+    originalPoints: number | null
+    awardedPoints: number | null
   }
 
   export type TaskLogSumAggregateOutputType = {
     value: number | null
     bonusPoints: number | null
+    originalPoints: number | null
+    awardedPoints: number | null
   }
 
   export type TaskLogMinAggregateOutputType = {
@@ -11602,6 +11606,10 @@ export namespace Prisma {
     completed: boolean | null
     value: number | null
     bonusPoints: number | null
+    isBackfill: boolean | null
+    originalPoints: number | null
+    awardedPoints: number | null
+    loggedAt: Date | null
   }
 
   export type TaskLogMaxAggregateOutputType = {
@@ -11613,6 +11621,10 @@ export namespace Prisma {
     completed: boolean | null
     value: number | null
     bonusPoints: number | null
+    isBackfill: boolean | null
+    originalPoints: number | null
+    awardedPoints: number | null
+    loggedAt: Date | null
   }
 
   export type TaskLogCountAggregateOutputType = {
@@ -11624,6 +11636,10 @@ export namespace Prisma {
     completed: number
     value: number
     bonusPoints: number
+    isBackfill: number
+    originalPoints: number
+    awardedPoints: number
+    loggedAt: number
     _all: number
   }
 
@@ -11631,11 +11647,15 @@ export namespace Prisma {
   export type TaskLogAvgAggregateInputType = {
     value?: true
     bonusPoints?: true
+    originalPoints?: true
+    awardedPoints?: true
   }
 
   export type TaskLogSumAggregateInputType = {
     value?: true
     bonusPoints?: true
+    originalPoints?: true
+    awardedPoints?: true
   }
 
   export type TaskLogMinAggregateInputType = {
@@ -11647,6 +11667,10 @@ export namespace Prisma {
     completed?: true
     value?: true
     bonusPoints?: true
+    isBackfill?: true
+    originalPoints?: true
+    awardedPoints?: true
+    loggedAt?: true
   }
 
   export type TaskLogMaxAggregateInputType = {
@@ -11658,6 +11682,10 @@ export namespace Prisma {
     completed?: true
     value?: true
     bonusPoints?: true
+    isBackfill?: true
+    originalPoints?: true
+    awardedPoints?: true
+    loggedAt?: true
   }
 
   export type TaskLogCountAggregateInputType = {
@@ -11669,6 +11697,10 @@ export namespace Prisma {
     completed?: true
     value?: true
     bonusPoints?: true
+    isBackfill?: true
+    originalPoints?: true
+    awardedPoints?: true
+    loggedAt?: true
     _all?: true
   }
 
@@ -11767,6 +11799,10 @@ export namespace Prisma {
     completed: boolean
     value: number
     bonusPoints: number
+    isBackfill: boolean
+    originalPoints: number | null
+    awardedPoints: number | null
+    loggedAt: Date | null
     _count: TaskLogCountAggregateOutputType | null
     _avg: TaskLogAvgAggregateOutputType | null
     _sum: TaskLogSumAggregateOutputType | null
@@ -11797,6 +11833,10 @@ export namespace Prisma {
     completed?: boolean
     value?: boolean
     bonusPoints?: boolean
+    isBackfill?: boolean
+    originalPoints?: boolean
+    awardedPoints?: boolean
+    loggedAt?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     task?: boolean | ChallengeTaskDefaultArgs<ExtArgs>
@@ -11811,6 +11851,10 @@ export namespace Prisma {
     completed?: boolean
     value?: boolean
     bonusPoints?: boolean
+    isBackfill?: boolean
+    originalPoints?: boolean
+    awardedPoints?: boolean
+    loggedAt?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     task?: boolean | ChallengeTaskDefaultArgs<ExtArgs>
@@ -11825,6 +11869,10 @@ export namespace Prisma {
     completed?: boolean
     value?: boolean
     bonusPoints?: boolean
+    isBackfill?: boolean
+    originalPoints?: boolean
+    awardedPoints?: boolean
+    loggedAt?: boolean
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     task?: boolean | ChallengeTaskDefaultArgs<ExtArgs>
@@ -11839,9 +11887,13 @@ export namespace Prisma {
     completed?: boolean
     value?: boolean
     bonusPoints?: boolean
+    isBackfill?: boolean
+    originalPoints?: boolean
+    awardedPoints?: boolean
+    loggedAt?: boolean
   }
 
-  export type TaskLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "taskId" | "date" | "completed" | "value" | "bonusPoints", ExtArgs["result"]["taskLog"]>
+  export type TaskLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "challengeId" | "userId" | "taskId" | "date" | "completed" | "value" | "bonusPoints" | "isBackfill" | "originalPoints" | "awardedPoints" | "loggedAt", ExtArgs["result"]["taskLog"]>
   export type TaskLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     challenge?: boolean | ChallengeDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -11874,6 +11926,10 @@ export namespace Prisma {
       completed: boolean
       value: number
       bonusPoints: number
+      isBackfill: boolean
+      originalPoints: number | null
+      awardedPoints: number | null
+      loggedAt: Date | null
     }, ExtArgs["result"]["taskLog"]>
     composites: {}
   }
@@ -12308,6 +12364,10 @@ export namespace Prisma {
     readonly completed: FieldRef<"TaskLog", 'Boolean'>
     readonly value: FieldRef<"TaskLog", 'Float'>
     readonly bonusPoints: FieldRef<"TaskLog", 'Int'>
+    readonly isBackfill: FieldRef<"TaskLog", 'Boolean'>
+    readonly originalPoints: FieldRef<"TaskLog", 'Int'>
+    readonly awardedPoints: FieldRef<"TaskLog", 'Int'>
+    readonly loggedAt: FieldRef<"TaskLog", 'DateTime'>
   }
     
 
@@ -16309,7 +16369,11 @@ export namespace Prisma {
     date: 'date',
     completed: 'completed',
     value: 'value',
-    bonusPoints: 'bonusPoints'
+    bonusPoints: 'bonusPoints',
+    isBackfill: 'isBackfill',
+    originalPoints: 'originalPoints',
+    awardedPoints: 'awardedPoints',
+    loggedAt: 'loggedAt'
   };
 
   export type TaskLogScalarFieldEnum = (typeof TaskLogScalarFieldEnum)[keyof typeof TaskLogScalarFieldEnum]
@@ -17120,6 +17184,10 @@ export namespace Prisma {
     completed?: BoolFilter<"TaskLog"> | boolean
     value?: FloatFilter<"TaskLog"> | number
     bonusPoints?: IntFilter<"TaskLog"> | number
+    isBackfill?: BoolFilter<"TaskLog"> | boolean
+    originalPoints?: IntNullableFilter<"TaskLog"> | number | null
+    awardedPoints?: IntNullableFilter<"TaskLog"> | number | null
+    loggedAt?: DateTimeNullableFilter<"TaskLog"> | Date | string | null
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     task?: XOR<ChallengeTaskScalarRelationFilter, ChallengeTaskWhereInput>
@@ -17134,6 +17202,10 @@ export namespace Prisma {
     completed?: SortOrder
     value?: SortOrder
     bonusPoints?: SortOrder
+    isBackfill?: SortOrder
+    originalPoints?: SortOrderInput | SortOrder
+    awardedPoints?: SortOrderInput | SortOrder
+    loggedAt?: SortOrderInput | SortOrder
     challenge?: ChallengeOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
     task?: ChallengeTaskOrderByWithRelationInput
@@ -17152,6 +17224,10 @@ export namespace Prisma {
     completed?: BoolFilter<"TaskLog"> | boolean
     value?: FloatFilter<"TaskLog"> | number
     bonusPoints?: IntFilter<"TaskLog"> | number
+    isBackfill?: BoolFilter<"TaskLog"> | boolean
+    originalPoints?: IntNullableFilter<"TaskLog"> | number | null
+    awardedPoints?: IntNullableFilter<"TaskLog"> | number | null
+    loggedAt?: DateTimeNullableFilter<"TaskLog"> | Date | string | null
     challenge?: XOR<ChallengeScalarRelationFilter, ChallengeWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     task?: XOR<ChallengeTaskScalarRelationFilter, ChallengeTaskWhereInput>
@@ -17166,6 +17242,10 @@ export namespace Prisma {
     completed?: SortOrder
     value?: SortOrder
     bonusPoints?: SortOrder
+    isBackfill?: SortOrder
+    originalPoints?: SortOrderInput | SortOrder
+    awardedPoints?: SortOrderInput | SortOrder
+    loggedAt?: SortOrderInput | SortOrder
     _count?: TaskLogCountOrderByAggregateInput
     _avg?: TaskLogAvgOrderByAggregateInput
     _max?: TaskLogMaxOrderByAggregateInput
@@ -17185,6 +17265,10 @@ export namespace Prisma {
     completed?: BoolWithAggregatesFilter<"TaskLog"> | boolean
     value?: FloatWithAggregatesFilter<"TaskLog"> | number
     bonusPoints?: IntWithAggregatesFilter<"TaskLog"> | number
+    isBackfill?: BoolWithAggregatesFilter<"TaskLog"> | boolean
+    originalPoints?: IntNullableWithAggregatesFilter<"TaskLog"> | number | null
+    awardedPoints?: IntNullableWithAggregatesFilter<"TaskLog"> | number | null
+    loggedAt?: DateTimeNullableWithAggregatesFilter<"TaskLog"> | Date | string | null
   }
 
   export type DaySummaryWhereInput = {
@@ -18147,6 +18231,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
     challenge: ChallengeCreateNestedOneWithoutTaskLogsInput
     user: UserCreateNestedOneWithoutTaskLogsInput
     task: ChallengeTaskCreateNestedOneWithoutLogsInput
@@ -18161,6 +18249,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type TaskLogUpdateInput = {
@@ -18169,6 +18261,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     challenge?: ChallengeUpdateOneRequiredWithoutTaskLogsNestedInput
     user?: UserUpdateOneRequiredWithoutTaskLogsNestedInput
     task?: ChallengeTaskUpdateOneRequiredWithoutLogsNestedInput
@@ -18183,6 +18279,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskLogCreateManyInput = {
@@ -18194,6 +18294,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type TaskLogUpdateManyMutationInput = {
@@ -18202,6 +18306,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskLogUncheckedUpdateManyInput = {
@@ -18213,6 +18321,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DaySummaryCreateInput = {
@@ -19191,11 +19303,17 @@ export namespace Prisma {
     completed?: SortOrder
     value?: SortOrder
     bonusPoints?: SortOrder
+    isBackfill?: SortOrder
+    originalPoints?: SortOrder
+    awardedPoints?: SortOrder
+    loggedAt?: SortOrder
   }
 
   export type TaskLogAvgOrderByAggregateInput = {
     value?: SortOrder
     bonusPoints?: SortOrder
+    originalPoints?: SortOrder
+    awardedPoints?: SortOrder
   }
 
   export type TaskLogMaxOrderByAggregateInput = {
@@ -19207,6 +19325,10 @@ export namespace Prisma {
     completed?: SortOrder
     value?: SortOrder
     bonusPoints?: SortOrder
+    isBackfill?: SortOrder
+    originalPoints?: SortOrder
+    awardedPoints?: SortOrder
+    loggedAt?: SortOrder
   }
 
   export type TaskLogMinOrderByAggregateInput = {
@@ -19218,11 +19340,17 @@ export namespace Prisma {
     completed?: SortOrder
     value?: SortOrder
     bonusPoints?: SortOrder
+    isBackfill?: SortOrder
+    originalPoints?: SortOrder
+    awardedPoints?: SortOrder
+    loggedAt?: SortOrder
   }
 
   export type TaskLogSumOrderByAggregateInput = {
     value?: SortOrder
     bonusPoints?: SortOrder
+    originalPoints?: SortOrder
+    awardedPoints?: SortOrder
   }
 
   export type DaySummaryUserIdChallengeIdDateCompoundUniqueInput = {
@@ -20650,6 +20778,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
     challenge: ChallengeCreateNestedOneWithoutTaskLogsInput
     task: ChallengeTaskCreateNestedOneWithoutLogsInput
   }
@@ -20662,6 +20794,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type TaskLogCreateOrConnectWithoutUserInput = {
@@ -20935,6 +21071,10 @@ export namespace Prisma {
     completed?: BoolFilter<"TaskLog"> | boolean
     value?: FloatFilter<"TaskLog"> | number
     bonusPoints?: IntFilter<"TaskLog"> | number
+    isBackfill?: BoolFilter<"TaskLog"> | boolean
+    originalPoints?: IntNullableFilter<"TaskLog"> | number | null
+    awardedPoints?: IntNullableFilter<"TaskLog"> | number | null
+    loggedAt?: DateTimeNullableFilter<"TaskLog"> | Date | string | null
   }
 
   export type DaySummaryUpsertWithWhereUniqueWithoutUserInput = {
@@ -21421,6 +21561,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
     user: UserCreateNestedOneWithoutTaskLogsInput
     task: ChallengeTaskCreateNestedOneWithoutLogsInput
   }
@@ -21433,6 +21577,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type TaskLogCreateOrConnectWithoutChallengeInput = {
@@ -21992,6 +22140,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
     challenge: ChallengeCreateNestedOneWithoutTaskLogsInput
     user: UserCreateNestedOneWithoutTaskLogsInput
   }
@@ -22004,6 +22156,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type TaskLogCreateOrConnectWithoutTaskInput = {
@@ -23148,6 +23304,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type DaySummaryCreateManyUserInput = {
@@ -23294,6 +23454,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     challenge?: ChallengeUpdateOneRequiredWithoutTaskLogsNestedInput
     task?: ChallengeTaskUpdateOneRequiredWithoutLogsNestedInput
   }
@@ -23306,6 +23470,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskLogUncheckedUpdateManyWithoutUserInput = {
@@ -23316,6 +23484,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DaySummaryUpdateWithoutUserInput = {
@@ -23499,6 +23671,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type DaySummaryCreateManyChallengeInput = {
@@ -23620,6 +23796,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutTaskLogsNestedInput
     task?: ChallengeTaskUpdateOneRequiredWithoutLogsNestedInput
   }
@@ -23632,6 +23812,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskLogUncheckedUpdateManyWithoutChallengeInput = {
@@ -23642,6 +23826,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DaySummaryUpdateWithoutChallengeInput = {
@@ -23751,6 +23939,10 @@ export namespace Prisma {
     completed?: boolean
     value?: number
     bonusPoints?: number
+    isBackfill?: boolean
+    originalPoints?: number | null
+    awardedPoints?: number | null
+    loggedAt?: Date | string | null
   }
 
   export type TaskTierUpdateWithoutTaskInput = {
@@ -23777,6 +23969,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     challenge?: ChallengeUpdateOneRequiredWithoutTaskLogsNestedInput
     user?: UserUpdateOneRequiredWithoutTaskLogsNestedInput
   }
@@ -23789,6 +23985,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type TaskLogUncheckedUpdateManyWithoutTaskInput = {
@@ -23799,6 +23999,10 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     value?: FloatFieldUpdateOperationsInput | number
     bonusPoints?: IntFieldUpdateOperationsInput | number
+    isBackfill?: BoolFieldUpdateOperationsInput | boolean
+    originalPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    awardedPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    loggedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 

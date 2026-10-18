@@ -21,6 +21,7 @@ import {
   parseMovementInput,
   applyMovementDelta,
 } from "@/lib/movement-config";
+import { todayKey as localDateKey } from "@/lib/backfill";
 
 const MOVEMENT_DEBOUNCE_MS = 5000;
 const GROUP_DEBOUNCE_MS = 400;
@@ -39,6 +40,7 @@ export function DailyLogClient({
   weekLogs = [],
   currentStreak = 0,
   todayFormatted,
+  banner,
 }: {
   challengeId: string;
   challengeName: string;
@@ -47,6 +49,8 @@ export function DailyLogClient({
   weekLogs?: TaskLog[];
   currentStreak?: number;
   todayFormatted?: string;
+  /** Rendered directly under the page header, above "Today's completion". */
+  banner?: React.ReactNode;
 }) {
   const router = useRouter();
   const [logState, setLogState] = useState<Record<string, { completed: boolean; value: number }>>(() => {
@@ -107,7 +111,8 @@ export function DailyLogClient({
     };
   }, []);
 
-  const todayKey = formatDateKey(new Date());
+  // The user's LOCAL calendar day (matches the server's startOfDay storage).
+  const todayKey = localDateKey();
   const dateDisplay = todayFormatted || new Date().toLocaleDateString("en-US", {
     month: "numeric",
     day: "numeric",
@@ -200,7 +205,7 @@ export function DailyLogClient({
 
     setIsSyncing(true);
     try {
-      await saveMultipleTaskLogs(challengeId, todayKey, updates);
+      await saveMultipleTaskLogs(challengeId, todayKey, updates, todayKey);
       // Only drop updates from the queue once the DB confirms them.
       const remaining = { ...pendingRef.current };
       entries.forEach(([taskId]) => delete remaining[taskId]);
@@ -322,7 +327,8 @@ export function DailyLogClient({
           completed: p.completed,
           value: p.value,
           bonusPoints: p.bonus,
-        }))
+        })),
+        todayKey
       );
     }
     window.addEventListener("pagehide", flushOnHide);
@@ -412,9 +418,12 @@ export function DailyLogClient({
     setIsSyncing(true);
     setMovementSaving(true);
     try {
-      const res = await saveMultipleTaskLogs(challengeId, todayKey, [
-        { taskId, completed, value, bonusPoints: bonus },
-      ]);
+      const res = await saveMultipleTaskLogs(
+        challengeId,
+        todayKey,
+        [{ taskId, completed, value, bonusPoints: bonus }],
+        todayKey
+      );
       if (!res.ok) throw new Error(res.error || "Save failed");
 
       setSaved(true);
@@ -540,6 +549,9 @@ export function DailyLogClient({
           )}
         </div>
       </div>
+
+      {/* Backfill entry banner ("Log yesterday"), when eligible */}
+      {banner}
 
       {/* 2. Today's Completion Card */}
       <div className="rounded-2xl border border-[#1d2b45] bg-gradient-to-b from-[#142239] to-[#0d1627] p-4 shadow-sm space-y-2.5">
@@ -972,7 +984,7 @@ export function DailyLogClient({
   );
 }
 
-function MovementIcon({
+export function MovementIcon({
   task,
   className,
 }: {
@@ -1034,18 +1046,24 @@ function MovementIcon({
   );
 }
 
-function MovementSheet({
+export function MovementSheet({
   task,
   value,
   saving,
   onDone,
   onClose,
+  pointsFor,
+  originalPointsFor,
 }: {
   task: ChallengeTask;
   value: number;
   saving: boolean;
   onDone: (value: number) => Promise<boolean>;
   onClose: () => void;
+  /** Override the points shown in the badge/Done label (e.g. backfill 70%). */
+  pointsFor?: (value: number) => number;
+  /** When set, the badge shows this value struck through next to the live points. */
+  originalPointsFor?: (value: number) => number;
 }) {
   const cfg = movementConfigFor(task);
   const [text, setText] = useState(() => (value > 0 ? String(value) : ""));
@@ -1056,7 +1074,8 @@ function MovementSheet({
   const sheetRef = useRef<HTMLDivElement | null>(null);
 
   const parsed = parseMovementInput(text, cfg);
-  const pts = numberTaskPoints(parsed, task);
+  const pts = pointsFor ? pointsFor(parsed) : numberTaskPoints(parsed, task);
+  const originalPts = originalPointsFor ? originalPointsFor(parsed) : null;
 
   // Focus + select the field as soon as the sheet opens.
   useEffect(() => {
@@ -1234,6 +1253,11 @@ function MovementSheet({
 
         <div className="mt-3 flex items-center justify-between">
           <span className="rounded-lg border border-[#5c3a1e] bg-[#3a2314] px-2.5 py-1 text-xs font-bold text-[#ffb35c]">
+            {originalPts != null && originalPts !== pts && (
+              <span className="mr-1.5 font-normal text-[#8fa1c3] line-through">
+                {originalPts} pts
+              </span>
+            )}
             {pts} pts
           </span>
           <span className="sr-only" aria-live="polite">
@@ -1264,7 +1288,7 @@ function MovementSheet({
   );
 }
 
-function MovementToast({
+export function MovementToast({
   message,
   actionLabel,
   onAction,
@@ -1307,7 +1331,7 @@ function MovementToast({
   );
 }
 
-function CustomAmountInput({
+export function CustomAmountInput({
   placeholder,
   onSubmit,
 }: {
@@ -1351,7 +1375,7 @@ function CustomAmountInput({
   );
 }
 
-function ChevronIcon({ className }: { className?: string }) {
+export function ChevronIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -1367,7 +1391,7 @@ function ChevronIcon({ className }: { className?: string }) {
   );
 }
 
-function CheckIcon({ className }: { className?: string }) {
+export function CheckIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
