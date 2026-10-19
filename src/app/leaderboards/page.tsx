@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getPrimaryChallenge, getUserChallenges } from "@/lib/queries";
 import { startOfWeek, startOfDay, endOfDay } from "@/lib/scoring";
+import { computeTaskPointsByUser, taskCategory } from "@/lib/leaderboard-tasks";
 import { AppShell } from "@/components/app-shell";
 import { LeaderboardClient } from "@/components/leaderboard-client";
 import { ChallengeSwitcher } from "@/components/challenge-switcher";
@@ -76,6 +77,29 @@ export default async function LeaderboardsPage({
     weekByUser.set(l.userId, (weekByUser.get(l.userId) ?? 0) + l.points)
   );
 
+  const tasks = membership.challenge.tasks;
+  const tiers = tasks.flatMap((t) => t.tiers);
+  // Filter options: grouped by category, never including negative-point tasks.
+  const filterableTasks = tasks
+    .filter((t) => t.points >= 0)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      category: taskCategory(t),
+    }));
+  const challengeLogs = await db.taskLog.findMany({
+    where: { challengeId, date: { gte: membership.challenge.startDate } },
+  });
+
+  const taskPointsByUser = computeTaskPointsByUser({
+    tasks,
+    tiers,
+    logs: challengeLogs,
+    userIds: members.map((m) => m.userId),
+    todayStart: dayStart,
+    weekStart,
+  });
+
   const rows = members.map((m) => {
     const peakPoints = Math.max(
       m.peakLeaguePoints || 0,
@@ -92,6 +116,7 @@ export default async function LeaderboardsPage({
       overall: m.points,
       peakLeaguePoints: peakPoints,
       streak: m.currentStreak,
+      taskPoints: taskPointsByUser[m.userId] ?? {},
     };
   });
 
@@ -118,6 +143,7 @@ export default async function LeaderboardsPage({
           today={today}
           week={week}
           overall={overall}
+          tasks={filterableTasks}
           myUserId={session.user.id}
         />
       </div>

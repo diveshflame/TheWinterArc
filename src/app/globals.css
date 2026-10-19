@@ -93,9 +93,26 @@ body {
   animation: toast-in 0.18s ease-out;
 }
 
+/* --- Task filter sheet --- */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-overlay-in {
+  animation: overlay-fade-in 0.2s ease-out;
+}
+
+@keyframes task-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-task-sheet-up {
+  animation: task-sheet-up 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flame-outer, .flame-inner, .ember-p, .animate-check, .animate-autosave,
-  .animate-sheet-up, .animate-toast-in {
+  .animate-sheet-up, .animate-toast-in, .animate-task-sheet-up {
     animation: none;
   }
 }

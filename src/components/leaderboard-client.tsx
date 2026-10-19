@@ -3,6 +3,8 @@
 import { Fragment, useState } from "react";
 import Link from "next/link";
 import { getLeagueState, resolvePersona } from "@/lib/leagues";
+import type { TaskPointTotals } from "@/lib/leaderboard-tasks";
+import { TaskFilter, type FilterableTask } from "@/components/task-filter-sheet";
 import { LeagueIcon } from "@/components/league-icons";
 
 export interface LeaderboardRow {
@@ -15,6 +17,8 @@ export interface LeaderboardRow {
   overall: number;
   peakLeaguePoints: number;
   streak: number;
+  /** Per-task points for this member, keyed by task id. */
+  taskPoints: Record<string, TaskPointTotals>;
 }
 
 type Tab = "today" | "week" | "overall";
@@ -23,17 +27,37 @@ export function LeaderboardClient({
   today,
   week,
   overall,
+  tasks,
   myUserId,
 }: {
   today: LeaderboardRow[];
   week: LeaderboardRow[];
   overall: LeaderboardRow[];
+  tasks: FilterableTask[];
   myUserId: string;
 }) {
   const [tab, setTab] = useState<Tab>("today");
+  const [taskId, setTaskId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const data = tab === "today" ? today : tab === "week" ? week : overall;
+  // The selection survives tab switches; an id that no longer exists simply
+  // reads as "All tasks".
+  const selectedTaskId =
+    taskId && tasks.some((t) => t.id === taskId) ? taskId : null;
+
+  const base = tab === "today" ? today : tab === "week" ? week : overall;
+  const basePoints = (r: LeaderboardRow) =>
+    tab === "today" ? r.today : tab === "week" ? r.week : r.overall;
+  const taskPoints = (r: LeaderboardRow, id: string) =>
+    r.taskPoints[id]?.[tab] ?? 0;
+
+  const data = selectedTaskId
+    ? [...base].sort(
+        (a, b) =>
+          taskPoints(b, selectedTaskId) - taskPoints(a, selectedTaskId) ||
+          basePoints(b) - basePoints(a)
+      )
+    : base;
   const myRank = data.findIndex((r) => r.userId === myUserId) + 1;
 
   return (
@@ -59,13 +83,23 @@ export function LeaderboardClient({
         ))}
       </div>
 
+      {/* Task filter */}
+      {tasks.length > 0 && (
+        <TaskFilter
+          tasks={tasks}
+          selectedTaskId={selectedTaskId}
+          onChange={setTaskId}
+        />
+      )}
+
       {/* Leaderboard Rows */}
       <div className="rounded-2xl bg-card border border-card-border divide-y divide-card-border shadow-md">
         {data.map((row, i) => {
           const isMe = row.userId === myUserId;
           const isOpen = openId === row.userId;
-          const points =
-            tab === "today" ? row.today : tab === "week" ? row.week : row.overall;
+          const points = selectedTaskId
+            ? taskPoints(row, selectedTaskId)
+            : basePoints(row);
 
           // Persona and league are cumulative from running peak points
           const leagueState = getLeagueState(row.peakLeaguePoints);
