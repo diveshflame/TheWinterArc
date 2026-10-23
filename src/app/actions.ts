@@ -24,6 +24,7 @@ import {
   getBackfillEligibility,
   type BackfillEligibility,
 } from "@/lib/queries";
+import type { Prisma } from "@/generated/client";
 
 // ---------------------------------------------------------------------------
 // Dynamic Tasks Logging
@@ -258,54 +259,75 @@ export async function saveBackfillLogs(
 
   const targetDate = dateKeyToUtcDate(dateStr);
   const loggedAt = new Date();
+
+  // Build every row (and its points) BEFORE opening the transaction. The
+  // transaction then only needs a handful of statements: a remote Postgres
+  // costs a real round trip per statement (~100-400ms) and Prisma aborts an
+  // interactive transaction that runs past its time budget (P2028), which used
+  // to roll the whole save back and report "Could not save yesterday's log"
+  // whenever a full day was logged.
+  const rows: Prisma.TaskLogCreateManyInput[] = [];
   let totalAwarded = 0;
+  for (const update of updates) {
+    const task = tasksById.get(update.taskId);
+    if (!task) {
+      return { ok: false, error: "Unknown task for this challenge", code: "INVALID" };
+    }
+
+    const value = Number.isFinite(update.value) ? Math.max(0, update.value) : 0;
+    const completed = !!update.completed;
+
+    // Compute points server-side from the task config (rules 3 & 4) —
+    // never trust client-sent point totals. On-time first, then ×0.7.
+    const original = onTimeTaskPoints(task, { completed, value });
+    const awarded = backfillAwardedPoints(task, { completed, value });
+    const bonusPoints =
+      task.inputType === "NUMBER" ? thresholdBonusFor(value, task) : 0;
+    totalAwarded += awarded;
+
+    rows.push({
+      userId,
+      challengeId,
+      taskId: task.id,
+      date: targetDate,
+      completed,
+      value,
+      bonusPoints,
+      isBackfill: true,
+      originalPoints: original,
+      awardedPoints: awarded,
+      loggedAt,
+    });
+  }
 
   try {
-    await db.$transaction(async (tx) => {
-      // Re-check inside the transaction so concurrent double-saves cannot
-      // both pass (one backfill save per day).
-      const count = await tx.taskLog.count({
-        where: { userId, challengeId, date: targetDate },
-      });
-      if (count > 0) {
-        throw new Error("ALREADY_LOGGED");
-      }
-
-      for (const update of updates) {
-        const task = tasksById.get(update.taskId);
-        if (!task) throw new Error("UNKNOWN_TASK");
-
-        const value = Number.isFinite(update.value) ? Math.max(0, update.value) : 0;
-        const completed = !!update.completed;
-
-        // Compute points server-side from the task config (rules 3 & 4) —
-        // never trust client-sent point totals. On-time first, then ×0.7.
-        const original = onTimeTaskPoints(task, { completed, value });
-        const awarded = backfillAwardedPoints(task, { completed, value });
-        const bonusPoints =
-          task.inputType === "NUMBER" ? thresholdBonusFor(value, task) : 0;
-        totalAwarded += awarded;
-
-        await tx.taskLog.create({
-          data: {
-            userId,
-            challengeId,
-            taskId: task.id,
-            date: targetDate,
-            completed,
-            value,
-            bonusPoints,
-            isBackfill: true,
-            originalPoints: original,
-            awardedPoints: awarded,
-            loggedAt,
-          },
+    await db.$transaction(
+      async (tx) => {
+        // Re-check inside the transaction so concurrent double-saves cannot
+        // both pass (one backfill save per day).
+        const count = await tx.taskLog.count({
+          where: { userId, challengeId, date: targetDate },
         });
-      }
-    });
+        if (count > 0) {
+          throw new Error("ALREADY_LOGGED");
+        }
+
+        // One batched INSERT instead of one statement per task.
+        await tx.taskLog.createMany({ data: rows });
+      },
+      // Safety margin for a slow link: the batched write is a couple of
+      // statements, but a round trip can still take hundreds of milliseconds.
+      { maxWait: 10_000, timeout: 30_000 }
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
-    if (message === "ALREADY_LOGGED") {
+    // Prisma's code for a unique-constraint hit (task_logs_userId_taskId_date):
+    // a concurrent save won the race between the count above and the insert.
+    const prismaCode =
+      typeof err === "object" && err !== null && "code" in err && typeof err.code === "string"
+        ? err.code
+        : undefined;
+    if (message === "ALREADY_LOGGED" || prismaCode === "P2002") {
       return {
         ok: false,
         error: "Yesterday has already been logged — each day can only be backfilled once.",
@@ -315,6 +337,9 @@ export async function saveBackfillLogs(
     if (message === "UNKNOWN_TASK") {
       return { ok: false, error: "Unknown task for this challenge", code: "INVALID" };
     }
+    // Unexpected DB error: log it server-side so the vague client message can
+    // still be diagnosed.
+    console.error("[saveBackfillLogs]", err);
     return { ok: false, error: "Could not save yesterday's log", code: "INVALID" };
   }
 

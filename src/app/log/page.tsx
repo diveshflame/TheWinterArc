@@ -78,7 +78,14 @@ export default async function LogPage({
           weekLogs={weekLogs}
           currentStreak={membership.currentStreak ?? 0}
           todayFormatted={todayFormatted}
-          banner={<BackfillBanner challengeId={challengeId} />}
+          banner={
+            // The key silences a React 19.2 false-positive "missing key"
+            // warning: the large `tasks` prop makes Flight outline this
+            // element into a lazy row, which drops its validation state on
+            // the client (facebook/react#37240, fixed in #37258). Harmless
+            // once React is updated past 19.2.
+            <BackfillBanner key="backfill-banner" challengeId={challengeId} />
+          }
         />
       </div>
     </AppShell>

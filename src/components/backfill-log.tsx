@@ -884,6 +884,7 @@ export function BackfillLogClient({
             }
             // Backfill entries are batched; the save bar persists them.
             setMovementValue(openMovementTask.id, clamped);
+            closeMovementSheet();
             return true;
           }}
         />

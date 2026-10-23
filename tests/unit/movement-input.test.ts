@@ -43,7 +43,7 @@ describe("movementConfigFor", () => {
     expect(reps.category).toBe("reps");
     expect(reps.step).toBe(1);
     expect(reps.decimals).toBe(0);
-    expect(reps.maxPerDay).toBe(500);
+    expect(reps.maxPerDay).toBe(50000);
     expect(reps.chips).toEqual([5, 10, 20, 50]);
     expect(reps.inputMode).toBe("numeric");
   });
@@ -103,7 +103,7 @@ describe("clampMovementValue", () => {
   });
 
   it("caps at the per-day maximum", () => {
-    expect(clampMovementValue(540, reps)).toBe(500);
+    expect(clampMovementValue(60000, reps)).toBe(50000);
     expect(clampMovementValue(150, km)).toBe(100);
   });
 
@@ -116,7 +116,7 @@ describe("clampMovementValue", () => {
 describe("applyMovementDelta", () => {
   it("adds a typed value plus a chip without exceeding the max", () => {
     expect(applyMovementDelta(40, 10, reps)).toBe(50);
-    expect(applyMovementDelta(490, 50, reps)).toBe(500);
+    expect(applyMovementDelta(49950, 50, reps)).toBe(50000);
   });
 
   it("stops at zero when decreasing", () => {
