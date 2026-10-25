@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { startOfDay } from "@/lib/scoring";
+import { startOfDay, startOfWeek } from "@/lib/scoring";
+import { computeTaskPointsByUser, taskCategory } from "@/lib/leaderboard-tasks";
 import { AppShell } from "@/components/app-shell";
 import { ProfileClient } from "@/components/profile-client";
 import { getShareBundle } from "@/lib/share/server";
@@ -20,7 +21,11 @@ export default async function ProfilePage() {
         include: {
           challenge: {
             include: {
-              tasks: true,
+              tasks: {
+                include: {
+                  tiers: true,
+                },
+              },
             },
           },
         },
@@ -132,6 +137,110 @@ export default async function ProfilePage() {
       }
     : null;
 
+  const allUserLogs = await db.taskLog.findMany({
+    where: { userId },
+  });
+
+  const weekStart = startOfWeek(new Date());
+
+  const challengePointsBreakdowns = user.memberships.map((m) => {
+    const challenge = m.challenge;
+    const challengeLogs = allUserLogs.filter(
+      (l) => l.challengeId === challenge.id
+    );
+    const tiers = challenge.tasks.flatMap((t) => t.tiers);
+
+    const taskPointsMap = computeTaskPointsByUser({
+      tasks: challenge.tasks,
+      tiers,
+      logs: challengeLogs,
+      userIds: [userId],
+      todayStart: today,
+      weekStart,
+    });
+    const userTaskPoints = taskPointsMap[userId] ?? {};
+
+    const tasksBreakdown = challenge.tasks.map((task) => {
+      const pointStats = userTaskPoints[task.id] ?? {
+        today: 0,
+        week: 0,
+        overall: 0,
+      };
+
+      const taskLogs = challengeLogs.filter((l) => l.taskId === task.id);
+      const loggedCount = taskLogs.filter((l) =>
+        task.inputType === "NUMBER" ? (l.value || 0) > 0 : l.completed
+      ).length;
+
+      const totalValue =
+        task.inputType === "NUMBER"
+          ? Math.round(
+              taskLogs.reduce((acc, l) => acc + (l.value || 0), 0) * 10
+            ) / 10
+          : 0;
+
+      return {
+        id: task.id,
+        name: task.name,
+        type: task.type as "DAILY" | "WEEKLY",
+        inputType: task.inputType as "CHECKBOX" | "NUMBER",
+        isRuleBreaker: task.isRuleBreaker,
+        isAlcoholTask: task.isAlcoholTask,
+        points: task.points,
+        unit: task.unit,
+        unitCount: task.unitCount,
+        target: task.target,
+        category: taskCategory(task),
+        todayPoints: pointStats.today,
+        weekPoints: pointStats.week,
+        overallPoints: pointStats.overall,
+        loggedCount,
+        totalValue,
+      };
+    });
+
+    const taskPointsTotal = tasksBreakdown.reduce(
+      (sum, t) => sum + t.overallPoints,
+      0
+    );
+    const totalPoints = m.points;
+    const bonusPointsTotal = Math.max(0, totalPoints - taskPointsTotal);
+
+    const challengeSummaries = summaries.filter(
+      (s) => s.challengeId === challenge.id
+    );
+    const streakBonusTotal =
+      challengeSummaries.filter((s) => s.streakBonusAwarded).length * 50;
+    const leagueBonusTotal = challengeSummaries.reduce(
+      (sum, s) => sum + (s.leagueBonusPoints || 0),
+      0
+    );
+    const dailyBonusTotal = Math.max(
+      0,
+      bonusPointsTotal - streakBonusTotal - leagueBonusTotal
+    );
+
+    return {
+      challengeId: challenge.id,
+      challengeName: challenge.name,
+      totalPoints,
+      taskPointsTotal,
+      bonusPointsTotal,
+      dailyBonusTotal,
+      streakBonusTotal,
+      leagueBonusTotal,
+      tasks: tasksBreakdown,
+    };
+  });
+
+  const sortedBreakdowns = [...challengePointsBreakdowns].sort((a, b) => {
+    if (winterArcMembership && a.challengeId === winterArcMembership.challenge.id)
+      return -1;
+    if (winterArcMembership && b.challengeId === winterArcMembership.challenge.id)
+      return 1;
+    return 0;
+  });
+
   return (
     <AppShell>
       <div className="pb-6">
@@ -155,6 +264,7 @@ export default async function ProfilePage() {
           summaries={formattedSummaries}
           activeMemberships={activeMemberships}
           share={share}
+          challengePointsBreakdowns={sortedBreakdowns}
         />
       </div>
     </AppShell>

@@ -18,6 +18,10 @@ import {
   RankStrip,
   RankUpModal,
 } from "@/components/league-components";
+import {
+  TaskPointsModal,
+  type ChallengePointsBreakdown,
+} from "@/components/task-points-modal";
 
 export interface UserSummaryLog {
   id: string;
@@ -77,6 +81,7 @@ export interface ProfileClientProps {
     squadMembers: SquadMember[];
     avatarUrl: string | null;
   } | null;
+  challengePointsBreakdowns?: ChallengePointsBreakdown[];
 }
 
 export function ProfileClient({
@@ -86,6 +91,7 @@ export function ProfileClient({
   summaries,
   activeMemberships,
   share = null,
+  challengePointsBreakdowns = [],
 }: ProfileClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -111,6 +117,7 @@ export function ProfileClient({
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
   const [insuranceStatus, setInsuranceStatus] = useState<string | null>(null);
   const [showRecapModal, setShowRecapModal] = useState(false);
+  const [showPointsModal, setShowPointsModal] = useState(false);
 
   // League State & Sticky Rank Strip state
   const peakPoints = user.peakLeaguePoints ?? user.totalPoints ?? 0;
@@ -151,7 +158,7 @@ export function ProfileClient({
   // IntersectionObserver for Emblem Card to trigger sticky RankStrip
   useEffect(() => {
     const el = emblemCardRef.current;
-    if (!el) return;
+    if (!el || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -459,12 +466,33 @@ export function ProfileClient({
       {/* 5. Stats Row: Points, Streak, Active */}
       <section className="grid grid-cols-3 gap-3">
         {/* Points Medallion */}
-        <div className="bg-[#111a2e] border border-[#1f2a44] p-3.5 rounded-[14px] flex flex-col items-center justify-center text-center shadow-sm">
-          <span className="font-display font-bold text-2xl text-[#e8b73a]">
+        <button
+          type="button"
+          onClick={() => setShowPointsModal(true)}
+          className="bg-[#111a2e] border border-[#1f2a44] hover:border-[#e8b73a]/50 p-3.5 rounded-[14px] flex flex-col items-center justify-center text-center shadow-sm transition-all duration-150 cursor-pointer group hover:bg-[#15203a] active:scale-[0.98]"
+          title="Click to view task points breakdown"
+          aria-label="View task points breakdown"
+        >
+          <span className="font-display font-bold text-2xl text-[#e8b73a] group-hover:scale-105 transition-transform">
             {user.totalPoints.toLocaleString()}
           </span>
-          <span className="text-[11px] font-medium text-[#8a97b2] mt-0.5">Points</span>
-        </div>
+          <span className="text-[11px] font-medium text-[#8a97b2] group-hover:text-[#e8b73a] transition-colors mt-0.5 flex items-center justify-center gap-0.5">
+            Points
+            <svg
+              className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </span>
+        </button>
 
         {/* Streak Medallion */}
         <button
@@ -783,6 +811,15 @@ export function ProfileClient({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Task Points Breakdown Modal */}
+      {challengePointsBreakdowns && challengePointsBreakdowns.length > 0 && (
+        <TaskPointsModal
+          isOpen={showPointsModal}
+          onClose={() => setShowPointsModal(false)}
+          challengeBreakdowns={challengePointsBreakdowns}
+        />
       )}
     </div>
   );
