@@ -1,4 +1,4 @@
-export type LeagueKey = "noob" | "amateur" | "silver" | "gold" | "titan" | "legend";
+export type LeagueKey = "noob" | "amateur" | "silver" | "gold" | "titan" | "legend" | "ruler";
 
 export type Division = "III" | "II" | "I";
 
@@ -90,6 +90,17 @@ export const LEAGUES: LeagueConfig[] = [
     persona: "Winter Arc Sovereign",
     color: "#ff8a3d",
     textColor: "#ffb35c",
+    icon: "crown",
+    description: "Sovereign · golden flames",
+  },
+  {
+    key: "ruler",
+    name: "Ruler",
+    minPoints: 10000,
+    dailyBonus: 5,
+    persona: "The One and Only",
+    color: "#f1690eff",
+    textColor: "#f1b46dff",
     icon: "crown",
     description: "Sovereign · golden flames",
   },
