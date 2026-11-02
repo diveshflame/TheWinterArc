@@ -5,6 +5,14 @@ import { db } from "@/lib/db";
 import { getPrimaryChallenge, getUserChallenges } from "@/lib/queries";
 import { startOfWeek, startOfDay, endOfDay } from "@/lib/scoring";
 import { computeTaskPointsByUser, taskCategory } from "@/lib/leaderboard-tasks";
+import {
+  computeBestDay,
+  computeBestMonth,
+  computeBestWeek,
+  computeWeeklyWinners,
+  type ScoredDay,
+  type WeeklyWinner,
+} from "@/lib/weekly-winners";
 import { AppShell } from "@/components/app-shell";
 import { LeaderboardClient } from "@/components/leaderboard-client";
 import { ChallengeSwitcher } from "@/components/challenge-switcher";
@@ -79,6 +87,57 @@ export default async function LeaderboardsPage({
 
   const tasks = membership.challenge.tasks;
   const tiers = tasks.flatMap((t) => t.tiers);
+
+  // Every weekly score of the challenge, so the Winners modal can list the
+  // top scorer of each week (current/in-progress week excluded downstream).
+  const allWeeklyScores = await db.weeklyScore.findMany({
+    where: { challengeId },
+    orderBy: { weekStart: "asc" },
+  });
+
+  // Every day summary of the challenge, so week totals (daily + weekly task
+  // points) can be computed for each member when picking weekly winners.
+  const allDaySummaries = await db.daySummary.findMany({
+    where: { challengeId },
+    orderBy: { date: "asc" },
+  });
+
+  const dailySummariesByUserId: Record<string, ScoredDay[]> = {};
+  for (const d of allDaySummaries) {
+    const list = dailySummariesByUserId[d.userId] ?? [];
+    list.push({ pointsAwarded: d.pointsAwarded, date: d.date });
+    dailySummariesByUserId[d.userId] = list;
+  }
+
+  const weeklyWinners: WeeklyWinner[] = computeWeeklyWinners({
+    scores: allWeeklyScores,
+    namesByUserId: Object.fromEntries(
+      members.map((m) => [m.userId, m.user.name ?? "Unknown"])
+    ),
+    dailySummariesByUserId,
+    currentWeekStart: startOfWeek(new Date()),
+  });
+
+  // Personal best records for the signed-in user (active challenge).
+  const myDaySummaries = await db.daySummary.findMany({
+    where: { userId: session.user.id, challengeId },
+    orderBy: { date: "asc" },
+  });
+  const myRecords = {
+    bestDay: computeBestDay(myDaySummaries),
+    bestWeek: computeBestWeek(
+      allWeeklyScores,
+      myDaySummaries,
+      session.user.id,
+      startOfWeek(new Date())
+    ),
+    bestMonth: computeBestMonth(
+      allWeeklyScores,
+      myDaySummaries,
+      session.user.id,
+      startOfWeek(new Date())
+    ),
+  };
   // Filter options: grouped by category, never including negative-point tasks.
   const filterableTasks = tasks
     .filter((t) => t.points >= 0)
@@ -145,6 +204,8 @@ export default async function LeaderboardsPage({
           overall={overall}
           tasks={filterableTasks}
           myUserId={session.user.id}
+          weeklyWinners={weeklyWinners}
+          myRecords={myRecords}
         />
       </div>
     </AppShell>

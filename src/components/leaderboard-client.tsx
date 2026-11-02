@@ -4,8 +4,15 @@ import { Fragment, useState } from "react";
 import Link from "next/link";
 import { getLeagueState, resolvePersona } from "@/lib/leagues";
 import type { TaskPointTotals } from "@/lib/leaderboard-tasks";
+import type {
+  BestDay,
+  BestMonth,
+  BestWeek,
+  WeeklyWinner,
+} from "@/lib/weekly-winners";
 import { TaskFilter, type FilterableTask } from "@/components/task-filter-sheet";
 import { LeagueIcon } from "@/components/league-icons";
+import { WeeklyWinnersModal } from "@/components/weekly-winners-modal";
 
 export interface LeaderboardRow {
   userId: string;
@@ -29,16 +36,25 @@ export function LeaderboardClient({
   overall,
   tasks,
   myUserId,
+  weeklyWinners,
+  myRecords,
 }: {
   today: LeaderboardRow[];
   week: LeaderboardRow[];
   overall: LeaderboardRow[];
   tasks: FilterableTask[];
   myUserId: string;
+  weeklyWinners: WeeklyWinner[];
+  myRecords: {
+    bestDay: BestDay | null;
+    bestWeek: BestWeek | null;
+    bestMonth: BestMonth | null;
+  } | null;
 }) {
   const [tab, setTab] = useState<Tab>("today");
   const [taskId, setTaskId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [winnersOpen, setWinnersOpen] = useState(false);
 
   // The selection survives tab switches; an id that no longer exists simply
   // reads as "All tasks".
@@ -91,6 +107,78 @@ export function LeaderboardClient({
           onChange={setTaskId}
         />
       )}
+
+      {/* Weekly winners trigger */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setWinnersOpen(true)}
+          className="flex items-center gap-1.5 rounded-xl border border-card-border bg-card px-3 py-1.5 text-xs font-semibold text-muted hover:text-foreground transition"
+        >
+          🏆 Winners
+        </button>
+      </div>
+
+      {/* Personal records */}
+      {myRecords &&
+        (myRecords.bestDay || myRecords.bestWeek || myRecords.bestMonth) && (
+          <div className="rounded-2xl bg-card border border-card-border p-4">
+            <h3 className="text-sm font-semibold mb-3">Your Records</h3>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-xl bg-background border border-card-border p-3 text-center">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-muted">
+                  Best Day
+                </p>
+                <p className="font-display font-bold text-xl text-foreground mt-1">
+                  {myRecords.bestDay?.points ?? 0}
+                </p>
+                <p className="text-[10px] text-muted mt-0.5">
+                  {myRecords.bestDay
+                    ? new Date(myRecords.bestDay.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </p>
+              </div>
+              <div className="rounded-xl bg-background border border-card-border p-3 text-center">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-muted">
+                  Best Week
+                </p>
+                <p className="font-display font-bold text-xl text-foreground mt-1">
+                  {myRecords.bestWeek?.points ?? 0}
+                </p>
+                <p className="text-[10px] text-muted mt-0.5">
+                  {myRecords.bestWeek
+                    ? new Date(myRecords.bestWeek.weekStart).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </p>
+              </div>
+              <div className="rounded-xl bg-background border border-card-border p-3 text-center">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-muted">
+                  Best Month
+                </p>
+                <p className="font-display font-bold text-xl text-foreground mt-1">
+                  {myRecords.bestMonth?.points ?? 0}
+                </p>
+                <p className="text-[10px] text-muted mt-0.5">
+                  {myRecords.bestMonth
+                    ? new Date(
+                        Number(myRecords.bestMonth.monthKey.slice(0, 4)),
+                        Number(myRecords.bestMonth.monthKey.slice(5, 7)) - 1,
+                        1
+                      ).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+                    : "—"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Leaderboard Rows */}
       <div className="rounded-2xl bg-card border border-card-border divide-y divide-card-border shadow-md">
@@ -217,6 +305,12 @@ export function LeaderboardClient({
           Your rank: #{myRank}
         </p>
       )}
+
+      <WeeklyWinnersModal
+        open={winnersOpen}
+        onClose={() => setWinnersOpen(false)}
+        winners={weeklyWinners}
+      />
     </div>
   );
 }
