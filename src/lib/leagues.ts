@@ -24,7 +24,7 @@ export const LEAGUES: LeagueConfig[] = [
     name: "Noob",
     minPoints: 0,
     dailyBonus: 0,
-    persona: "I'm Gay",
+    persona: "I'm Good",
     color: "#94a3b8",
     textColor: "#94a3b8",
     icon: "snowflake",
