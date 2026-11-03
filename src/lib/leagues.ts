@@ -87,7 +87,7 @@ export const LEAGUES: LeagueConfig[] = [
     name: "Legend",
     minPoints: 5200,
     dailyBonus: 5,
-    persona: "Winter Arc Sovereign",
+    persona: "Winter Arc Legend",
     color: "#ff8a3d",
     textColor: "#ffb35c",
     icon: "crown",
